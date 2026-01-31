@@ -3,13 +3,13 @@
     {
       "id": "cleansing_shrine",
       "name": "Cleansing Shrine",
-      "description": "Remove a negative trait from a minion",
+      "description": "Remove a negative trait from a soul",
       "effect": "remove_negative_trait"
     },
     {
       "id": "blessing_shrine",
       "name": "Blessing Shrine", 
-      "description": "Add a positive trait to a minion's mask",
+      "description": "Add a positive trait to a soul's mask",
       "effect": "add_positive_trait"
     },
     {
@@ -29,13 +29,13 @@
     {
       "id": "healing_shrine",
       "name": "Healing Shrine",
-      "description": "Restore a minion to full health",
+      "description": "Restore a soul to full health",
       "effect": "heal_full"
     },
     {
       "id": "blood_shrine",
       "name": "Blood Shrine",
-      "description": "Increase max HP by 5 for a minion",
+      "description": "Increase max HP by 5 for a soul",
       "effect": "increase_max_hp",
       "value": 5
     }

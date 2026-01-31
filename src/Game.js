@@ -1,7 +1,7 @@
 // Game controller - orchestrates everything
 import { ConfigLoader } from './core/ConfigLoader.js';
 import { GameState } from './core/GameState.js';
-import { Minion } from './core/Minion.js';
+import { Soul } from './core/Soul.js';
 import { Combat } from './core/Combat.js';
 
 export class Game {
@@ -28,8 +28,8 @@ export class Game {
   }
 
   // Home screen actions
-  summonMinion() {
-    return this.state.summonMinion();
+  summonSoul() {
+    return this.state.summonSoul();
   }
 
   buyMask(rarity, index) {
@@ -41,56 +41,56 @@ export class Game {
     return result;
   }
 
-  equipTempMask(minionId) {
+  equipTempMask(soulId) {
     if (!this.tempMask) {
       return { success: false, error: 'No mask to equip' };
     }
     
-    const result = this.state.equipMaskToMinion(minionId, this.tempMask);
+    const result = this.state.equipMaskToSoul(soulId, this.tempMask);
     if (result.success) {
       this.tempMask = null;
     }
     return result;
   }
 
-  equipMask(minionId, mask) {
-    return this.state.equipMaskToMinion(minionId, mask);
+  equipMask(soulId, mask) {
+    return this.state.equipMaskToSoul(soulId, mask);
   }
 
-  removeMaskFromMinion(minionId) {
-    const minion = this.state.minions.find(m => m.id === minionId);
-    if (!minion) {
-      return { success: false, error: 'Minion not found' };
+  removeMaskFromSoul(soulId) {
+    const soul = this.state.souls.find(m => m.id === soulId);
+    if (!soul) {
+      return { success: false, error: 'Soul not found' };
     }
 
-    if (!minion.mask) {
+    if (!soul.mask) {
       return { success: false, error: 'No mask equipped' };
     }
 
-    const cost = minion.getMaskRemovalCost();
+    const cost = soul.getMaskRemovalCost();
     
     if (cost === 0) {
       // Free removal - bind expired
-      const mask = minion.removeMask();
+      const mask = soul.removeMask();
       if (mask) {
         this.tempMask = mask; // Store for re-equipping
       }
       return { success: true, cost: 0 };
     }
 
-    if (!minion.canAffordMaskRemoval()) {
+    if (!soul.canAffordMaskRemoval()) {
       return { success: false, error: 'Not enough blood to remove mask' };
     }
 
-    const mask = minion.forceRemoveMask();
+    const mask = soul.forceRemoveMask();
     if (mask) {
       this.tempMask = mask; // Store for re-equipping
     }
     return { success: true, cost };
   }
 
-  getMinions() {
-    return this.state.minions.filter(m => !m.isDead());
+  getSouls() {
+    return this.state.souls.filter(m => !m.isDead());
   }
 
   getMaskInventory() {
@@ -132,10 +132,10 @@ export class Game {
     return null;
   }
 
-  startBattle(minionId) {
-    const minion = this.state.minions.find(m => m.id === minionId);
-    if (!minion) {
-      return { success: false, error: 'Minion not found' };
+  startBattle(soulId) {
+    const soul = this.state.souls.find(m => m.id === soulId);
+    if (!soul) {
+      return { success: false, error: 'Soul not found' };
     }
 
     const enemy = this.getCurrentEnemy();
@@ -146,7 +146,7 @@ export class Game {
     // Create deep copy of enemy for this battle
     const enemyCopy = { ...enemy };
     
-    this.combat = new Combat(minion, enemyCopy, this.config);
+    this.combat = new Combat(soul, enemyCopy, this.config);
     const initialState = this.combat.startCombat();
 
     return { success: true, combatState: initialState };
@@ -179,18 +179,18 @@ export class Game {
     }
 
     const result = this.combat.getResult();
-    const minion = this.combat.minion;
+    const soul = this.combat.soul;
     const enemy = this.combat.enemy;
 
     if (result === 'victory') {
       // Award resources
       this.state.awardVictory(enemy);
       
-      // Mark minion tired
-      minion.setTired(true);
+      // Mark soul tired
+      soul.setTired(true);
       
       // Decrement mask bind
-      minion.decrementMaskBind();
+      soul.decrementMaskBind();
       
       return {
         success: true,
@@ -200,8 +200,8 @@ export class Game {
       };
     } else {
       // Mask breaks on defeat
-      if (minion.mask) {
-        minion.breakMask();
+      if (soul.mask) {
+        soul.breakMask();
       }
       
       return {
@@ -229,12 +229,12 @@ export class Game {
   }
 
   applyTraitChoice(traitId, isPositive) {
-    const minion = this.combat.minion;
+    const soul = this.combat.soul;
     
     if (isPositive) {
-      minion.addPositiveTraitToMask(traitId);
+      soul.addPositiveTraitToMask(traitId);
     } else {
-      minion.addNegativeTrait(traitId);
+      soul.addNegativeTrait(traitId);
     }
 
     this.combat = null;
@@ -244,7 +244,7 @@ export class Game {
   // Game over check
   checkGameOver() {
     if (this.state.hasLost()) {
-      return { gameOver: true, message: 'All minions lost. Starting over...' };
+      return { gameOver: true, message: 'All souls lost. Starting over...' };
     }
     
     if (this.state.isTrackComplete()) {

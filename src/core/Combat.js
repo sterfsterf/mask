@@ -1,22 +1,22 @@
 // Combat system - handles card battles
 export class Combat {
-  constructor(minion, enemy, config) {
+  constructor(soul, enemy, config) {
     this.config = config;
     
     // Combatants
-    this.minion = minion;
+    this.soul = soul;
     this.enemy = enemy;
     
     // Stats
-    this.minionStats = minion.getStats();
-    this.minionBlood = minion.blood;
-    this.minionBlock = 0;
+    this.soulStats = soul.getStats();
+    this.soulBlood = soul.blood;
+    this.soulBlock = 0;
     
     this.enemyBlood = enemy.blood;
     this.enemyBlock = 0;
     
     // Deck & hand
-    this.deck = this.shuffleDeck(minion.buildDeck(config));
+    this.deck = this.shuffleDeck(soul.buildDeck(config));
     this.hand = [];
     this.discardPile = [];
     
@@ -90,17 +90,17 @@ export class Combat {
   executeCardEffect(card, isPlayer) {
     if (card.type === 'attack') {
       if (isPlayer) {
-        const damage = Math.max(0, (card.damage + this.minionStats.attack) - this.enemyBlock);
-        this.enemyBlock = Math.max(0, this.enemyBlock - (card.damage + this.minionStats.attack));
+        const damage = Math.max(0, (card.damage + this.soulStats.attack) - this.enemyBlock);
+        this.enemyBlock = Math.max(0, this.enemyBlock - (card.damage + this.soulStats.attack));
         this.enemyBlood -= damage;
       } else {
-        const damage = Math.max(0, (card.damage + this.enemy.attack) - this.minionBlock);
-        this.minionBlock = Math.max(0, this.minionBlock - (card.damage + this.enemy.attack));
-        this.minionBlood -= damage;
+        const damage = Math.max(0, (card.damage + this.enemy.attack) - this.soulBlock);
+        this.soulBlock = Math.max(0, this.soulBlock - (card.damage + this.enemy.attack));
+        this.soulBlood -= damage;
       }
     } else if (card.type === 'defend') {
       if (isPlayer) {
-        this.minionBlock += card.block + this.minionStats.defense;
+        this.soulBlock += card.block + this.soulStats.defense;
       } else {
         this.enemyBlock += card.block + this.enemy.defense;
       }
@@ -132,7 +132,7 @@ export class Combat {
       this.drawCards(5);
       
       // Block decays each turn
-      this.minionBlock = 0;
+      this.soulBlock = 0;
       this.enemyBlock = 0;
     }
 
@@ -155,22 +155,27 @@ export class Combat {
   checkCombatEnd() {
     if (this.enemyBlood <= 0) {
       this.result = 'victory';
-      this.minion.blood = this.minionBlood;
-    } else if (this.minionBlood <= 0) {
+      this.soul.blood = this.soulBlood;
+    } else if (this.soulBlood <= 0) {
       this.result = 'defeat';
-      this.minion.blood = 0;
+      this.soul.blood = 0;
     }
   }
 
   getState() {
     return {
-      minion: {
-        blood: this.minionBlood,
-        maxBlood: this.minion.maxBlood,
-        block: this.minionBlock,
-        stats: this.minionStats
+      soul: {
+        id: this.soul.id,
+        name: this.soul.name,
+        type: this.soul.type,
+        mask: this.soul.mask,
+        blood: this.soulBlood,
+        maxBlood: this.soul.maxBlood,
+        block: this.soulBlock,
+        stats: this.soulStats
       },
       enemy: {
+        id: this.enemy.id,
         blood: this.enemyBlood,
         maxBlood: this.enemy.blood,
         block: this.enemyBlock,

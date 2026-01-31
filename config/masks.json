@@ -15,40 +15,146 @@
       "texture": "/masks/gnarled_visage.png"
     },
     {
-      "id": "crude_wooden",
-      "name": "Crude Wooden Mask",
+      "id": "iron_grimace",
+      "name": "Iron Grimace",
+      "rarity": "rare",
+      "type": "flesh",
+      "traits": ["fortify", "rage"],
+      "bind_duration": 5,
+      "texture": "/masks/iron_grimace.png"
+    },
+    {
+      "id": "fleshy_grin",
+      "name": "Fleshy Grin",
+      "rarity": "common",
+      "type": "flesh",
+      "traits": ["fortify"],
+      "bind_duration": 3,
+      "texture": "/masks/fleshy_grin.png"
+    },
+    {
+      "id": "scrimshaw_awe",
+      "name": "Scrimshaw Awe",
+      "rarity": "rare",
+      "type": "bone",
+      "traits": ["swift", "rage"],
+      "bind_duration": 5
+    },
+    {
+      "id": "void_crown",
+      "name": "Void Crown",
+      "rarity": "legendary",
+      "type": "universal",
+      "traits": ["rage", "fortify", "swift"],
+      "bind_duration": 10
+    },
+    {
+      "id": "ember_shroud",
+      "name": "Ember Shroud",
+      "rarity": "rare",
+      "type": "shadow",
+      "traits": ["swift", "rage"],
+      "bind_duration": 5
+    },
+    {
+      "id": "calcified_howl",
+      "name": "Calcified Howl",
+      "rarity": "legendary",
+      "type": "bone",
+      "traits": ["rage", "rage", "swift"],
+      "bind_duration": 10
+    },
+    {
+      "id": "crimson_tyrant",
+      "name": "Crimson Tyrant",
+      "rarity": "legendary",
+      "type": "flesh",
+      "traits": ["rage", "fortify", "rage"],
+      "bind_duration": 10
+    },
+    {
+      "id": "beggers_gaze",
+      "name": "Begger's Gaze",
       "rarity": "common",
       "type": "shadow",
       "traits": ["swift"],
       "bind_duration": 3
     },
     {
-      "id": "flesh_mask",
-      "name": "Flesh Mask",
+      "id": "splintered_smile",
+      "name": "Splintered Smile",
       "rarity": "common",
-      "type": "flesh",
-      "traits": ["fortify"],
+      "type": "bone",
+      "traits": ["swift"],
       "bind_duration": 3
     },
     {
-      "id": "bone_visage",
-      "name": "Bone Visage",
+      "id": "ashen_veil",
+      "name": "Ashen Veil",
+      "rarity": "common",
+      "type": "shadow",
+      "traits": ["swift"],
+      "bind_duration": 3
+    },
+    {
+      "id": "sanguine_maw",
+      "name": "Sanguine Maw",
+      "rarity": "rare",
+      "type": "flesh",
+      "traits": ["rage", "fortify"],
+      "bind_duration": 5
+    },
+    {
+      "id": "obsidian_leer",
+      "name": "Obsidian Leer",
+      "rarity": "rare",
+      "type": "shadow",
+      "traits": ["rage", "swift"],
+      "bind_duration": 5
+    },
+    {
+      "id": "charnel_grin",
+      "name": "Charnel Grin",
       "rarity": "rare",
       "type": "bone",
       "traits": ["rage", "swift"],
       "bind_duration": 5
     },
     {
-      "id": "iron_grimace",
-      "name": "Iron Grimace",
+      "id": "flayed_sovereign",
+      "name": "Flayed Sovereign",
       "rarity": "rare",
       "type": "flesh",
       "traits": ["fortify", "rage"],
       "bind_duration": 5
     },
     {
-      "id": "void_crown",
-      "name": "Void Crown",
+      "id": "abyssal_membrane",
+      "name": "Abyssal Membrane",
+      "rarity": "legendary",
+      "type": "shadow",
+      "traits": ["rage", "fortify", "swift"],
+      "bind_duration": 10
+    },
+    {
+      "id": "gorewreath",
+      "name": "Gorewreath",
+      "rarity": "legendary",
+      "type": "flesh",
+      "traits": ["rage", "rage", "fortify"],
+      "bind_duration": 10
+    },
+    {
+      "id": "ossuary_crown",
+      "name": "Ossuary Crown",
+      "rarity": "legendary",
+      "type": "bone",
+      "traits": ["rage", "fortify", "swift"],
+      "bind_duration": 10
+    },
+    {
+      "id": "carrion_psalm",
+      "name": "Carrion Psalm",
       "rarity": "legendary",
       "type": "universal",
       "traits": ["rage", "fortify", "swift"],

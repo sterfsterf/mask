@@ -1,5 +1,5 @@
-// GameState - manages currencies, minions, progression
-import { Minion } from './Minion.js';
+// GameState - manages currencies, souls, progression
+import { Soul } from './Soul.js';
 
 export class GameState {
   constructor(config) {
@@ -9,9 +9,9 @@ export class GameState {
     this.darkEnergy = 5;
     this.coins = 5;
     
-    // Minions
-    this.minions = [];
-    this.nextMinionId = 1;
+    // Souls
+    this.souls = [];
+    this.nextSoulId = 1;
     
     // Progression
     this.currentTrack = null;
@@ -21,6 +21,7 @@ export class GameState {
     
     // Current node state
     this.maskShopOffering = null;
+    this.soldMasks = { common: [], rare: [], legendary: [] }; // Track sold masks by rarity/index
     this.currentShrine = null;
     this.mysteryRevealed = null;
   }
@@ -29,23 +30,23 @@ export class GameState {
     // No longer used - start with empty roster
   }
 
-  summonMinion() {
-    const cost = this.config.minionConfig.summon_cost;
+  summonSoul() {
+    const cost = this.config.soulConfig.summon_cost;
     if (this.darkEnergy < cost) {
       return { success: false, error: 'Not enough dark energy' };
     }
 
-    const minionType = this.config.rollMinionType();
-    const minion = new Minion(
-      this.nextMinionId++,
-      minionType,
+    const soulType = this.config.rollSoulType();
+    const soul = new Soul(
+      this.nextSoulId++,
+      soulType,
       this.config
     );
 
-    this.minions.push(minion);
+    this.souls.push(soul);
     this.darkEnergy -= cost;
 
-    return { success: true, minion };
+    return { success: true, soul };
   }
 
   craftMask(rarity) {
@@ -74,6 +75,11 @@ export class GameState {
       return { success: false, error: 'Mask not found' };
     }
 
+    // Check if already sold
+    if (this.soldMasks[rarity].includes(index)) {
+      return { success: false, error: 'Already sold out' };
+    }
+
     const cost = this.config.maskConfig.costs[rarity];
     if (this.coins < cost) {
       return { success: false, error: 'Not enough coins' };
@@ -82,16 +88,19 @@ export class GameState {
     const mask = masks[index];
     this.coins -= cost;
 
+    // Mark as sold
+    this.soldMasks[rarity].push(index);
+
     return { success: true, mask };
   }
 
-  equipMaskToMinion(minionId, mask) {
-    const minion = this.minions.find(m => m.id === minionId);
-    if (!minion) {
-      return { success: false, error: 'Minion not found' };
+  equipMaskToSoul(soulId, mask) {
+    const soul = this.souls.find(m => m.id === soulId);
+    if (!soul) {
+      return { success: false, error: 'Soul not found' };
     }
 
-    minion.equipMask(mask);
+    soul.equipMask(mask);
 
     return { success: true };
   }
@@ -132,6 +141,7 @@ export class GameState {
     // Initialize node-specific state
     if (node.type === 'mask_shop') {
       this.maskShopOffering = this.config.generateMaskShopOffering();
+      this.soldMasks = { common: [], rare: [], legendary: [] }; // Reset sold masks for new shop
     } else if (node.type === 'shrine') {
       this.currentShrine = this.config.getRandomShrine();
     } else if (node.type === 'mystery') {
@@ -142,6 +152,7 @@ export class GameState {
       
       if (revealedType === 'mask_shop') {
         this.maskShopOffering = this.config.generateMaskShopOffering();
+        this.soldMasks = { common: [], rare: [], legendary: [] }; // Reset sold masks for new shop
       } else if (revealedType === 'shrine') {
         this.currentShrine = this.config.getRandomShrine();
       } else if (revealedType === 'battle') {
@@ -175,17 +186,17 @@ export class GameState {
   }
 
   hasLost() {
-    // Lost if no minions alive and can't afford to summon
-    const hasAliveMinions = this.minions.some(m => !m.isDead());
-    const canSummon = this.darkEnergy >= this.config.minionConfig.summon_cost;
-    return !hasAliveMinions && !canSummon;
+    // Lost if no souls alive and can't afford to summon
+    const hasAliveSouls = this.souls.some(m => !m.isDead());
+    const canSummon = this.darkEnergy >= this.config.soulConfig.summon_cost;
+    return !hasAliveSouls && !canSummon;
   }
 
   reset() {
     this.darkEnergy = 5;
     this.coins = 5;
-    this.minions = [];
-    this.nextMinionId = 1;
+    this.souls = [];
+    this.nextSoulId = 1;
     this.currentTrack = null;
     this.currentNodeId = null;
     this.visitedNodes = [];

@@ -3,16 +3,16 @@ export class ConfigLoader {
   constructor() {
     this.cards = null;
     this.traits = null;
-    this.minionTypes = null;
+    this.soulTypes = null;
     this.masks = null;
     this.enemies = null;
   }
 
   async loadAll() {
-    const [cards, traits, minionTypes, masks, enemies, shrines] = await Promise.all([
+    const [cards, traits, soulTypes, masks, enemies, shrines] = await Promise.all([
       fetch('/config/cards.json').then(r => r.json()),
       fetch('/config/traits.json').then(r => r.json()),
-      fetch('/config/minion_types.json').then(r => r.json()),
+      fetch('/config/soul_types.json').then(r => r.json()),
       fetch('/config/masks.json').then(r => r.json()),
       fetch('/config/enemies.json').then(r => r.json()),
       fetch('/config/shrines.json').then(r => r.json())
@@ -21,8 +21,8 @@ export class ConfigLoader {
     this.cards = this.indexById(cards.cards);
     this.traitCards = this.indexById(traits.trait_cards);
     this.traits = this.indexById(traits.traits);
-    this.minionTypes = this.indexById(minionTypes.types);
-    this.minionConfig = minionTypes;
+    this.soulTypes = this.indexById(soulTypes.types);
+    this.soulConfig = soulTypes;
     this.maskConfig = masks;
     this.enemyConfig = enemies;
     this.enemies = this.indexById(enemies.enemies);
@@ -47,16 +47,16 @@ export class ConfigLoader {
     return this.traits[id];
   }
 
-  getMinionType(id) {
-    return this.minionTypes[id];
+  getSoulType(id) {
+    return this.soulTypes[id];
   }
 
   getEnemy(id) {
     return this.enemies[id];
   }
 
-  rollMinionType() {
-    const table = this.minionConfig.rarity_table;
+  rollSoulType() {
+    const table = this.soulConfig.rarity_table;
     const totalWeight = table.reduce((sum, entry) => sum + entry.weight, 0);
     let roll = Math.random() * totalWeight;
     
@@ -69,8 +69,8 @@ export class ConfigLoader {
       }
     }
 
-    // Find minion types with this rarity
-    const candidates = Object.values(this.minionTypes).filter(
+    // Find soul types with this rarity
+    const candidates = Object.values(this.soulTypes).filter(
       t => t.rarity === selectedRarity
     );
     
@@ -109,50 +109,22 @@ export class ConfigLoader {
     const rareMasks = this.maskConfig.masks.filter(m => m.rarity === 'rare');
     const legendaryMasks = this.maskConfig.masks.filter(m => m.rarity === 'legendary');
 
-    // 3 common masks (with replacement if needed)
-    for (let i = 0; i < 3; i++) {
+    // 2 common masks
+    for (let i = 0; i < 2; i++) {
       if (commonMasks.length > 0) {
         const mask = commonMasks[Math.floor(Math.random() * commonMasks.length)];
         offering.common.push({ ...mask });
       }
     }
 
-    // 2 rare masks (with replacement if needed)
-    for (let i = 0; i < 2; i++) {
-      if (rareMasks.length > 0) {
-        const mask = rareMasks[Math.floor(Math.random() * rareMasks.length)];
-        offering.rare.push({ ...mask });
-      }
-    }
-
-    // 1 legendary mask
-    if (legendaryMasks.length > 0) {
+    // 1 rare OR legendary mask (50/50 chance)
+    if (Math.random() < 0.5 && rareMasks.length > 0) {
+      const mask = rareMasks[Math.floor(Math.random() * rareMasks.length)];
+      offering.rare.push({ ...mask });
+    } else if (legendaryMasks.length > 0) {
       const mask = legendaryMasks[Math.floor(Math.random() * legendaryMasks.length)];
       offering.legendary.push({ ...mask });
     }
-
-    return offering;
-  }
-
-  generateMaskShopOffering() {
-    const offering = {
-      common: [],
-      rare: [],
-      legendary: []
-    };
-
-    // 3 common masks
-    for (let i = 0; i < 3; i++) {
-      offering.common.push(this.rollMask('common'));
-    }
-
-    // 2 rare masks
-    for (let i = 0; i < 2; i++) {
-      offering.rare.push(this.rollMask('rare'));
-    }
-
-    // 1 legendary mask
-    offering.legendary.push(this.rollMask('legendary'));
 
     return offering;
   }

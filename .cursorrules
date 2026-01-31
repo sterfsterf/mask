@@ -1,0 +1,30 @@
+# Cursor Rules for Mask Project
+
+## General Principles
+- Always read configuration from config files (`config/*.json`) rather than hardcoding values
+- When creating prefabs, instantiating models, or displaying content, pull data from the appropriate config file
+- Never duplicate content definitions - the config files are the single source of truth
+
+## Configuration Files
+- `config/masks.json` - All mask data (id, name, rarity, texture paths, traits)
+- `config/soul_types.json` - All soul/minion types (id, name, rarity, stats, prefab mapping, quotes)
+- `config/enemies.json` - All enemy data
+- `config/cards.json` - All card/action data
+- `config/shrines.json` - All shrine effect data
+- `config/traits.json` - All trait definitions
+
+## Code Organization
+- `src/core/ConfigLoader.js` - Loads and provides access to all config files
+- `src/debug/Prefab3D.js` - 3D model prefab definitions and PrefabManager
+- `src/debug/PreviewViewport.js` - 3D model preview/debug viewport
+- `src/UI.js` - All DOM/UI rendering and interactions
+- `src/core/GameState.js` - Game state management
+- `src/core/Combat.js` - Combat system logic
+- `src/core/Soul.js` - Soul/minion entity class
+
+## Important Conventions
+- Mask prefabs should load textures from `mask.texture` path in config
+- Soul types map 1:1 to prefabs (soul type id = prefab name)
+- All masks use white base material (`0xffffff`) with `MeshBasicMaterial` for proper PNG display
+- Mask textures use `transparent: true` and `alphaTest: 0.5` for PNG transparency
+- Never hardcode asset paths - always reference from config

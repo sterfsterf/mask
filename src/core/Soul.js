@@ -1,5 +1,5 @@
-// Minion class - represents a summoned minion
-export class Minion {
+// Soul class - represents a summoned soul
+export class Soul {
   constructor(id, type, config) {
     this.id = id;
     this.type = type.id;

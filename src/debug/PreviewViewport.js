@@ -4,7 +4,6 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
 import { PrefabManager } from './Prefab3D.js';
 
 export class PreviewViewport {
@@ -16,18 +15,15 @@ export class PreviewViewport {
     this.renderer = null;
     this.composer = null;
     this.controls = null;
-    this.transformControls = null;
     this.currentModel = null;
     this.prefabManager = new PrefabManager();
     this.animationId = null;
-    this.currentCategory = 'minion';
+    this.currentCategory = 'soul';
     this.currentIndex = 0;
     this.currentMask = null;
     this.selectedMaskKey = 'mask_gnarled_visage'; // Default mask
     this.maskVisible = false;
     this.autoRotate = true; // Auto-rotation enabled by default
-    this.transformMode = 'translate'; // translate, rotate, scale
-    this.transformEnabled = false;
     this.pixelationEnabled = true; // Pixelation enabled by default
     
     this.createViewportUI();
@@ -46,17 +42,10 @@ export class PreviewViewport {
         <div id="viewport-canvas-container">
           <button id="toggle-rotate-btn" class="toggle-rotate-btn">AUTO ROTATE: ON</button>
           <button id="toggle-pixel-btn" class="toggle-pixel-btn">PIXELS: ON</button>
-          <div class="transform-controls">
-            <button id="transform-toggle-btn" class="transform-btn">GIZMO: OFF</button>
-            <button id="transform-translate-btn" class="transform-mode-btn active">MOVE</button>
-            <button id="transform-rotate-btn" class="transform-mode-btn">ROTATE</button>
-            <button id="transform-scale-btn" class="transform-mode-btn">SCALE</button>
-            <button id="log-position-btn" class="transform-btn">LOG POS</button>
-          </div>
         </div>
         <div class="viewport-controls">
           <div class="category-tabs">
-            <button class="tab-btn active" data-category="minion">MINIONS</button>
+            <button class="tab-btn active" data-category="soul">SOULS</button>
             <button class="tab-btn" data-category="enemy">ENEMIES</button>
             <button class="tab-btn" data-category="mask">MASKS</button>
           </div>
@@ -109,60 +98,6 @@ export class PreviewViewport {
       const btn = document.getElementById('toggle-pixel-btn');
       btn.textContent = `PIXELS: ${this.pixelationEnabled ? 'ON' : 'OFF'}`;
     });
-
-    // Transform controls
-    document.getElementById('transform-toggle-btn').addEventListener('click', () => {
-      this.transformEnabled = !this.transformEnabled;
-      const btn = document.getElementById('transform-toggle-btn');
-      btn.textContent = `GIZMO: ${this.transformEnabled ? 'ON' : 'OFF'}`;
-      this.updateTransformControls();
-    });
-
-    document.getElementById('transform-translate-btn').addEventListener('click', () => {
-      this.transformMode = 'translate';
-      this.updateTransformModeButtons();
-      if (this.transformControls) this.transformControls.setMode('translate');
-    });
-
-    document.getElementById('transform-rotate-btn').addEventListener('click', () => {
-      this.transformMode = 'rotate';
-      this.updateTransformModeButtons();
-      if (this.transformControls) this.transformControls.setMode('rotate');
-    });
-
-    document.getElementById('transform-scale-btn').addEventListener('click', () => {
-      this.transformMode = 'scale';
-      this.updateTransformModeButtons();
-      if (this.transformControls) this.transformControls.setMode('scale');
-    });
-
-    document.getElementById('log-position-btn').addEventListener('click', () => {
-      this.logCurrentPosition();
-    });
-  }
-
-  updateTransformModeButtons() {
-    document.querySelectorAll('.transform-mode-btn').forEach(b => b.classList.remove('active'));
-    if (this.transformMode === 'translate') {
-      document.getElementById('transform-translate-btn').classList.add('active');
-    } else if (this.transformMode === 'rotate') {
-      document.getElementById('transform-rotate-btn').classList.add('active');
-    } else if (this.transformMode === 'scale') {
-      document.getElementById('transform-scale-btn').classList.add('active');
-    }
-  }
-
-  logCurrentPosition() {
-    if (this.transformControls && this.transformControls.object) {
-      const obj = this.transformControls.object;
-      console.log('===== CURRENT OBJECT TRANSFORM =====');
-      console.log('Position:', obj.position.toArray());
-      console.log('Rotation (radians):', obj.rotation.toArray().slice(0, 3));
-      console.log('Scale:', obj.scale.toArray());
-      console.log('Object:', obj);
-    } else {
-      console.log('No object selected');
-    }
   }
 
   open() {
@@ -190,7 +125,6 @@ export class PreviewViewport {
     const container = document.getElementById('viewport-canvas-container');
     const rotateBtn = container.querySelector('#toggle-rotate-btn');
     const pixelBtn = container.querySelector('#toggle-pixel-btn');
-    const transformControlsDiv = container.querySelector('.transform-controls');
     container.innerHTML = '';
 
     // Scene
@@ -220,9 +154,6 @@ export class PreviewViewport {
     }
     if (pixelBtn) {
       container.appendChild(pixelBtn);
-    }
-    if (transformControlsDiv) {
-      container.appendChild(transformControlsDiv);
     }
 
     // Post-processing setup
@@ -262,7 +193,7 @@ export class PreviewViewport {
 
     const pixelPass = new ShaderPass(PixelShader);
     pixelPass.uniforms['resolution'].value = new THREE.Vector2(container.clientWidth, container.clientHeight);
-    pixelPass.uniforms['pixelSize'].value = 6;
+    pixelPass.uniforms['pixelSize'].value = 4.8; // 20% smaller pixels (6 * 0.8)
     this.composer.addPass(pixelPass);
     
     // Store reference to pixel pass for toggling
@@ -277,17 +208,6 @@ export class PreviewViewport {
     this.controls.minDistance = 2;
     this.controls.maxDistance = 8;
     this.controls.update();
-
-    // TransformControls for moving objects
-    this.transformControls = new TransformControls(this.camera, this.renderer.domElement);
-    this.transformControls.setMode(this.transformMode);
-    this.transformControls.setSize(0.8);
-    this.scene.add(this.transformControls);
-
-    // When dragging with transform controls, disable orbit controls
-    this.transformControls.addEventListener('dragging-changed', (event) => {
-      this.controls.enabled = !event.value;
-    });
 
     // Lights - much brighter to see dark models
     const ambientLight = new THREE.AmbientLight(0xffffff, 2.0);
@@ -333,11 +253,26 @@ export class PreviewViewport {
 
   updateModelList() {
     const listContainer = document.getElementById('model-list');
-    const keys = this.prefabManager.getKeysByCategory(this.currentCategory);
+    let keys = this.prefabManager.getKeysByCategory(this.currentCategory);
+    
+    // Sort masks by rarity: common -> rare -> legendary
+    if (this.currentCategory === 'mask') {
+      keys = this.sortMasksByRarity(keys);
+    }
     
     listContainer.innerHTML = keys.map((key, index) => {
-      const displayName = this.getDisplayName(key);
-      return `<button class="model-btn ${index === this.currentIndex ? 'active' : ''}" data-key="${key}" data-index="${index}">${displayName}</button>`;
+      let displayName = this.getDisplayName(key);
+      const rarityClass = this.getRarityClass(key);
+      
+      // Add ! indicator if mask has no texture
+      if (key.startsWith('mask_')) {
+        const hasTexture = this.maskHasTexture(key);
+        if (!hasTexture) {
+          displayName += ' !';
+        }
+      }
+      
+      return `<button class="model-btn ${rarityClass} ${index === this.currentIndex ? 'active' : ''}" data-key="${key}" data-index="${index}">${displayName}</button>`;
     }).join('');
 
     // Bind click events
@@ -369,6 +304,53 @@ export class PreviewViewport {
     this.updateToggleMaskButton();
   }
 
+  maskHasTexture(maskKey) {
+    const maskId = maskKey.replace('mask_', '');
+    const maskConfig = this.game.config.maskConfig.masks.find(m => m.id === maskId);
+    
+    if (!maskConfig) return false;
+    
+    // Check if texture property exists and is not empty
+    return maskConfig.texture && maskConfig.texture.trim() !== '';
+  }
+
+  sortMasksByRarity(maskKeys) {
+    const rarityOrder = { 'common': 1, 'rare': 2, 'legendary': 3 };
+    
+    return maskKeys.sort((a, b) => {
+      const maskIdA = a.replace('mask_', '');
+      const maskIdB = b.replace('mask_', '');
+      
+      const maskA = this.game.config.maskConfig.masks.find(m => m.id === maskIdA);
+      const maskB = this.game.config.maskConfig.masks.find(m => m.id === maskIdB);
+      
+      // If either mask not found, maintain original order
+      if (!maskA || !maskB) return 0;
+      
+      const rarityA = rarityOrder[maskA.rarity] || 0;
+      const rarityB = rarityOrder[maskB.rarity] || 0;
+      
+      return rarityA - rarityB;
+    });
+  }
+
+  getRarityClass(key) {
+    // Only apply rarity colors to masks
+    if (!key.startsWith('mask_')) {
+      return '';
+    }
+
+    // Get mask config to determine rarity
+    const maskId = key.replace('mask_', '');
+    const maskConfig = this.game.config.maskConfig.masks.find(m => m.id === maskId);
+    
+    if (!maskConfig) {
+      return '';
+    }
+
+    return `rarity-${maskConfig.rarity}`;
+  }
+
   getDisplayName(key) {
     const parts = key.split('_');
     return parts.slice(1).map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
@@ -388,23 +370,23 @@ export class PreviewViewport {
       
       // Position masks differently - scale them up and position better for viewing
       if (prefabKey.startsWith('mask_')) {
-        this.currentModel.position.set(0, 2.0, 0); // High enough to clear floor (plane is 2 units tall when scaled)
+        this.currentModel.position.set(0, 1.0, 0); // Position at eye level, center of mask
         this.currentModel.scale.set(2, 2, 2); // Scale up masks for better viewing
       } else {
         this.currentModel.position.set(0, 1, 0); // Center at eye level
       }
       
-      // Add mask mount point for minions
-      if (prefabKey.startsWith('minion_')) {
+      // Add mask mount point for souls
+      if (prefabKey.startsWith('soul_')) {
         const mountPoint = new THREE.Object3D();
         mountPoint.name = 'maskMount';
         
-        // Different mount points for each minion type
-        if (prefabKey === 'minion_flesh') {
+        // Different mount points for each soul type
+        if (prefabKey === 'soul_flesh') {
           mountPoint.position.set(0, 0.9, 0.5); // Closer to face for curved mask
           this.currentModel.add(mountPoint);
-        } else if (prefabKey === 'minion_shadow') {
-          // Attach to head orb for shadow minion
+        } else if (prefabKey === 'soul_shadow') {
+          // Attach to head orb for shadow soul
           const headOrb = this.currentModel.userData.headOrb;
           if (headOrb) {
             // Position at outer edge of the orb (orb radius ~0.08-0.12)
@@ -414,7 +396,7 @@ export class PreviewViewport {
             mountPoint.position.set(0, 1.2, 0.35); // Fallback
             this.currentModel.add(mountPoint);
           }
-        } else if (prefabKey === 'minion_bone') {
+        } else if (prefabKey === 'soul_bone') {
           mountPoint.position.set(0, 1.4, 0.45); // Closer to skull for curved mask
           this.currentModel.add(mountPoint);
         }
@@ -428,28 +410,15 @@ export class PreviewViewport {
       this.updateModelInfo(prefabKey);
       
       // Reattach mask if it was visible
-      if (this.maskVisible && prefabKey.startsWith('minion_')) {
+      if (this.maskVisible && prefabKey.startsWith('soul_')) {
         this.attachMask();
       }
-      
-      // Update transform controls
-      this.updateTransformControls();
     } else {
       console.error('Failed to load prefab:', prefabKey);
     }
     
     // Update toggle mask button visibility
     this.updateToggleMaskButton();
-  }
-
-  updateTransformControls() {
-    if (!this.transformControls) return;
-    
-    if (this.transformEnabled && this.currentModel) {
-      this.transformControls.attach(this.currentModel);
-    } else {
-      this.transformControls.detach();
-    }
   }
 
   updateModelInfo(prefabKey) {
@@ -460,9 +429,9 @@ export class PreviewViewport {
     
     // Get config details
     let details = '';
-    if (prefabKey.startsWith('minion_')) {
-      const type = prefabKey.replace('minion_', '');
-      const config = this.game.config.getMinionType(type);
+    if (prefabKey.startsWith('soul_')) {
+      const type = prefabKey.replace('soul_', '');
+      const config = this.game.config.getSoulType(type);
       if (config) {
         details = `
           <div class="stat-line">❤️ HP: ${config.base_blood}</div>
@@ -496,7 +465,7 @@ export class PreviewViewport {
       } else {
         details = `
           <div class="stat-line">Mask preview</div>
-          <div class="stat-line">Grants traits to minions</div>
+          <div class="stat-line">Grants traits to souls</div>
           <div class="stat-line">Binds for multiple battles</div>
         `;
       }
@@ -507,9 +476,9 @@ export class PreviewViewport {
 
   updateToggleMaskButton() {
     const toggleBtn = document.getElementById('toggle-mask-btn');
-    const isMinion = this.currentModel && this.currentCategory === 'minion';
-    
-    if (isMinion) {
+    const isSoul = this.currentModel && this.currentCategory === 'soul';
+
+    if (isSoul) {
       toggleBtn.style.display = 'block';
       toggleBtn.textContent = this.maskVisible ? 'HIDE MASK' : 'SHOW MASK';
     } else {
@@ -518,7 +487,7 @@ export class PreviewViewport {
   }
 
   toggleMask() {
-    if (!this.currentModel || this.currentCategory !== 'minion') return;
+    if (!this.currentModel || this.currentCategory !== 'soul') return;
     
     this.maskVisible = !this.maskVisible;
     
@@ -588,12 +557,12 @@ export class PreviewViewport {
       this.currentModel.rotation.y += 0.01;
     }
     
-    // Bob up and down (only if transform controls not active)
-    if (this.currentModel && !this.transformEnabled) {
+    // Bob up and down
+    if (this.currentModel) {
       this.currentModel.position.y = Math.sin(time) * 0.1;
     }
     
-    // Animate undulating spheres (for shadow minion)
+    // Animate undulating spheres (for shadow soul)
     if (this.currentModel && this.currentModel.userData.needsAnimation && this.currentModel.userData.spheres) {
       this.currentModel.userData.spheres.forEach(sphere => {
         const data = sphere.userData;
@@ -686,15 +655,15 @@ export class PreviewViewport {
 
       .toggle-rotate-btn {
         position: absolute;
-        top: 10px;
-        left: 10px;
+        top: 8px;
+        left: 8px;
         background: rgba(0, 0, 0, 0.7);
         border: 2px solid #00ff00;
         color: #00ff00;
-        padding: 10px 15px;
+        padding: 6px 10px;
         cursor: pointer;
         font-family: 'Courier New', monospace;
-        font-size: 12px;
+        font-size: 10px;
         font-weight: bold;
         transition: all 0.2s;
         z-index: 10;
@@ -707,15 +676,15 @@ export class PreviewViewport {
 
       .toggle-pixel-btn {
         position: absolute;
-        top: 10px;
-        right: 10px;
+        top: 8px;
+        right: 8px;
         background: rgba(0, 0, 0, 0.7);
         border: 2px solid #00ff00;
         color: #00ff00;
-        padding: 10px 15px;
+        padding: 6px 10px;
         cursor: pointer;
         font-family: 'Courier New', monospace;
-        font-size: 12px;
+        font-size: 10px;
         font-weight: bold;
         transition: all 0.2s;
         z-index: 10;
@@ -723,41 +692,6 @@ export class PreviewViewport {
 
       .toggle-pixel-btn:hover {
         background: rgba(0, 255, 0, 0.2);
-        color: #fff;
-      }
-
-      .transform-controls {
-        position: absolute;
-        top: 50px;
-        left: 10px;
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-        z-index: 10;
-      }
-
-      .transform-btn,
-      .transform-mode-btn {
-        background: rgba(0, 0, 0, 0.7);
-        border: 2px solid #00ff00;
-        color: #00ff00;
-        padding: 8px 12px;
-        cursor: pointer;
-        font-family: 'Courier New', monospace;
-        font-size: 11px;
-        font-weight: bold;
-        transition: all 0.2s;
-      }
-
-      .transform-btn:hover,
-      .transform-mode-btn:hover {
-        background: rgba(0, 255, 0, 0.2);
-        color: #fff;
-      }
-
-      .transform-mode-btn.active {
-        background: rgba(0, 255, 0, 0.3);
-        border-color: #fff;
         color: #fff;
       }
 
@@ -781,10 +715,10 @@ export class PreviewViewport {
         border: none;
         border-right: 1px solid #00ff00;
         color: #00ff00;
-        padding: 15px 10px;
+        padding: 10px 8px;
         cursor: pointer;
         font-family: 'Courier New', monospace;
-        font-size: 11px;
+        font-size: 10px;
         font-weight: bold;
         transition: all 0.2s;
       }
@@ -803,20 +737,20 @@ export class PreviewViewport {
       }
 
       .model-list {
-        padding: 10px;
+        padding: 8px;
         border-bottom: 2px solid #00ff00;
       }
 
       .model-btn {
         width: 100%;
         background: rgba(0, 0, 0, 0.5);
-        border: 1px solid #00ff00;
+        border: 2px solid #00ff00;
         color: #00ff00;
-        padding: 12px;
-        margin: 5px 0;
+        padding: 8px;
+        margin: 3px 0;
         cursor: pointer;
         font-family: 'Courier New', monospace;
-        font-size: 12px;
+        font-size: 10px;
         text-align: left;
         transition: all 0.2s;
       }
@@ -831,24 +765,58 @@ export class PreviewViewport {
         color: #fff;
       }
 
+      /* Rarity color coding for masks */
+      .model-btn.rarity-common {
+        border-color: #aaaaaa;
+        color: #aaaaaa;
+      }
+
+      .model-btn.rarity-common.active {
+        border-color: #ffffff;
+        color: #ffffff;
+        background: rgba(170, 170, 170, 0.2);
+      }
+
+      .model-btn.rarity-rare {
+        border-color: #4169e1;
+        color: #4169e1;
+      }
+
+      .model-btn.rarity-rare.active {
+        border-color: #6495ed;
+        color: #ffffff;
+        background: rgba(65, 105, 225, 0.2);
+      }
+
+      .model-btn.rarity-legendary {
+        border-color: #ffd700;
+        color: #ffd700;
+      }
+
+      .model-btn.rarity-legendary.active {
+        border-color: #ffed4e;
+        color: #ffffff;
+        background: rgba(255, 215, 0, 0.2);
+      }
+
       .model-info {
-        padding: 20px;
+        padding: 15px;
         color: #00ff00;
       }
 
       #model-name {
-        font-size: 16px;
+        font-size: 14px;
         font-weight: bold;
-        margin-bottom: 15px;
+        margin-bottom: 10px;
         color: #fff;
       }
 
       #model-details {
-        font-size: 12px;
+        font-size: 10px;
       }
 
       .stat-line {
-        padding: 5px 0;
+        padding: 4px 0;
         border-bottom: 1px solid rgba(0, 255, 0, 0.2);
       }
 
@@ -857,11 +825,11 @@ export class PreviewViewport {
         background: rgba(0, 255, 0, 0.1);
         border: 2px solid #00ff00;
         color: #00ff00;
-        padding: 15px;
-        margin-top: 15px;
+        padding: 10px;
+        margin-top: 10px;
         cursor: pointer;
         font-family: 'Courier New', monospace;
-        font-size: 14px;
+        font-size: 11px;
         font-weight: bold;
         transition: all 0.2s;
       }
