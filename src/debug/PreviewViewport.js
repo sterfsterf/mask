@@ -1,5 +1,10 @@
 // 3D Preview Viewport - manages Three.js scene for model preview
 import * as THREE from 'three';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
 import { PrefabManager } from './Prefab3D.js';
 
 export class PreviewViewport {
@@ -9,11 +14,21 @@ export class PreviewViewport {
     this.scene = null;
     this.camera = null;
     this.renderer = null;
+    this.composer = null;
+    this.controls = null;
+    this.transformControls = null;
     this.currentModel = null;
     this.prefabManager = new PrefabManager();
     this.animationId = null;
     this.currentCategory = 'minion';
     this.currentIndex = 0;
+    this.currentMask = null;
+    this.selectedMaskKey = 'mask_gnarled_visage'; // Default mask
+    this.maskVisible = false;
+    this.autoRotate = true; // Auto-rotation enabled by default
+    this.transformMode = 'translate'; // translate, rotate, scale
+    this.transformEnabled = false;
+    this.pixelationEnabled = true; // Pixelation enabled by default
     
     this.createViewportUI();
   }
@@ -28,7 +43,17 @@ export class PreviewViewport {
         <button id="viewport-close">✕</button>
       </div>
       <div class="viewport-content">
-        <div id="viewport-canvas-container"></div>
+        <div id="viewport-canvas-container">
+          <button id="toggle-rotate-btn" class="toggle-rotate-btn">AUTO ROTATE: ON</button>
+          <button id="toggle-pixel-btn" class="toggle-pixel-btn">PIXELS: ON</button>
+          <div class="transform-controls">
+            <button id="transform-toggle-btn" class="transform-btn">GIZMO: OFF</button>
+            <button id="transform-translate-btn" class="transform-mode-btn active">MOVE</button>
+            <button id="transform-rotate-btn" class="transform-mode-btn">ROTATE</button>
+            <button id="transform-scale-btn" class="transform-mode-btn">SCALE</button>
+            <button id="log-position-btn" class="transform-btn">LOG POS</button>
+          </div>
+        </div>
         <div class="viewport-controls">
           <div class="category-tabs">
             <button class="tab-btn active" data-category="minion">MINIONS</button>
@@ -39,6 +64,7 @@ export class PreviewViewport {
           <div class="model-info">
             <div id="model-name">Select a model</div>
             <div id="model-details"></div>
+            <button id="toggle-mask-btn" class="toggle-mask-btn" style="display: none;">TOGGLE MASK</button>
           </div>
         </div>
       </div>
@@ -64,6 +90,79 @@ export class PreviewViewport {
         this.updateModelList();
       });
     });
+
+    // Toggle mask button
+    document.getElementById('toggle-mask-btn').addEventListener('click', () => {
+      this.toggleMask();
+    });
+
+    // Toggle auto-rotate button
+    document.getElementById('toggle-rotate-btn').addEventListener('click', () => {
+      this.autoRotate = !this.autoRotate;
+      const btn = document.getElementById('toggle-rotate-btn');
+      btn.textContent = `AUTO ROTATE: ${this.autoRotate ? 'ON' : 'OFF'}`;
+    });
+
+    // Toggle pixelation button
+    document.getElementById('toggle-pixel-btn').addEventListener('click', () => {
+      this.pixelationEnabled = !this.pixelationEnabled;
+      const btn = document.getElementById('toggle-pixel-btn');
+      btn.textContent = `PIXELS: ${this.pixelationEnabled ? 'ON' : 'OFF'}`;
+    });
+
+    // Transform controls
+    document.getElementById('transform-toggle-btn').addEventListener('click', () => {
+      this.transformEnabled = !this.transformEnabled;
+      const btn = document.getElementById('transform-toggle-btn');
+      btn.textContent = `GIZMO: ${this.transformEnabled ? 'ON' : 'OFF'}`;
+      this.updateTransformControls();
+    });
+
+    document.getElementById('transform-translate-btn').addEventListener('click', () => {
+      this.transformMode = 'translate';
+      this.updateTransformModeButtons();
+      if (this.transformControls) this.transformControls.setMode('translate');
+    });
+
+    document.getElementById('transform-rotate-btn').addEventListener('click', () => {
+      this.transformMode = 'rotate';
+      this.updateTransformModeButtons();
+      if (this.transformControls) this.transformControls.setMode('rotate');
+    });
+
+    document.getElementById('transform-scale-btn').addEventListener('click', () => {
+      this.transformMode = 'scale';
+      this.updateTransformModeButtons();
+      if (this.transformControls) this.transformControls.setMode('scale');
+    });
+
+    document.getElementById('log-position-btn').addEventListener('click', () => {
+      this.logCurrentPosition();
+    });
+  }
+
+  updateTransformModeButtons() {
+    document.querySelectorAll('.transform-mode-btn').forEach(b => b.classList.remove('active'));
+    if (this.transformMode === 'translate') {
+      document.getElementById('transform-translate-btn').classList.add('active');
+    } else if (this.transformMode === 'rotate') {
+      document.getElementById('transform-rotate-btn').classList.add('active');
+    } else if (this.transformMode === 'scale') {
+      document.getElementById('transform-scale-btn').classList.add('active');
+    }
+  }
+
+  logCurrentPosition() {
+    if (this.transformControls && this.transformControls.object) {
+      const obj = this.transformControls.object;
+      console.log('===== CURRENT OBJECT TRANSFORM =====');
+      console.log('Position:', obj.position.toArray());
+      console.log('Rotation (radians):', obj.rotation.toArray().slice(0, 3));
+      console.log('Scale:', obj.scale.toArray());
+      console.log('Object:', obj);
+    } else {
+      console.log('No object selected');
+    }
   }
 
   open() {
@@ -89,12 +188,15 @@ export class PreviewViewport {
 
   initThreeJS() {
     const container = document.getElementById('viewport-canvas-container');
+    const rotateBtn = container.querySelector('#toggle-rotate-btn');
+    const pixelBtn = container.querySelector('#toggle-pixel-btn');
+    const transformControlsDiv = container.querySelector('.transform-controls');
     container.innerHTML = '';
 
     // Scene
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x413030);
-    this.scene.fog = new THREE.Fog(0x413030, 5, 15);
+    this.scene.background = new THREE.Color(0x7a5555);
+    this.scene.fog = new THREE.Fog(0x7a5555, 5, 15);
 
     // Camera
     this.camera = new THREE.PerspectiveCamera(
@@ -111,20 +213,95 @@ export class PreviewViewport {
     this.renderer.setSize(container.clientWidth, container.clientHeight);
     this.renderer.setPixelRatio(window.devicePixelRatio);
     container.appendChild(this.renderer.domElement);
+    
+    // Re-append UI buttons on top of canvas
+    if (rotateBtn) {
+      container.appendChild(rotateBtn);
+    }
+    if (pixelBtn) {
+      container.appendChild(pixelBtn);
+    }
+    if (transformControlsDiv) {
+      container.appendChild(transformControlsDiv);
+    }
+
+    // Post-processing setup
+    this.composer = new EffectComposer(this.renderer);
+
+    // Render pass
+    const renderPass = new RenderPass(this.scene, this.camera);
+    this.composer.addPass(renderPass);
+
+    // Pixelation shader
+    const PixelShader = {
+      uniforms: {
+        'tDiffuse': { value: null },
+        'resolution': { value: new THREE.Vector2() },
+        'pixelSize': { value: 4 }
+      },
+      vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform sampler2D tDiffuse;
+        uniform vec2 resolution;
+        uniform float pixelSize;
+        varying vec2 vUv;
+        
+        void main() {
+          vec2 dxy = pixelSize / resolution;
+          vec2 coord = dxy * floor(vUv / dxy);
+          gl_FragColor = texture2D(tDiffuse, coord);
+        }
+      `
+    };
+
+    const pixelPass = new ShaderPass(PixelShader);
+    pixelPass.uniforms['resolution'].value = new THREE.Vector2(container.clientWidth, container.clientHeight);
+    pixelPass.uniforms['pixelSize'].value = 6;
+    this.composer.addPass(pixelPass);
+    
+    // Store reference to pixel pass for toggling
+    this.pixelPass = pixelPass;
+
+    // OrbitControls for mouse interaction
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls.enableDamping = true;
+    this.controls.dampingFactor = 0.05;
+    this.controls.target.set(0, 1, 0);
+    this.controls.enablePan = false; // Disable panning
+    this.controls.minDistance = 2;
+    this.controls.maxDistance = 8;
+    this.controls.update();
+
+    // TransformControls for moving objects
+    this.transformControls = new TransformControls(this.camera, this.renderer.domElement);
+    this.transformControls.setMode(this.transformMode);
+    this.transformControls.setSize(0.8);
+    this.scene.add(this.transformControls);
+
+    // When dragging with transform controls, disable orbit controls
+    this.transformControls.addEventListener('dragging-changed', (event) => {
+      this.controls.enabled = !event.value;
+    });
 
     // Lights - much brighter to see dark models
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 2.0);
     this.scene.add(ambientLight);
 
-    const mainLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    const mainLight = new THREE.DirectionalLight(0xffffff, 2.5);
     mainLight.position.set(5, 10, 5);
     this.scene.add(mainLight);
 
-    const fillLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    const fillLight = new THREE.DirectionalLight(0xffffff, 1.5);
     fillLight.position.set(-5, 5, -5);
     this.scene.add(fillLight);
 
-    const rimLight = new THREE.DirectionalLight(0xffffff, 0.6);
+    const rimLight = new THREE.DirectionalLight(0xffffff, 1.2);
     rimLight.position.set(0, 5, -10);
     this.scene.add(rimLight);
 
@@ -149,6 +326,8 @@ export class PreviewViewport {
       this.camera.aspect = container.clientWidth / container.clientHeight;
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(container.clientWidth, container.clientHeight);
+      this.composer.setSize(container.clientWidth, container.clientHeight);
+      pixelPass.uniforms['resolution'].value.set(container.clientWidth, container.clientHeight);
     });
   }
 
@@ -167,6 +346,12 @@ export class PreviewViewport {
         const key = e.target.dataset.key;
         const index = parseInt(e.target.dataset.index);
         this.currentIndex = index;
+        
+        // If clicking a mask, store it as selected mask
+        if (key.startsWith('mask_')) {
+          this.selectedMaskKey = key;
+        }
+        
         this.loadModel(key);
         
         // Update active state
@@ -179,6 +364,9 @@ export class PreviewViewport {
     if (keys.length > 0) {
       this.loadModel(keys[this.currentIndex]);
     }
+    
+    // Update toggle mask button visibility
+    this.updateToggleMaskButton();
   }
 
   getDisplayName(key) {
@@ -197,15 +385,70 @@ export class PreviewViewport {
     const mesh = this.prefabManager.instantiate(prefabKey);
     if (mesh) {
       this.currentModel = mesh;
-      this.currentModel.position.set(0, 1, 0); // Center at eye level
+      
+      // Position masks differently - scale them up and position better for viewing
+      if (prefabKey.startsWith('mask_')) {
+        this.currentModel.position.set(0, 2.0, 0); // High enough to clear floor (plane is 2 units tall when scaled)
+        this.currentModel.scale.set(2, 2, 2); // Scale up masks for better viewing
+      } else {
+        this.currentModel.position.set(0, 1, 0); // Center at eye level
+      }
+      
+      // Add mask mount point for minions
+      if (prefabKey.startsWith('minion_')) {
+        const mountPoint = new THREE.Object3D();
+        mountPoint.name = 'maskMount';
+        
+        // Different mount points for each minion type
+        if (prefabKey === 'minion_flesh') {
+          mountPoint.position.set(0, 0.9, 0.5); // Closer to face for curved mask
+          this.currentModel.add(mountPoint);
+        } else if (prefabKey === 'minion_shadow') {
+          // Attach to head orb for shadow minion
+          const headOrb = this.currentModel.userData.headOrb;
+          if (headOrb) {
+            // Position at outer edge of the orb (orb radius ~0.08-0.12)
+            mountPoint.position.set(0, 0, 0.35); // Closer for curved mask
+            headOrb.add(mountPoint);
+          } else {
+            mountPoint.position.set(0, 1.2, 0.35); // Fallback
+            this.currentModel.add(mountPoint);
+          }
+        } else if (prefabKey === 'minion_bone') {
+          mountPoint.position.set(0, 1.4, 0.45); // Closer to skull for curved mask
+          this.currentModel.add(mountPoint);
+        }
+      }
+      
       this.scene.add(this.currentModel);
       
       console.log('Loaded model:', prefabKey, this.currentModel);
       
       // Update info
       this.updateModelInfo(prefabKey);
+      
+      // Reattach mask if it was visible
+      if (this.maskVisible && prefabKey.startsWith('minion_')) {
+        this.attachMask();
+      }
+      
+      // Update transform controls
+      this.updateTransformControls();
     } else {
       console.error('Failed to load prefab:', prefabKey);
+    }
+    
+    // Update toggle mask button visibility
+    this.updateToggleMaskButton();
+  }
+
+  updateTransformControls() {
+    if (!this.transformControls) return;
+    
+    if (this.transformEnabled && this.currentModel) {
+      this.transformControls.attach(this.currentModel);
+    } else {
+      this.transformControls.detach();
     }
   }
 
@@ -241,15 +484,91 @@ export class PreviewViewport {
         `;
       }
     } else if (prefabKey.startsWith('mask_')) {
-      const rarity = prefabKey.replace('mask_', '');
-      details = `
-          <div class="stat-line">Rarity: ${rarity}</div>
+      const maskId = prefabKey.replace('mask_', '');
+      const maskConfig = this.game.config.maskConfig?.masks?.find(m => m.id === maskId);
+      if (maskConfig) {
+        details = `
+          <div class="stat-line">Rarity: ${maskConfig.rarity}</div>
+          <div class="stat-line">Type: ${maskConfig.type}</div>
+          <div class="stat-line">Traits: ${maskConfig.traits.join(', ')}</div>
+          <div class="stat-line">Bind Duration: ${maskConfig.bind_duration} battles</div>
+        `;
+      } else {
+        details = `
+          <div class="stat-line">Mask preview</div>
           <div class="stat-line">Grants traits to minions</div>
           <div class="stat-line">Binds for multiple battles</div>
         `;
+      }
     }
     
     detailsEl.innerHTML = details;
+  }
+
+  updateToggleMaskButton() {
+    const toggleBtn = document.getElementById('toggle-mask-btn');
+    const isMinion = this.currentModel && this.currentCategory === 'minion';
+    
+    if (isMinion) {
+      toggleBtn.style.display = 'block';
+      toggleBtn.textContent = this.maskVisible ? 'HIDE MASK' : 'SHOW MASK';
+    } else {
+      toggleBtn.style.display = 'none';
+    }
+  }
+
+  toggleMask() {
+    if (!this.currentModel || this.currentCategory !== 'minion') return;
+    
+    this.maskVisible = !this.maskVisible;
+    
+    if (this.maskVisible) {
+      this.attachMask();
+    } else {
+      this.detachMask();
+    }
+    
+    this.updateToggleMaskButton();
+  }
+
+  attachMask() {
+    if (!this.currentModel) return;
+    
+    // Remove old mask if exists
+    this.detachMask();
+    
+    const mountPoint = this.currentModel.getObjectByName('maskMount');
+    if (!mountPoint) {
+      console.warn('No mask mount point found');
+      return;
+    }
+    
+    console.log('Attaching mask:', this.selectedMaskKey);
+    
+    // Create mask
+    const maskMesh = this.prefabManager.instantiate(this.selectedMaskKey);
+    if (maskMesh) {
+      maskMesh.name = 'attachedMask';
+      maskMesh.scale.set(1.0, 1.0, 1.0);
+      mountPoint.add(maskMesh);
+      this.currentMask = maskMesh;
+      console.log('Mask attached:', maskMesh);
+    } else {
+      console.error('Failed to instantiate mask:', this.selectedMaskKey);
+    }
+  }
+
+  detachMask() {
+    if (!this.currentModel) return;
+    
+    const mountPoint = this.currentModel.getObjectByName('maskMount');
+    if (!mountPoint) return;
+    
+    const mask = mountPoint.getObjectByName('attachedMask');
+    if (mask) {
+      mountPoint.remove(mask);
+      this.currentMask = null;
+    }
   }
 
   animate() {
@@ -259,32 +578,44 @@ export class PreviewViewport {
 
     const time = Date.now() * 0.001;
 
-    // Rotate model
-    if (this.currentModel) {
-      this.currentModel.rotation.y += 0.01;
-      
-      // Bob up and down
-      this.currentModel.position.y = Math.sin(time) * 0.1;
-
-      // Animate undulating spheres (for shadow minion)
-      if (this.currentModel.userData.needsAnimation && this.currentModel.userData.spheres) {
-        this.currentModel.userData.spheres.forEach(sphere => {
-          const data = sphere.userData;
-          if (data.basePos) {
-            // Undulating movement on all axes
-            sphere.position.x = data.basePos.x + Math.sin(time * data.speed + data.phase) * data.amplitude;
-            sphere.position.y = data.basePos.y + Math.cos(time * data.speed * 1.3 + data.phase) * data.amplitude;
-            sphere.position.z = data.basePos.z + Math.sin(time * data.speed * 0.7 + data.phase) * data.amplitude;
-            
-            // Slight scale pulsing
-            const scale = 1.0 + Math.sin(time * data.speed * 2 + data.phase) * 0.1;
-            sphere.scale.set(scale, scale, scale);
-          }
-        });
-      }
+    // Update orbit controls
+    if (this.controls) {
+      this.controls.update();
     }
 
-    this.renderer.render(this.scene, this.camera);
+    // Rotate model (only if auto-rotate is on)
+    if (this.currentModel && this.autoRotate) {
+      this.currentModel.rotation.y += 0.01;
+    }
+    
+    // Bob up and down (only if transform controls not active)
+    if (this.currentModel && !this.transformEnabled) {
+      this.currentModel.position.y = Math.sin(time) * 0.1;
+    }
+    
+    // Animate undulating spheres (for shadow minion)
+    if (this.currentModel && this.currentModel.userData.needsAnimation && this.currentModel.userData.spheres) {
+      this.currentModel.userData.spheres.forEach(sphere => {
+        const data = sphere.userData;
+        if (data.basePos) {
+          // Undulating movement on all axes
+          sphere.position.x = data.basePos.x + Math.sin(time * data.speed + data.phase) * data.amplitude;
+          sphere.position.y = data.basePos.y + Math.cos(time * data.speed * 1.3 + data.phase) * data.amplitude;
+          sphere.position.z = data.basePos.z + Math.sin(time * data.speed * 0.7 + data.phase) * data.amplitude;
+          
+          // Slight scale pulsing
+          const scale = 1.0 + Math.sin(time * data.speed * 2 + data.phase) * 0.1;
+          sphere.scale.set(scale, scale, scale);
+        }
+      });
+    }
+
+    // Render with or without pixelation
+    if (this.pixelationEnabled) {
+      this.composer.render();
+    } else {
+      this.renderer.render(this.scene, this.camera);
+    }
   }
 
   addStyles() {
@@ -351,6 +682,83 @@ export class PreviewViewport {
 
       #viewport-canvas-container canvas {
         display: block;
+      }
+
+      .toggle-rotate-btn {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: rgba(0, 0, 0, 0.7);
+        border: 2px solid #00ff00;
+        color: #00ff00;
+        padding: 10px 15px;
+        cursor: pointer;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        font-weight: bold;
+        transition: all 0.2s;
+        z-index: 10;
+      }
+
+      .toggle-rotate-btn:hover {
+        background: rgba(0, 255, 0, 0.2);
+        color: #fff;
+      }
+
+      .toggle-pixel-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.7);
+        border: 2px solid #00ff00;
+        color: #00ff00;
+        padding: 10px 15px;
+        cursor: pointer;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        font-weight: bold;
+        transition: all 0.2s;
+        z-index: 10;
+      }
+
+      .toggle-pixel-btn:hover {
+        background: rgba(0, 255, 0, 0.2);
+        color: #fff;
+      }
+
+      .transform-controls {
+        position: absolute;
+        top: 50px;
+        left: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        z-index: 10;
+      }
+
+      .transform-btn,
+      .transform-mode-btn {
+        background: rgba(0, 0, 0, 0.7);
+        border: 2px solid #00ff00;
+        color: #00ff00;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-family: 'Courier New', monospace;
+        font-size: 11px;
+        font-weight: bold;
+        transition: all 0.2s;
+      }
+
+      .transform-btn:hover,
+      .transform-mode-btn:hover {
+        background: rgba(0, 255, 0, 0.2);
+        color: #fff;
+      }
+
+      .transform-mode-btn.active {
+        background: rgba(0, 255, 0, 0.3);
+        border-color: #fff;
+        color: #fff;
       }
 
       .viewport-controls {
@@ -442,6 +850,25 @@ export class PreviewViewport {
       .stat-line {
         padding: 5px 0;
         border-bottom: 1px solid rgba(0, 255, 0, 0.2);
+      }
+
+      .toggle-mask-btn {
+        width: 100%;
+        background: rgba(0, 255, 0, 0.1);
+        border: 2px solid #00ff00;
+        color: #00ff00;
+        padding: 15px;
+        margin-top: 15px;
+        cursor: pointer;
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        font-weight: bold;
+        transition: all 0.2s;
+      }
+
+      .toggle-mask-btn:hover {
+        background: rgba(0, 255, 0, 0.2);
+        color: #fff;
       }
     `;
     document.head.appendChild(style);

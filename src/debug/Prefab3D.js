@@ -52,7 +52,6 @@ export class ShadowMinionPrefab extends Prefab3D {
     const group = new THREE.Group();
 
     // Create undulating mass of shadow spheres
-    const sphereGeom = new THREE.SphereGeometry(0.12, 8, 8);
     const shadowMat = new THREE.MeshPhongMaterial({ 
       color: 0x0a0a0a,
       emissive: 0x1a0a2e,
@@ -62,21 +61,32 @@ export class ShadowMinionPrefab extends Prefab3D {
     });
 
     // Create cluster of spheres in organic formation
-    const sphereCount = 25;
+    const sphereCount = 45; // More orbs
     const spheres = [];
+    let topOrb = null; // Will hold reference to a top orb for attaching eyes/mask
     
     for (let i = 0; i < sphereCount; i++) {
+      // Vary sphere size - smaller at top, larger at bottom
+      const verticalPos = (i / sphereCount) * 1.5; // 0 to 1.5 height
+      const heightRatio = 1.0 - (verticalPos / 1.5); // 1.0 at bottom, 0 at top
+      const baseSize = 0.08 + heightRatio * 0.08; // 0.08 to 0.16
+      const sizeVariation = baseSize + (Math.random() - 0.5) * 0.06;
+      
+      const sphereGeom = new THREE.SphereGeometry(sizeVariation, 8, 8);
       const sphere = new THREE.Mesh(sphereGeom, shadowMat.clone());
       
       // Position in rough humanoid shape with randomness
-      const angle = (i / sphereCount) * Math.PI * 2;
-      const verticalPos = (i / sphereCount) * 1.5; // 0 to 1.5 height
+      // More density at bottom
+      const angle = (i / sphereCount) * Math.PI * 2 + Math.random() * 0.5;
       const radius = 0.3 - (Math.abs(verticalPos - 0.75) * 0.2); // Wider in middle
       
+      // Add extra randomness at bottom for density
+      const extraSpread = heightRatio * 0.2;
+      
       sphere.position.set(
-        Math.cos(angle) * radius + (Math.random() - 0.5) * 0.15,
+        Math.cos(angle) * radius + (Math.random() - 0.5) * (0.15 + extraSpread),
         verticalPos + (Math.random() - 0.5) * 0.1,
-        Math.sin(angle) * radius + (Math.random() - 0.5) * 0.15
+        Math.sin(angle) * radius + (Math.random() - 0.5) * (0.15 + extraSpread)
       );
       
       // Store animation data
@@ -85,38 +95,56 @@ export class ShadowMinionPrefab extends Prefab3D {
       sphere.userData.speed = 0.5 + Math.random() * 0.5;
       sphere.userData.amplitude = 0.05 + Math.random() * 0.05;
       
+      // Pick a top orb (around 85% up) for head
+      if (verticalPos >= 1.2 && verticalPos <= 1.35 && !topOrb) {
+        topOrb = sphere;
+        sphere.name = 'headOrb';
+      }
+      
       group.add(sphere);
       spheres.push(sphere);
     }
 
     // Eyes - glowing purple orbs floating in the mass
+    // Attach to top orb so they move with it
     const eyeGeom = new THREE.SphereGeometry(0.08, 8, 8);
     const eyeMat = new THREE.MeshBasicMaterial({ 
-      color: 0x6a0dad,
+      color: 0x9d4edd, // Lighter purple
       transparent: true,
       opacity: 0.9
     });
     
     const leftEye = new THREE.Mesh(eyeGeom, eyeMat);
-    leftEye.position.set(-0.15, 1.1, 0.25);
+    leftEye.position.set(-0.15, 0.05, 0.15); // Relative to orb
     leftEye.userData.basePos = leftEye.position.clone();
     leftEye.userData.phase = 0;
     leftEye.userData.speed = 0.8;
     leftEye.userData.amplitude = 0.03;
-    group.add(leftEye);
+    if (topOrb) {
+      topOrb.add(leftEye);
+    } else {
+      leftEye.position.set(-0.15, 1.15, 0.15);
+      group.add(leftEye);
+    }
     spheres.push(leftEye);
     
     const rightEye = new THREE.Mesh(eyeGeom, eyeMat);
-    rightEye.position.set(0.15, 1.1, 0.25);
+    rightEye.position.set(0.15, 0.05, 0.15); // Relative to orb
     rightEye.userData.basePos = rightEye.position.clone();
     rightEye.userData.phase = Math.PI;
     rightEye.userData.speed = 0.8;
     rightEye.userData.amplitude = 0.03;
-    group.add(rightEye);
+    if (topOrb) {
+      topOrb.add(rightEye);
+    } else {
+      rightEye.position.set(0.15, 1.15, 0.15);
+      group.add(rightEye);
+    }
     spheres.push(rightEye);
 
-    // Store spheres for animation
+    // Store spheres and head orb for animation and mask mounting
     group.userData.spheres = spheres;
+    group.userData.headOrb = topOrb;
     group.userData.needsAnimation = true;
 
     return group;
@@ -472,37 +500,70 @@ export class MaskPrefab extends Prefab3D {
   create() {
     const group = new THREE.Group();
 
-    // Base mask shape
-    const maskGeom = new THREE.SphereGeometry(0.4, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2);
-    const maskMat = new THREE.MeshPhongMaterial({ 
-      color: this.config.color || 0x8b4513,
-      side: THREE.DoubleSide,
-      flatShading: true
-    });
-    const mask = new THREE.Mesh(maskGeom, maskMat);
-    mask.rotation.x = Math.PI / 2;
-    group.add(mask);
-
-    // Eye holes
-    const eyeHoleGeom = new THREE.CircleGeometry(0.08, 8);
-    const eyeHoleMat = new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.DoubleSide });
+    // Create curved plane for mask texture using cylinder
+    // Using a cylinder with large radius gives a subtle curve
+    const maskGeom = new THREE.CylinderGeometry(
+      2.5, // top radius
+      2.5, // bottom radius  
+      1.0, // height
+      32,  // radial segments
+      1,   // height segments
+      true, // open ended
+      0,    // start angle
+      Math.PI / 3 // arc length - smaller = more curved
+    );
     
-    const leftEyeHole = new THREE.Mesh(eyeHoleGeom, eyeHoleMat);
-    leftEyeHole.position.set(-0.12, 0, 0.25);
-    group.add(leftEyeHole);
+    // Rotate to face forward
+    maskGeom.rotateY(Math.PI);
     
-    const rightEyeHole = new THREE.Mesh(eyeHoleGeom, eyeHoleMat);
-    rightEyeHole.position.set(0.12, 0, 0.25);
-    group.add(rightEyeHole);
-
-    // Decorations based on rarity
-    if (this.config.rarity === 'legendary') {
-      const crownGeom = new THREE.ConeGeometry(0.15, 0.3, 6);
-      const crownMat = new THREE.MeshPhongMaterial({ color: 0xffd700 });
-      const crown = new THREE.Mesh(crownGeom, crownMat);
-      crown.position.y = 0.3;
-      group.add(crown);
+    // Translate geometry so pivot is at the front surface center
+    maskGeom.translate(0, 0, 2.5);
+    
+    let maskMat;
+    if (this.config.texture) {
+      // Load texture with fallback
+      const textureLoader = new THREE.TextureLoader();
+      
+      // Start with fallback material - using MeshBasicMaterial for unlit/full brightness
+      maskMat = new THREE.MeshBasicMaterial({ 
+        color: this.config.color || 0x8b4513,
+        side: THREE.DoubleSide,
+        transparent: true,
+        alphaTest: 0.5
+      });
+      
+      const texture = textureLoader.load(
+        this.config.texture,
+        (tex) => {
+          console.log('Texture loaded successfully:', this.config.texture);
+          console.log('Texture size:', tex.image.width, 'x', tex.image.height);
+          
+          // Configure texture
+          tex.minFilter = THREE.LinearFilter;
+          tex.magFilter = THREE.NearestFilter; // Pixelated look
+          
+          // Update material with texture once loaded
+          maskMat.map = tex;
+          maskMat.transparent = true;
+          maskMat.alphaTest = 0.5; // Discard pixels below 50% alpha
+          maskMat.needsUpdate = true;
+        },
+        undefined,
+        (err) => {
+          console.warn('Could not load texture, using fallback color:', this.config.texture);
+          // Material already set to fallback color
+        }
+      );
+    } else {
+      // Fallback to colored plane - also unlit for consistency
+      maskMat = new THREE.MeshBasicMaterial({ 
+        color: this.config.color || 0x8b4513,
+        side: THREE.DoubleSide
+      });
     }
+    
+    const mask = new THREE.Mesh(maskGeom, maskMat);
+    group.add(mask);
 
     return group;
   }
@@ -527,10 +588,31 @@ export class PrefabManager {
     this.prefabs.set('enemy_orc_warrior', new OrcWarriorEnemyPrefab('orc_warrior', {}));
     this.prefabs.set('enemy_dark_knight', new DarkKnightEnemyPrefab('dark_knight', {}));
 
-    // Masks
-    this.prefabs.set('mask_common', new MaskPrefab('mask', { color: 0x8b4513, rarity: 'common' }));
-    this.prefabs.set('mask_rare', new MaskPrefab('mask', { color: 0xa855f7, rarity: 'rare' }));
-    this.prefabs.set('mask_legendary', new MaskPrefab('mask', { color: 0xffd700, rarity: 'legendary' }));
+    // Masks - based on actual mask types from config
+    this.prefabs.set('mask_gnarled_visage', new MaskPrefab('mask', { 
+      texture: '/masks/gnarled_visage.png', 
+      rarity: 'common' 
+    }));
+    this.prefabs.set('mask_crude_wooden', new MaskPrefab('mask', { 
+      texture: '/masks/mask_tree.png', 
+      rarity: 'common' 
+    }));
+    this.prefabs.set('mask_flesh_mask', new MaskPrefab('mask', { 
+      color: 0x8b4049, 
+      rarity: 'common' 
+    }));
+    this.prefabs.set('mask_bone_visage', new MaskPrefab('mask', { 
+      color: 0xdedede, 
+      rarity: 'rare' 
+    }));
+    this.prefabs.set('mask_iron_grimace', new MaskPrefab('mask', { 
+      color: 0x444444, 
+      rarity: 'rare' 
+    }));
+    this.prefabs.set('mask_void_crown', new MaskPrefab('mask', { 
+      color: 0x1a0a2e, 
+      rarity: 'legendary' 
+    }));
   }
 
   getPrefab(key) {
