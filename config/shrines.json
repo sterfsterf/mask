@@ -1,0 +1,43 @@
+{
+  "shrine_types": [
+    {
+      "id": "cleansing_shrine",
+      "name": "Cleansing Shrine",
+      "description": "Remove a negative trait from a minion",
+      "effect": "remove_negative_trait"
+    },
+    {
+      "id": "blessing_shrine",
+      "name": "Blessing Shrine", 
+      "description": "Add a positive trait to a minion's mask",
+      "effect": "add_positive_trait"
+    },
+    {
+      "id": "dark_shrine",
+      "name": "Dark Shrine",
+      "description": "Gain 3 Dark Energy",
+      "effect": "dark_energy",
+      "value": 3
+    },
+    {
+      "id": "coin_shrine",
+      "name": "Coin Shrine",
+      "description": "Gain 10 Coins",
+      "effect": "coins",
+      "value": 10
+    },
+    {
+      "id": "healing_shrine",
+      "name": "Healing Shrine",
+      "description": "Restore a minion to full health",
+      "effect": "heal_full"
+    },
+    {
+      "id": "blood_shrine",
+      "name": "Blood Shrine",
+      "description": "Increase max HP by 5 for a minion",
+      "effect": "increase_max_hp",
+      "value": 5
+    }
+  ]
+}

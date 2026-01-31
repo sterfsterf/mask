@@ -1,0 +1,58 @@
+{
+  "costs": {
+    "common": 3,
+    "rare": 10,
+    "legendary": 30
+  },
+  "masks": [
+    {
+      "id": "gnarled_visage",
+      "name": "Gnarled Visage",
+      "rarity": "common",
+      "type": "shadow",
+      "traits": ["swift"],
+      "bind_duration": 3,
+      "texture": "/masks/gnarled_visage.png"
+    },
+    {
+      "id": "crude_wooden",
+      "name": "Crude Wooden Mask",
+      "rarity": "common",
+      "type": "shadow",
+      "traits": ["swift"],
+      "bind_duration": 3
+    },
+    {
+      "id": "flesh_mask",
+      "name": "Flesh Mask",
+      "rarity": "common",
+      "type": "flesh",
+      "traits": ["fortify"],
+      "bind_duration": 3
+    },
+    {
+      "id": "bone_visage",
+      "name": "Bone Visage",
+      "rarity": "rare",
+      "type": "bone",
+      "traits": ["rage", "swift"],
+      "bind_duration": 5
+    },
+    {
+      "id": "iron_grimace",
+      "name": "Iron Grimace",
+      "rarity": "rare",
+      "type": "flesh",
+      "traits": ["fortify", "rage"],
+      "bind_duration": 5
+    },
+    {
+      "id": "void_crown",
+      "name": "Void Crown",
+      "rarity": "legendary",
+      "type": "universal",
+      "traits": ["rage", "fortify", "swift"],
+      "bind_duration": 10
+    }
+  ]
+}

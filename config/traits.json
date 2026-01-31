@@ -1,0 +1,111 @@
+{
+  "traits": [
+    {
+      "id": "rage",
+      "name": "Rage",
+      "type": "positive",
+      "stat_mods": {
+        "attack": 3,
+        "defense": -1
+      },
+      "card": "rage_strike",
+      "description": "+3 ATK, -1 DEF"
+    },
+    {
+      "id": "fortify",
+      "name": "Fortify",
+      "type": "positive",
+      "stat_mods": {
+        "defense": 4
+      },
+      "card": "fortify_block",
+      "description": "+4 DEF"
+    },
+    {
+      "id": "swift",
+      "name": "Swift",
+      "type": "positive",
+      "stat_mods": {},
+      "card": "swift_strike",
+      "description": "Fast strikes"
+    },
+    {
+      "id": "cracked",
+      "name": "Cracked",
+      "type": "negative",
+      "stat_mods": {
+        "defense": -3
+      },
+      "card": "cracked_weakness",
+      "description": "-3 DEF, fragile"
+    },
+    {
+      "id": "fearful",
+      "name": "Fearful",
+      "type": "negative",
+      "stat_mods": {
+        "attack": -2
+      },
+      "card": "fearful_hesitation",
+      "description": "-2 ATK, hesitant"
+    },
+    {
+      "id": "cursed",
+      "name": "Cursed",
+      "type": "negative",
+      "stat_mods": {
+        "blood": -5
+      },
+      "card": "curse_drain",
+      "description": "-5 max HP"
+    }
+  ],
+  "trait_cards": [
+    {
+      "id": "rage_strike",
+      "name": "Rage Strike",
+      "cost": 1,
+      "type": "attack",
+      "damage": 9,
+      "description": "Deal 9 damage. Aggressive."
+    },
+    {
+      "id": "fortify_block",
+      "name": "Fortify",
+      "cost": 1,
+      "type": "defend",
+      "block": 8,
+      "description": "Gain 8 block. Solid defense."
+    },
+    {
+      "id": "swift_strike",
+      "name": "Swift Strike",
+      "cost": 0,
+      "type": "attack",
+      "damage": 4,
+      "description": "Deal 4 damage. Free."
+    },
+    {
+      "id": "cracked_weakness",
+      "name": "Cracked",
+      "cost": 1,
+      "type": "status",
+      "description": "Does nothing. Fragile state."
+    },
+    {
+      "id": "fearful_hesitation",
+      "name": "Hesitation",
+      "cost": 2,
+      "type": "attack",
+      "damage": 3,
+      "description": "Deal 3 damage. Costs too much."
+    },
+    {
+      "id": "curse_drain",
+      "name": "Drain",
+      "cost": 1,
+      "type": "status",
+      "description": "Does nothing. Life drains away."
+    }
+  ]
+}

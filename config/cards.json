@@ -1,0 +1,35 @@
+{
+  "cards": [
+    {
+      "id": "slash",
+      "name": "Slash",
+      "cost": 1,
+      "type": "attack",
+      "damage": 6,
+      "description": "Deal 6 damage"
+    },
+    {
+      "id": "defend",
+      "name": "Defend",
+      "cost": 1,
+      "type": "defend",
+      "block": 5,
+      "description": "Gain 5 block"
+    },
+    {
+      "id": "heavy_strike",
+      "name": "Heavy Strike",
+      "cost": 2,
+      "type": "attack",
+      "damage": 12,
+      "description": "Deal 12 damage"
+    },
+    {
+      "id": "tired",
+      "name": "Tired",
+      "cost": 1,
+      "type": "status",
+      "description": "Does nothing. Clogs your deck."
+    }
+  ]
+}

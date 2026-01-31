@@ -1,0 +1,128 @@
+{
+  "tracks": [
+    {
+      "id": "main_path",
+      "name": "The Void Path",
+      "start_node": 0,
+      "nodes": [
+        {
+          "id": 0,
+          "type": "void",
+          "name": "Starting Void",
+          "connections": [1, 2]
+        },
+        {
+          "id": 1,
+          "type": "battle",
+          "enemy": "weak_shadow",
+          "connections": [3, 4]
+        },
+        {
+          "id": 2,
+          "type": "shrine",
+          "connections": [4, 5]
+        },
+        {
+          "id": 3,
+          "type": "mask_shop",
+          "connections": [6]
+        },
+        {
+          "id": 4,
+          "type": "battle",
+          "enemy": "goblin",
+          "connections": [6, 7]
+        },
+        {
+          "id": 5,
+          "type": "mystery",
+          "connections": [7]
+        },
+        {
+          "id": 6,
+          "type": "void",
+          "name": "Void Crossing",
+          "connections": [8, 9]
+        },
+        {
+          "id": 7,
+          "type": "shrine",
+          "connections": [9]
+        },
+        {
+          "id": 8,
+          "type": "battle",
+          "enemy": "orc_warrior",
+          "connections": [10]
+        },
+        {
+          "id": 9,
+          "type": "mask_shop",
+          "connections": [10, 11]
+        },
+        {
+          "id": 10,
+          "type": "shrine",
+          "connections": [12]
+        },
+        {
+          "id": 11,
+          "type": "mystery",
+          "connections": [12]
+        },
+        {
+          "id": 12,
+          "type": "battle",
+          "enemy": "dark_knight",
+          "connections": []
+        }
+      ]
+    }
+  ],
+  "enemies": [
+    {
+      "id": "weak_shadow",
+      "name": "Weak Shadow",
+      "type": "shadow",
+      "blood": 30,
+      "attack": 6,
+      "defense": 2,
+      "coin_reward": 3,
+      "dark_energy_reward": 1,
+      "ai_pattern": "basic_attack"
+    },
+    {
+      "id": "goblin",
+      "name": "Goblin",
+      "type": "goblin",
+      "blood": 40,
+      "attack": 10,
+      "defense": 4,
+      "coin_reward": 5,
+      "dark_energy_reward": 1,
+      "ai_pattern": "basic_attack"
+    },
+    {
+      "id": "orc_warrior",
+      "name": "Orc Warrior",
+      "type": "orc",
+      "blood": 60,
+      "attack": 16,
+      "defense": 8,
+      "coin_reward": 8,
+      "dark_energy_reward": 2,
+      "ai_pattern": "basic_attack"
+    },
+    {
+      "id": "dark_knight",
+      "name": "Dark Knight",
+      "type": "knight",
+      "blood": 100,
+      "attack": 20,
+      "defense": 16,
+      "coin_reward": 15,
+      "dark_energy_reward": 5,
+      "ai_pattern": "basic_attack"
+    }
+  ]
+}
