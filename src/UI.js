@@ -687,6 +687,20 @@ export class UI {
         50% { opacity: 0.7; }
       }
 
+      .energy-display-left {
+        position: fixed;
+        bottom: 160px;
+        left: 20px;
+        z-index: 50;
+        background: rgba(10, 10, 10, 0.9);
+        border: 2px solid #a855f7;
+        padding: 8px 12px;
+        border-radius: 4px;
+        color: #a855f7;
+        font-size: 16px;
+        font-weight: bold;
+      }
+
       .pile-viewer-btn {
         position: fixed;
         bottom: 120px;
@@ -708,6 +722,29 @@ export class UI {
 
       .pile-viewer-btn.right {
         right: 20px;
+      }
+
+      .pile-viewer-btn.right-top {
+        right: 20px;
+      }
+
+      .end-turn-btn {
+        position: fixed;
+        bottom: 160px;
+        right: 20px;
+        z-index: 50;
+        background: #1a1a1a;
+        border: 2px solid #ff0033;
+        color: #fff;
+        padding: 10px 20px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .end-turn-btn:hover {
+        background: #ff0033;
+        transform: scale(1.05);
       }
 
       .pile-viewer-btn:hover {
@@ -1314,12 +1351,12 @@ export class UI {
     const type = node.type === 'mystery' ? (this.game.state.mysteryRevealed || 'mystery') : node.type;
     
     switch(type) {
-      case 'void': return 'Void Gate';
+      case 'void': return 'Void';
       case 'battle': return 'Battle';
-      case 'mask_shop': return 'Mask Vendor';
+      case 'mask_shop': return 'Shop';
       case 'shrine': return 'Shrine';
-      case 'mystery': return '???';
-      default: return node.type;
+      case 'mystery': return ''; // No label for mystery nodes
+      default: return '';
     }
   }
 
@@ -2148,8 +2185,8 @@ export class UI {
         </div>
       </div>
 
-      <div class="energy-display">
-        <span style="color: #a855f7; font-size: 20px; font-weight: bold;">⚡ ${state.energy}/${state.maxEnergy}</span>
+      <div class="energy-display-left">
+        ⚡ ${state.energy}/${state.maxEnergy}
       </div>
 
       <button class="pile-viewer-btn left" onclick="window.ui.viewDrawPile()">
