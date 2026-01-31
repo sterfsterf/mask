@@ -93,6 +93,11 @@ export class Combat {
         const damage = Math.max(0, (card.damage + this.soulStats.attack) - this.enemyBlock);
         this.enemyBlock = Math.max(0, this.enemyBlock - (card.damage + this.soulStats.attack));
         this.enemyBlood -= damage;
+        
+        // Self-damage if card has it
+        if (card.self_damage) {
+          this.soulBlood -= card.self_damage;
+        }
       } else {
         const damage = Math.max(0, (card.damage + this.enemy.attack) - this.soulBlock);
         this.soulBlock = Math.max(0, this.soulBlock - (card.damage + this.enemy.attack));
@@ -182,6 +187,8 @@ export class Combat {
         name: this.enemy.name
       },
       hand: [...this.hand],
+      deck: [...this.deck],
+      discard: [...this.discardPile],
       energy: this.energy,
       maxEnergy: this.maxEnergy,
       deckCount: this.deck.length,

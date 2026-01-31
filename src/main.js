@@ -6,6 +6,7 @@ import { Game } from './Game.js';
 import { UI } from './UI.js';
 import { DebugMenu } from './debug/DebugMenu.js';
 import { PreviewViewport } from './debug/PreviewViewport.js';
+import { PixelShader, PIXELATION_CONFIG } from './core/PixelationShader.js';
 
 // Initialize Three.js scene
 const scene = new THREE.Scene();
@@ -33,36 +34,9 @@ const renderPass = new RenderPass(scene, camera);
 composer.addPass(renderPass);
 
 // Pixelation shader
-const PixelShader = {
-  uniforms: {
-    'tDiffuse': { value: null },
-    'resolution': { value: new THREE.Vector2() },
-    'pixelSize': { value: 4 }
-  },
-  vertexShader: `
-    varying vec2 vUv;
-    void main() {
-      vUv = uv;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    }
-  `,
-  fragmentShader: `
-    uniform sampler2D tDiffuse;
-    uniform vec2 resolution;
-    uniform float pixelSize;
-    varying vec2 vUv;
-    
-    void main() {
-      vec2 dxy = pixelSize / resolution;
-      vec2 coord = dxy * floor(vUv / dxy);
-      gl_FragColor = texture2D(tDiffuse, coord);
-    }
-  `
-};
-
 const pixelPass = new ShaderPass(PixelShader);
 pixelPass.uniforms['resolution'].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
-pixelPass.uniforms['pixelSize'].value = 6;
+pixelPass.uniforms['pixelSize'].value = PIXELATION_CONFIG.pixelSize;
 composer.addPass(pixelPass);
 
 // Lighting
@@ -195,6 +169,9 @@ window.debugPreview = debugPreview; // Expose globally
 
 const debugMenu = new DebugMenu(game);
 window.debugMenu = debugMenu; // Debug access
+
+// Render the map first, which will automatically enter the first node
+ui.renderMap();
 
 animate();
 

@@ -4,6 +4,7 @@ import { PrefabManager } from './debug/Prefab3D.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { PixelShader, PIXELATION_CONFIG } from './core/PixelationShader.js';
 
 export class UI {
   constructor(game) {
@@ -29,12 +30,12 @@ export class UI {
         <div id="node-screen" class="screen hidden"></div>
         <div id="battle-screen" class="screen hidden"></div>
         <div id="trait-choice-screen" class="screen hidden"></div>
+        <div id="summoning-screen" class="screen hidden"></div>
       </div>
     `;
 
     this.addStyles();
     this.updateCurrencyHUD();
-    this.renderMap();
   }
 
   toggleDebug() {
@@ -541,16 +542,530 @@ export class UI {
         left: 4px;
         font-size: 14px;
       }
+
+      .map-visual {
+        position: relative;
+        display: flex;
+        flex-direction: row;
+        padding: 20px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 2px solid #333;
+        border-radius: 8px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        max-height: 650px;
+        height: 650px;
+      }
+
+      .map-connections {
+        position: absolute;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      .map-line {
+        stroke: #444;
+        stroke-width: 2;
+        transition: all 0.3s;
+      }
+
+      .map-line.active {
+        stroke: #666;
+        stroke-width: 3;
+      }
+
+      .map-line.available {
+        stroke: #0f0;
+        stroke-width: 4;
+        animation: line-pulse 2s ease-in-out infinite;
+      }
+
+      .map-path {
+        stroke: #444;
+        stroke-width: 2;
+        transition: all 0.3s;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .map-path.active {
+        stroke: #666;
+        stroke-width: 3;
+      }
+
+      .map-path.available {
+        stroke: #0f0;
+        stroke-width: 4;
+        animation: line-pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes line-pulse {
+        0%, 100% { opacity: 0.8; }
+        50% { opacity: 0.4; }
+      }
+
+      .map-nodes-container {
+        position: relative;
+        z-index: 2;
+        height: 100%;
+      }
+
+      .map-layer {
+        position: absolute;
+        height: 100%;
+        width: 80px;
+        display: flex;
+        align-items: center;
+      }
+
+      .map-node {
+        position: absolute;
+        width: 54px;
+        height: 54px;
+        background: rgba(30, 30, 30, 0.9);
+        border: 2px solid #444;
+        border-radius: 6px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        transition: all 0.3s;
+      }
+
+      .map-node.current {
+        border-color: #a855f7;
+        box-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
+        transform: scale(1.1);
+        z-index: 10;
+      }
+
+      .map-node.completed {
+        border-color: #666;
+        opacity: 0.6;
+      }
+
+      .map-node.available {
+        border-color: #0f0;
+        box-shadow: 0 0 12px rgba(0, 255, 0, 0.3);
+        cursor: pointer;
+        animation: pulse 2s ease-in-out infinite;
+        z-index: 5;
+      }
+
+      .map-node.available:hover {
+        transform: scale(1.2);
+        box-shadow: 0 0 20px rgba(0, 255, 0, 0.6);
+      }
+
+      .map-node.boss {
+        width: 70px;
+        height: 70px;
+        border-color: #ff0033;
+        background: rgba(50, 10, 10, 0.9);
+      }
+
+      .map-node-icon {
+        font-size: 20px;
+      }
+
+      .map-node.boss .map-node-icon {
+        font-size: 32px;
+      }
+
+      .map-node-type {
+        font-size: 8px;
+        color: #999;
+        text-align: center;
+        line-height: 1;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+      }
+
+      .pile-viewer-btn {
+        position: fixed;
+        bottom: 120px;
+        z-index: 50;
+        background: rgba(30, 30, 30, 0.9);
+        border: 2px solid #666;
+        color: #fff;
+        padding: 10px 15px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+        line-height: 1.4;
+      }
+
+      .pile-viewer-btn.left {
+        left: 20px;
+      }
+
+      .pile-viewer-btn.right {
+        right: 20px;
+      }
+
+      .pile-viewer-btn:hover {
+        background: rgba(50, 50, 50, 0.95);
+        border-color: #fff;
+        transform: scale(1.05);
+      }
+
+      h2 {
+        color: #ff0033;
+        margin: 10px 0;
+      }
+
+      h3 {
+        color: #fff;
+        margin: 10px 0;
+      }
+
+      .trait-choice {
+        background: rgba(30, 30, 30, 0.95);
+        border: 2px solid #ff0033;
+        padding: 20px;
+        margin: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .trait-choice:hover {
+        border-color: #fff;
+        background: rgba(50, 50, 50, 0.95);
+        transform: scale(1.05);
+      }
+
+      .node-button {
+        background: rgba(30, 30, 30, 0.95);
+        border: 3px solid #ff0033;
+        padding: 20px;
+        margin: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+        min-width: 200px;
+        display: inline-block;
+      }
+
+      .node-button:hover {
+        border-color: #fff;
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(255, 0, 51, 0.5);
+      }
+
+      .node-button.current {
+        border-color: #a855f7;
+        background: rgba(50, 30, 70, 0.95);
+      }
+
+      .mask-shop-grid {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin: 20px 0;
+      }
+
+      .mask-shop-card {
+        width: 120px;
+        border: 3px solid;
+        padding: 8px;
+        background: rgba(0, 0, 0, 0.3);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .mask-shop-card.legendary { border-color: #fbbf24; }
+      .mask-shop-card.rare { border-color: #a855f7; }
+      .mask-shop-card.common { border-color: #666; }
+
+      .mask-shop-card.sold-out {
+        opacity: 0.5;
+        position: relative;
+      }
+
+      .mask-shop-card.sold-out::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 10px,
+          rgba(255, 0, 0, 0.1) 10px,
+          rgba(255, 0, 0, 0.1) 20px
+        );
+        pointer-events: none;
+      }
+
+      .sold-btn {
+        background: #666 !important;
+        color: #999 !important;
+        cursor: not-allowed !important;
+      }
+
+      .mask-image {
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
+        image-rendering: pixelated;
+      }
+
+      .mask-placeholder {
+        width: 80px;
+        height: 80px;
+      }
+
+      .mask-card-info {
+        text-align: center;
+        font-size: 11px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .mask-traits {
+        font-size: 9px;
+        color: #aaa;
+      }
+
+      .buy-btn {
+        padding: 4px 8px;
+        font-size: 10px;
+        margin-top: 4px;
+      }
+
+      .temp-mask-panel {
+        padding: 10px;
+        margin-bottom: 15px;
+        background: rgba(100, 255, 100, 0.1);
+        border: 2px solid #0f0;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .mini-btn {
+        padding: 4px 8px;
+        font-size: 10px;
+      }
+
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+
+      .modal {
+        background: #1a1a1a;
+        border: 3px solid #ff0033;
+        padding: 30px;
+        max-width: 400px;
+        text-align: center;
+      }
+
+      .modal input {
+        background: #0a0a0a;
+        border: 2px solid #666;
+        color: #fff;
+        padding: 10px;
+        font-family: 'Courier New', monospace;
+        font-size: 16px;
+        width: 100%;
+        margin: 20px 0;
+      }
+
+      .modal input:focus {
+        border-color: #ff0033;
+        outline: none;
+      }
+
+      .souls-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.9);
+        border-top: 2px solid #ff0033;
+        padding: 10px;
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        z-index: 100;
+      }
+
+      .soul-card-mini {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: 8px;
+        background: rgba(30, 30, 30, 0.9);
+        border: 2px solid #666;
+      }
+
+      .soul-preview-mini {
+        border: 2px solid #444;
+        image-rendering: pixelated;
+      }
+
+      .soul-name {
+        font-size: 11px;
+        font-weight: bold;
+      }
+
+      .soul-stats {
+        font-size: 10px;
+        color: #aaa;
+      }
+
+      .has-mask {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        font-size: 14px;
+      }
+
+      .is-tired {
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        font-size: 14px;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+      }
+
+      .pile-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+      }
+
+      .pile-modal {
+        background: #1a1a1a;
+        border: 3px solid #ff0033;
+        padding: 30px;
+        max-width: 80%;
+        max-height: 80%;
+        overflow-y: auto;
+        text-align: center;
+      }
+
+      .pile-cards {
+        margin: 20px 0;
+        max-height: 500px;
+        overflow-y: auto;
+      }
+
+      #summoning-canvas-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 1;
+      }
+
+      #summoning-ui {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        z-index: 10;
+        pointer-events: none;
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        padding: 20px;
+      }
+
+      .summon-void-btn {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        pointer-events: auto;
+        background: #9d4edd;
+        border: 3px solid #fff;
+        color: #fff;
+        padding: 15px 30px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .summon-void-btn:hover {
+        background: #b47eee;
+        transform: translateX(-50%) scale(1.05);
+      }
+
+      .summon-void-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        transform: translateX(-50%);
+      }
+
+      .leave-void-btn {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        pointer-events: auto;
+        background: #1a1a1a;
+        border: 2px solid #666;
+        color: #fff;
+        padding: 10px 20px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .leave-void-btn:hover {
+        background: #333;
+        border-color: #fff;
+      }
     `;
     document.head.appendChild(style);
   }
 
   renderMap() {
+    console.log('🗺️ renderMap() called');
     const mapScreen = document.getElementById('map-screen');
     const souls = this.game.getSouls();
     const currentNode = this.game.getCurrentNode();
+    console.log('Current node:', currentNode);
     const availableNodes = this.game.getAvailableNodes();
     const isComplete = this.game.state.isCurrentNodeComplete();
+    console.log('Is complete:', isComplete);
 
     this.updateCurrencyHUD();
 
@@ -558,30 +1073,31 @@ export class UI {
     const oldBar = document.querySelector('.souls-bar');
     if (oldBar) oldBar.remove();
 
+    // Build visual node map
+    const mapVisual = this.buildMapVisual();
+
     mapScreen.innerHTML = `
-      <h2>🎭 MASK - The Void Path</h2>
+      <h2>🎭 MASK - Seed: ${this.game.state.mapSeed}</h2>
+
+      ${mapVisual}
 
       ${!isComplete && currentNode ? `
-        <div class="panel">
+        <div class="panel" style="margin-top: 20px;">
           <h3>Current Location: ${this.getNodeName(currentNode)}</h3>
           <p>${this.getNodeDescription(currentNode)}</p>
+          <button onclick="window.ui.enterCurrentNode()">Enter</button>
         </div>
       ` : ''}
 
       ${isComplete && availableNodes.length > 0 ? `
-        <div class="panel">
+        <div class="panel" style="margin-top: 20px;">
           <h3>Choose Your Path</h3>
-          ${availableNodes.map(node => `
-            <div class="node-button" onclick="window.ui.moveToNode(${node.id})">
-              <strong>${this.getNodeName(node)}</strong><br>
-              <span style="color: #999; font-size: 12px;">${this.getNodeDescription(node)}</span>
-            </div>
-          `).join('')}
+          <p>Click a node on the map to proceed.</p>
         </div>
       ` : ''}
 
       ${isComplete && availableNodes.length === 0 ? `
-        <div class="panel"><h3>🏆 Path Complete!</h3></div>
+        <div class="panel"><h3>🏆 Run Complete!</h3></div>
       ` : ''}
     `;
 
@@ -602,21 +1118,198 @@ export class UI {
     document.body.appendChild(soulsBar);
 
     this.showScreen('map');
+    console.log('Map screen shown');
     
     // Render soul previews after DOM is updated
     setTimeout(() => {
       souls.forEach(m => this.renderSoulPreview(m, true));
     }, 0);
 
+    // Bind click handlers to available nodes
+    if (isComplete && availableNodes.length > 0) {
+      setTimeout(() => {
+        availableNodes.forEach(node => {
+          const nodeEl = document.getElementById(`map-node-${node.id}`);
+          if (nodeEl) {
+            nodeEl.style.cursor = 'pointer';
+            nodeEl.onclick = () => this.moveToNode(node.id);
+          }
+        });
+      }, 0);
+    }
+
+    // Auto-scroll to center current node
+    if (currentNode) {
+      setTimeout(() => {
+        const mapVisual = document.querySelector('.map-visual');
+        const currentNodeEl = document.getElementById(`map-node-${currentNode.id}`);
+        
+        if (mapVisual && currentNodeEl) {
+          // Calculate node position relative to container
+          const layerWidth = 80;
+          const containerHeight = 600;
+          const nodeX = currentNode.layer * layerWidth + layerWidth / 2;
+          const nodeY = currentNode.x * containerHeight;
+          
+          // Center the node in the viewport
+          const scrollX = nodeX - (mapVisual.clientWidth / 2);
+          const scrollY = nodeY - (mapVisual.clientHeight / 2);
+          
+          mapVisual.scrollTo({
+            left: Math.max(0, scrollX),
+            top: Math.max(0, scrollY),
+            behavior: 'smooth'
+          });
+        }
+      }, 100);
+    }
+
     // Auto-enter current node if not completed
     if (!isComplete && currentNode) {
+      console.log('Auto-entering current node in 100ms');
       setTimeout(() => this.enterCurrentNode(), 100);
+    }
+  }
+
+  buildMapVisual() {
+    const nodes = this.game.state.mapNodes;
+    const currentNodeId = this.game.state.currentNodeId;
+    const completedNodes = this.game.state.completedNodes;
+    const availableNodes = this.game.getAvailableNodes().map(n => n.id);
+
+    // Group nodes by layer
+    const layers = {};
+    nodes.forEach(node => {
+      if (!layers[node.layer]) layers[node.layer] = [];
+      layers[node.layer].push(node);
+    });
+
+    const maxLayer = Math.max(...Object.keys(layers).map(Number));
+    const containerHeight = 600; // Fixed height for vertical spread
+    const layerWidth = 80; // Width per layer (horizontal spacing)
+    const nodeRadius = 27;
+
+    // Build SVG for connections
+    let svg = `<svg class="map-connections" width="${(maxLayer + 1) * layerWidth}" height="${containerHeight}">`;
+
+    // Draw elbow connections between nodes
+    nodes.forEach(node => {
+      const fromX = node.layer * layerWidth + layerWidth / 2;
+      const fromY = node.x * containerHeight;
+
+      node.connections.forEach(targetId => {
+        const targetNode = nodes.find(n => n.id === targetId);
+        if (targetNode) {
+          const toX = targetNode.layer * layerWidth + layerWidth / 2;
+          const toY = targetNode.x * containerHeight;
+
+          const isActive = (node.id === currentNodeId && availableNodes.includes(targetId)) ||
+                          (completedNodes.includes(node.id) && completedNodes.includes(targetId));
+          const isAvailable = node.id === currentNodeId && availableNodes.includes(targetId);
+
+          // Create elbow path: horizontal -> vertical with rounded corner
+          const midX = (fromX + toX) / 2;
+          const cornerRadius = 15;
+          
+          // Determine if going up or down
+          const goingDown = toY > fromY;
+          const verticalDist = Math.abs(toY - fromY);
+          const useCorner = verticalDist > cornerRadius * 2;
+          
+          let pathData;
+          if (useCorner) {
+            if (goingDown) {
+              pathData = `
+                M ${fromX} ${fromY}
+                L ${midX - cornerRadius} ${fromY}
+                Q ${midX} ${fromY}, ${midX} ${fromY + cornerRadius}
+                L ${midX} ${toY - cornerRadius}
+                Q ${midX} ${toY}, ${midX + cornerRadius} ${toY}
+                L ${toX} ${toY}
+              `;
+            } else {
+              pathData = `
+                M ${fromX} ${fromY}
+                L ${midX - cornerRadius} ${fromY}
+                Q ${midX} ${fromY}, ${midX} ${fromY - cornerRadius}
+                L ${midX} ${toY + cornerRadius}
+                Q ${midX} ${toY}, ${midX + cornerRadius} ${toY}
+                L ${toX} ${toY}
+              `;
+            }
+          } else {
+            // Straight line if too close vertically
+            pathData = `M ${fromX} ${fromY} L ${toX} ${toY}`;
+          }
+
+          svg += `<path 
+            d="${pathData}"
+            class="map-path ${isActive ? 'active' : ''} ${isAvailable ? 'available' : ''}"
+            fill="none"
+          />`;
+        }
+      });
+    });
+
+    svg += '</svg>';
+
+    let html = `<div class="map-visual">`;
+    html += svg;
+    html += '<div class="map-nodes-container">';
+
+    // Render each layer as a column
+    for (let layer = 0; layer <= maxLayer; layer++) {
+      const layerNodes = layers[layer] || [];
+      
+      html += `<div class="map-layer" style="left: ${layer * layerWidth}px;">`;
+      
+      layerNodes.forEach(node => {
+        const isCurrent = node.id === currentNodeId;
+        const isCompleted = completedNodes.includes(node.id);
+        const isAvailable = availableNodes.includes(node.id);
+        const isBoss = node.isBoss;
+        
+        let statusClass = '';
+        if (isCurrent) statusClass = 'current';
+        else if (isCompleted) statusClass = 'completed';
+        else if (isAvailable) statusClass = 'available';
+
+        const topPos = node.x * containerHeight - nodeRadius;
+        
+        html += `
+          <div id="map-node-${node.id}" 
+               class="map-node ${statusClass} ${isBoss ? 'boss' : ''}"
+               style="top: ${topPos}px;">
+            <div class="map-node-icon">${this.getNodeIcon(node)}</div>
+            <div class="map-node-type">${this.getNodeName(node)}</div>
+          </div>
+        `;
+      });
+      
+      html += `</div>`;
+    }
+
+    html += '</div>';
+    html += '</div>';
+    return html;
+  }
+
+  getNodeIcon(node) {
+    if (node.isBoss) return '💀';
+    switch(node.type) {
+      case 'void': return '🌀';
+      case 'battle': return '⚔️';
+      case 'mask_shop': return '🎭';
+      case 'shrine': return '✨';
+      case 'mystery': return '❓';
+      default: return '◆';
     }
   }
 
   getNodeName(node) {
     if (!node) return 'Unknown';
     if (node.name) return node.name;
+    if (node.isBoss) return 'BOSS';
     
     const type = node.type === 'mystery' ? (this.game.state.mysteryRevealed || 'mystery') : node.type;
     
@@ -645,10 +1338,12 @@ export class UI {
 
   moveToNode(nodeId) {
     this.game.moveToNode(nodeId);
-    this.renderMap();
+    // Automatically enter the node instead of showing the "current location" screen
+    this.enterCurrentNode();
   }
 
   enterCurrentNode() {
+    console.log('🚪 enterCurrentNode() called');
     const isComplete = this.game.state.isCurrentNodeComplete();
     if (isComplete) {
       alert('This node has already been completed!');
@@ -656,7 +1351,9 @@ export class UI {
     }
     
     const node = this.game.getCurrentNode();
+    console.log('Entering node:', node);
     const actualType = node.type === 'mystery' ? this.game.state.mysteryRevealed : node.type;
+    console.log('Actual type:', actualType);
     
     switch(actualType) {
       case 'void':
@@ -675,27 +1372,171 @@ export class UI {
   }
 
   renderVoidNode() {
-    const nodeScreen = document.getElementById('node-screen');
+    console.log('🌀 renderVoidNode() called');
     const summonCost = this.game.config.soulConfig.summon_cost;
     const canAfford = this.game.state.darkEnergy >= summonCost;
 
     this.updateCurrencyHUD();
+    console.log('About to build summoning screen HTML');
 
-    nodeScreen.innerHTML = `
-      <h2>🌀 Void Gate</h2>
-      
-      <div class="panel">
-        <p>The void whispers... summon a soul to fight for you.</p>
-        <p>Cost: ${summonCost} ⚡ Dark Energy</p>
-        <button onclick="window.ui.summonSoul()" ${!canAfford ? 'disabled' : ''}>
-          Summon Soul
+    // Hide souls bar during void scene
+    const soulsBar = document.querySelector('.souls-bar');
+    if (soulsBar) {
+      soulsBar.style.display = 'none';
+    }
+
+    // Show the summoning screen with 3D void scene
+    const summoningScreen = document.getElementById('summoning-screen');
+    summoningScreen.innerHTML = `
+      <div id="summoning-canvas-container"></div>
+      <div id="summoning-ui">
+        <button class="summon-void-btn" onclick="window.ui.summonSoulFromVoid()" ${!canAfford ? 'disabled' : ''}>
+          Summon Soul (${summonCost} ⚡)
         </button>
+        <button class="leave-void-btn" onclick="window.ui.backToMap()">Leave</button>
       </div>
-
-      <button onclick="window.ui.backToMap()">Leave</button>
     `;
 
-    this.showScreen('node');
+    console.log('Calling showScreen(summoning)');
+    this.showScreen('summoning');
+    console.log('Summoning screen should now be visible');
+    
+    // Initialize the void scene (without a soul - just show the portal)
+    console.log('Calling initVoidScene()');
+    this.initVoidScene();
+  }
+
+  initVoidScene() {
+    const container = document.getElementById('summoning-canvas-container');
+    if (!container) return;
+
+    // Scene
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x7a5a8a);
+    scene.fog = new THREE.Fog(0x7a5a8a, 5, 15);
+
+    // Camera
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 1.5, 4);
+    camera.lookAt(0, 0.5, 0);
+
+    // Renderer
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    container.appendChild(renderer.domElement);
+
+    // Post-processing
+    const composer = new EffectComposer(renderer);
+    const renderPass = new RenderPass(scene, camera);
+    composer.addPass(renderPass);
+
+    const PixelShader = {
+      uniforms: {
+        'tDiffuse': { value: null },
+        'resolution': { value: new THREE.Vector2() },
+        'pixelSize': { value: 4 }
+      },
+      vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform sampler2D tDiffuse;
+        uniform vec2 resolution;
+        uniform float pixelSize;
+        varying vec2 vUv;
+        
+        void main() {
+          vec2 dxy = pixelSize / resolution;
+          vec2 coord = dxy * floor(vUv / dxy);
+          gl_FragColor = texture2D(tDiffuse, coord);
+        }
+      `
+    };
+
+    const pixelPass = new ShaderPass(PixelShader);
+    pixelPass.uniforms['resolution'].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
+    pixelPass.uniforms['pixelSize'].value = 6;
+    composer.addPass(pixelPass);
+
+    // Create void portal
+    const portalGeom = new THREE.TorusGeometry(1.5, 0.3, 16, 32);
+    const portalMat = new THREE.MeshBasicMaterial({ 
+      color: 0x1a0a2e,
+      side: THREE.DoubleSide
+    });
+    const portal = new THREE.Mesh(portalGeom, portalMat);
+    portal.rotation.x = Math.PI / 2;
+    portal.position.y = 0.3;
+    scene.add(portal);
+
+    // Purple light
+    const light = new THREE.PointLight(0x9d4edd, 5, 10);
+    light.position.set(0, 0.3, 0);
+    scene.add(light);
+
+    // Ambient light
+    const ambientLight = new THREE.AmbientLight(0xffffff, 2.5);
+    scene.add(ambientLight);
+
+    // Directional lights
+    const mainLight = new THREE.DirectionalLight(0xffffff, 2.5);
+    mainLight.position.set(5, 10, 5);
+    scene.add(mainLight);
+
+    const fillLight = new THREE.DirectionalLight(0x9d4edd, 2.0);
+    fillLight.position.set(-5, 5, -5);
+    scene.add(fillLight);
+
+    const rimLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    rimLight.position.set(0, 5, -10);
+    scene.add(rimLight);
+
+    // Store scene data
+    this.voidScene = { scene, camera, renderer, composer, portal, light };
+
+    // Animate
+    const animate = () => {
+      if (!this.voidScene) return;
+      
+      portal.rotation.z += 0.005;
+      
+      composer.render();
+      this.voidAnimationId = requestAnimationFrame(animate);
+    };
+    animate();
+
+    // Handle resize
+    window.addEventListener('resize', () => {
+      if (!this.voidScene) return;
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      composer.setSize(window.innerWidth, window.innerHeight);
+      pixelPass.uniforms['resolution'].value.set(window.innerWidth, window.innerHeight);
+    });
+  }
+
+  disposeVoidScene() {
+    if (this.voidAnimationId) {
+      cancelAnimationFrame(this.voidAnimationId);
+      this.voidAnimationId = null;
+    }
+    if (this.voidScene) {
+      this.voidScene.renderer.dispose();
+      this.voidScene = null;
+    }
+  }
+
+  summonSoulFromVoid() {
+    // Dispose the idle void scene first
+    this.disposeVoidScene();
+    // Now trigger the actual summoning sequence
+    this.summonSoul();
   }
 
   renderMaskShop() {
@@ -941,36 +1782,9 @@ export class UI {
     const renderPass = new RenderPass(scene, camera);
     composer.addPass(renderPass);
 
-    const PixelShader = {
-      uniforms: {
-        'tDiffuse': { value: null },
-        'resolution': { value: new THREE.Vector2() },
-        'pixelSize': { value: 4 }
-      },
-      vertexShader: `
-        varying vec2 vUv;
-        void main() {
-          vUv = uv;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-      `,
-      fragmentShader: `
-        uniform sampler2D tDiffuse;
-        uniform vec2 resolution;
-        uniform float pixelSize;
-        varying vec2 vUv;
-        
-        void main() {
-          vec2 dxy = pixelSize / resolution;
-          vec2 coord = dxy * floor(vUv / dxy);
-          gl_FragColor = texture2D(tDiffuse, coord);
-        }
-      `
-    };
-
     const pixelPass = new ShaderPass(PixelShader);
     pixelPass.uniforms['resolution'].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
-    pixelPass.uniforms['pixelSize'].value = 6;
+    pixelPass.uniforms['pixelSize'].value = PIXELATION_CONFIG.pixelSize;
     composer.addPass(pixelPass);
 
     // Create void portal (dark torus)
@@ -1315,34 +2129,38 @@ export class UI {
       <div class="combat-info">
         <div class="combatant">
           <div class="health-bar-floating">
-            <strong>${state.soul.name || 'Your Soul'}</strong><br>
-            <div>❤️ ${state.soul.blood}/${state.soul.maxBlood}</div>
-            ${state.soul.block > 0 ? `<span class="block-badge">🛡️ ${state.soul.block}</span>` : ''}
+            <strong>${state.soul.name || 'Your Soul'}</strong>
             <div class="health-bar">
               <div class="health-fill" style="width: ${(state.soul.blood / state.soul.maxBlood) * 100}%"></div>
             </div>
+            <div style="font-size: 11px;">❤️ ${state.soul.blood}/${state.soul.maxBlood} ${state.soul.block > 0 ? `🛡️ ${state.soul.block}` : ''}</div>
           </div>
         </div>
 
         <div class="combatant" style="text-align: right;">
           <div class="health-bar-floating">
-            <strong>${state.enemy.name}</strong><br>
-            <div>❤️ ${state.enemy.blood}/${state.enemy.maxBlood}</div>
-            ${state.enemy.block > 0 ? `<span class="block-badge">🛡️ ${state.enemy.block}</span>` : ''}
+            <strong>${state.enemy.name}</strong>
             <div class="health-bar">
               <div class="health-fill" style="width: ${(state.enemy.blood / state.enemy.maxBlood) * 100}%"></div>
             </div>
+            <div style="font-size: 11px;">❤️ ${state.enemy.blood}/${state.enemy.maxBlood} ${state.enemy.block > 0 ? `🛡️ ${state.enemy.block}` : ''}</div>
           </div>
         </div>
       </div>
 
-      <div class="panel" style="position: fixed; top: 120px; left: 50%; transform: translateX(-50%); z-index: 50; background: rgba(10, 10, 10, 0.8);">
-        <span style="color: #a855f7;">Energy: ${state.energy}/${state.maxEnergy}</span> | 
-        <span>Turn: ${state.turn + 1}</span> | 
-        <span>Deck: ${state.deckCount}</span> | 
-        <span>Discard: ${state.discardCount}</span>
-        <button onclick="window.ui.endTurn()" style="float: right;">End Turn</button>
+      <div class="energy-display">
+        <span style="color: #a855f7; font-size: 20px; font-weight: bold;">⚡ ${state.energy}/${state.maxEnergy}</span>
       </div>
+
+      <button class="pile-viewer-btn left" onclick="window.ui.viewDrawPile()">
+        📚 ${state.deckCount}
+      </button>
+
+      <button class="pile-viewer-btn right-top" onclick="window.ui.viewDiscardPile()">
+        🗑️ ${state.discardCount}
+      </button>
+
+      <button class="end-turn-btn" onclick="window.ui.endTurn()">End Turn</button>
 
       <div class="hand">
         ${state.hand.map((card, i) => `
@@ -1388,36 +2206,9 @@ export class UI {
     const renderPass = new RenderPass(scene, camera);
     composer.addPass(renderPass);
 
-    const PixelShader = {
-      uniforms: {
-        'tDiffuse': { value: null },
-        'resolution': { value: new THREE.Vector2() },
-        'pixelSize': { value: 4 }
-      },
-      vertexShader: `
-        varying vec2 vUv;
-        void main() {
-          vUv = uv;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-      `,
-      fragmentShader: `
-        uniform sampler2D tDiffuse;
-        uniform vec2 resolution;
-        uniform float pixelSize;
-        varying vec2 vUv;
-        
-        void main() {
-          vec2 dxy = pixelSize / resolution;
-          vec2 coord = dxy * floor(vUv / dxy);
-          gl_FragColor = texture2D(tDiffuse, coord);
-        }
-      `
-    };
-
     const pixelPass = new ShaderPass(PixelShader);
     pixelPass.uniforms['resolution'].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
-    pixelPass.uniforms['pixelSize'].value = 6;
+    pixelPass.uniforms['pixelSize'].value = PIXELATION_CONFIG.pixelSize;
     composer.addPass(pixelPass);
 
     // Lights
@@ -1620,6 +2411,47 @@ export class UI {
     }
   }
 
+  viewDrawPile() {
+    const state = this.game.getCombatState();
+    if (!state) return;
+
+    this.showPileModal('Draw Pile', state.deck);
+  }
+
+  viewDiscardPile() {
+    const state = this.game.getCombatState();
+    if (!state) return;
+
+    this.showPileModal('Discard Pile', state.discard);
+  }
+
+  showPileModal(title, cards) {
+    const modal = document.createElement('div');
+    modal.className = 'pile-modal-overlay';
+    modal.onclick = (e) => {
+      if (e.target === modal) modal.remove();
+    };
+
+    modal.innerHTML = `
+      <div class="pile-modal">
+        <h2>${title} (${cards.length})</h2>
+        <div class="pile-cards">
+          ${cards.length === 0 ? '<p style="color: #999;">Empty</p>' : ''}
+          ${cards.map(card => `
+            <div class="card ${card.type}" style="display: inline-block; margin: 5px;">
+              <div class="card-name">${card.name}</div>
+              <div class="card-cost">Cost: ${card.cost}</div>
+              <div class="card-desc">${card.description || ''}</div>
+            </div>
+          `).join('')}
+        </div>
+        <button onclick="this.closest('.pile-modal-overlay').remove()" style="margin-top: 20px;">Close</button>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+  }
+
   handleBattleEnd() {
     const result = this.game.resolveBattle();
     if (result.success) {
@@ -1638,11 +2470,18 @@ export class UI {
   renderTraitChoice(battleResult) {
     const traitScreen = document.getElementById('trait-choice-screen');
     const isPositive = battleResult.result === 'victory';
+    const soul = this.game.combat.soul;
+    const hasMask = soul && soul.mask;
     
     traitScreen.innerHTML = `
       <div class="panel">
         <h2>${isPositive ? '🎉 VICTORY!' : '💀 DEFEAT'}</h2>
         <p>${isPositive ? 'Choose a trait to add to your mask:' : 'Your mask broke! Choose a curse for your soul:'}</p>
+        ${isPositive && !hasMask ? `
+          <div style="background: rgba(255, 0, 0, 0.2); border: 2px solid #ff0033; padding: 10px; margin-top: 10px;">
+            ⚠️ <strong>WARNING:</strong> This soul has no mask equipped. The trait will be forfeited!
+          </div>
+        ` : ''}
       </div>
 
       <div style="display: flex; gap: 20px; flex-wrap: wrap;">
@@ -1676,7 +2515,8 @@ export class UI {
   }
 
   showScreen(screenName) {
-    const screens = ['map', 'node', 'battle', 'trait-choice'];
+    console.log(`📺 showScreen(${screenName}) called`);
+    const screens = ['map', 'node', 'battle', 'trait-choice', 'summoning'];
     screens.forEach(name => {
       const el = document.getElementById(`${name}-screen`);
       if (name === screenName) {

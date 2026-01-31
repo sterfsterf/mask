@@ -30,6 +30,15 @@
       "cost": 1,
       "type": "status",
       "description": "Does nothing. Clogs your deck."
+    },
+    {
+      "id": "rage_strike",
+      "name": "Rage Strike",
+      "type": "attack",
+      "cost": 1,
+      "damage": 9,
+      "self_damage": 2,
+      "description": "Deal 9 damage. Take 2 damage."
     }
   ]
 }

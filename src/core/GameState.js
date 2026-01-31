@@ -1,5 +1,6 @@
 // GameState - manages currencies, souls, progression
 import { Soul } from './Soul.js';
+import { MapGenerator } from './MapGenerator.js';
 
 export class GameState {
   constructor(config) {
@@ -14,7 +15,8 @@ export class GameState {
     this.nextSoulId = 1;
     
     // Progression
-    this.currentTrack = null;
+    this.mapSeed = null;
+    this.mapNodes = [];
     this.currentNodeId = null;
     this.visitedNodes = [];
     this.completedNodes = [];
@@ -105,31 +107,36 @@ export class GameState {
     return { success: true };
   }
 
-  startTrack(trackId) {
-    const track = this.config.getTrack(trackId);
-    if (!track) {
-      return { success: false, error: 'Track not found' };
-    }
-
-    this.currentTrack = track;
-    this.currentNodeId = track.start_node;
-    this.visitedNodes = [this.currentNodeId];
-
-    return { success: true, track };
+  startRun(seed = null) {
+    // Generate new seed if not provided
+    this.mapSeed = seed || Math.floor(Math.random() * 1000000);
+    
+    const generator = new MapGenerator(this.mapSeed);
+    this.mapNodes = generator.generateMap(20); // 20 layers
+    generator.visualizeMap(this.mapNodes);
+    
+    this.currentNodeId = 0; // Start at first node
+    this.visitedNodes = [0];
+    this.completedNodes = [];
+    
+    console.log(`🎲 Started run with seed: ${this.mapSeed}`);
+    return { success: true, seed: this.mapSeed };
   }
 
   getCurrentNode() {
-    if (!this.currentTrack || this.currentNodeId === null) {
+    if (this.currentNodeId === null || !this.mapNodes.length) {
       return null;
     }
-    return this.config.getNode(this.currentNodeId);
+    return this.mapNodes.find(n => n.id === this.currentNodeId);
   }
 
   getAvailableNextNodes() {
     const currentNode = this.getCurrentNode();
     if (!currentNode) return [];
     
-    return currentNode.connections.map(nodeId => this.config.getNode(nodeId));
+    return currentNode.connections.map(nodeId => 
+      this.mapNodes.find(n => n.id === nodeId)
+    ).filter(n => n !== undefined);
   }
 
   moveToNode(nodeId) {
@@ -175,7 +182,7 @@ export class GameState {
     return this.completedNodes.includes(this.currentNodeId);
   }
 
-  isTrackComplete() {
+  isRunComplete() {
     const node = this.getCurrentNode();
     return node && node.connections.length === 0;
   }
@@ -197,7 +204,8 @@ export class GameState {
     this.coins = 5;
     this.souls = [];
     this.nextSoulId = 1;
-    this.currentTrack = null;
+    this.mapSeed = null;
+    this.mapNodes = [];
     this.currentNodeId = null;
     this.visitedNodes = [];
     this.completedNodes = [];

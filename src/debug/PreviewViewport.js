@@ -5,6 +5,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { PrefabManager } from './Prefab3D.js';
+import { PixelShader, PIXELATION_CONFIG } from '../core/PixelationShader.js';
 
 export class PreviewViewport {
   constructor(game) {
@@ -164,36 +165,9 @@ export class PreviewViewport {
     this.composer.addPass(renderPass);
 
     // Pixelation shader
-    const PixelShader = {
-      uniforms: {
-        'tDiffuse': { value: null },
-        'resolution': { value: new THREE.Vector2() },
-        'pixelSize': { value: 4 }
-      },
-      vertexShader: `
-        varying vec2 vUv;
-        void main() {
-          vUv = uv;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-      `,
-      fragmentShader: `
-        uniform sampler2D tDiffuse;
-        uniform vec2 resolution;
-        uniform float pixelSize;
-        varying vec2 vUv;
-        
-        void main() {
-          vec2 dxy = pixelSize / resolution;
-          vec2 coord = dxy * floor(vUv / dxy);
-          gl_FragColor = texture2D(tDiffuse, coord);
-        }
-      `
-    };
-
     const pixelPass = new ShaderPass(PixelShader);
     pixelPass.uniforms['resolution'].value = new THREE.Vector2(container.clientWidth, container.clientHeight);
-    pixelPass.uniforms['pixelSize'].value = 4.8; // 20% smaller pixels (6 * 0.8)
+    pixelPass.uniforms['pixelSize'].value = PIXELATION_CONFIG.pixelSize;
     this.composer.addPass(pixelPass);
     
     // Store reference to pixel pass for toggling
@@ -370,10 +344,10 @@ export class PreviewViewport {
       
       // Position masks differently - scale them up and position better for viewing
       if (prefabKey.startsWith('mask_')) {
-        this.currentModel.position.set(0, 1.0, 0); // Position at eye level, center of mask
+        this.currentModel.position.set(0, 1.5, 0); // Higher position - scaled plane is 2 units tall
         this.currentModel.scale.set(2, 2, 2); // Scale up masks for better viewing
       } else {
-        this.currentModel.position.set(0, 1, 0); // Center at eye level
+        this.currentModel.position.set(0, 0, 0); // Souls at ground level - feet near floor
       }
       
       // Add mask mount point for souls
@@ -382,22 +356,51 @@ export class PreviewViewport {
         mountPoint.name = 'maskMount';
         
         // Different mount points for each soul type
-        if (prefabKey === 'soul_flesh') {
-          mountPoint.position.set(0, 0.9, 0.5); // Closer to face for curved mask
+        if (prefabKey === 'soul_imp') {
+          // Imp (formerly flesh)
+          mountPoint.position.set(0, 1.0, 0.3);
           this.currentModel.add(mountPoint);
-        } else if (prefabKey === 'soul_shadow') {
-          // Attach to head orb for shadow soul
+        } else if (prefabKey === 'soul_wretch') {
+          // Wretch (formerly shadow) - attach to head orb
           const headOrb = this.currentModel.userData.headOrb;
           if (headOrb) {
-            // Position at outer edge of the orb (orb radius ~0.08-0.12)
-            mountPoint.position.set(0, 0, 0.35); // Closer for curved mask
+            mountPoint.position.set(0, 0, 0.25);
             headOrb.add(mountPoint);
           } else {
-            mountPoint.position.set(0, 1.2, 0.35); // Fallback
+            mountPoint.position.set(0, 1.2, 0.25);
             this.currentModel.add(mountPoint);
           }
-        } else if (prefabKey === 'soul_bone') {
-          mountPoint.position.set(0, 1.4, 0.45); // Closer to skull for curved mask
+        } else if (prefabKey === 'soul_hollow') {
+          // Hollow (formerly bone)
+          mountPoint.position.set(0, 1.45, 0.35);
+          this.currentModel.add(mountPoint);
+        } else if (prefabKey === 'soul_cur') {
+          // Cur - lumpy dog creature
+          mountPoint.position.set(0.5, 0.85, 0.25);
+          this.currentModel.add(mountPoint);
+        } else if (prefabKey === 'soul_scamp') {
+          // Scamp - small imp
+          mountPoint.position.set(0, 0.7, 0.3);
+          this.currentModel.add(mountPoint);
+        } else if (prefabKey === 'soul_varmint') {
+          // Varmint
+          mountPoint.position.set(0, 0.8, 0.3);
+          this.currentModel.add(mountPoint);
+        } else if (prefabKey === 'soul_knave') {
+          // Knave
+          mountPoint.position.set(0, 1.0, 0.3);
+          this.currentModel.add(mountPoint);
+        } else if (prefabKey === 'soul_brute') {
+          // Brute
+          mountPoint.position.set(0, 1.2, 0.4);
+          this.currentModel.add(mountPoint);
+        } else if (prefabKey === 'soul_blight') {
+          // Blight
+          mountPoint.position.set(0, 0.9, 0.3);
+          this.currentModel.add(mountPoint);
+        } else {
+          // Default mount point for any other soul types
+          mountPoint.position.set(0, 1.0, 0.3);
           this.currentModel.add(mountPoint);
         }
       }
@@ -557,9 +560,14 @@ export class PreviewViewport {
       this.currentModel.rotation.y += 0.01;
     }
     
-    // Bob up and down
+    // Bob up and down - maintain base height for different model types
     if (this.currentModel) {
-      this.currentModel.position.y = Math.sin(time) * 0.1;
+      // Store base height if not already stored
+      if (this.currentModel.userData.baseHeight === undefined) {
+        this.currentModel.userData.baseHeight = this.currentModel.position.y;
+      }
+      // Apply bob animation on top of base height
+      this.currentModel.position.y = this.currentModel.userData.baseHeight + Math.sin(time) * 0.1;
     }
     
     // Animate undulating spheres (for shadow soul)

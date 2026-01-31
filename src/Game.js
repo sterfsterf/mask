@@ -20,8 +20,8 @@ export class Game {
     
     this.state = new GameState(this.config);
     
-    // Start at beginning of track (void node)
-    this.state.startTrack('main_path');
+    // Start a new run with procedural map
+    this.state.startRun();
     
     console.log('✓ Game initialized');
     return this;
@@ -232,9 +232,15 @@ export class Game {
     const soul = this.combat.soul;
     
     if (isPositive) {
-      soul.addPositiveTraitToMask(traitId);
+      if (soul.mask) {
+        soul.addPositiveTraitToMask(traitId);
+        console.log(`✓ Added positive trait ${traitId} to ${soul.name}'s mask`);
+      } else {
+        console.log(`⚠️ ${soul.name} has no mask - positive trait ${traitId} forfeited`);
+      }
     } else {
       soul.addNegativeTrait(traitId);
+      console.log(`✓ Added negative trait ${traitId} to ${soul.name}`);
     }
 
     this.combat = null;
@@ -247,8 +253,8 @@ export class Game {
       return { gameOver: true, message: 'All souls lost. Starting over...' };
     }
     
-    if (this.state.isTrackComplete()) {
-      return { trackComplete: true, message: 'Track complete! Victory!' };
+    if (this.state.isRunComplete()) {
+      return { runComplete: true, message: 'Run complete! Victory!' };
     }
     
     return { gameOver: false };
@@ -257,7 +263,7 @@ export class Game {
   reset() {
     this.state.reset();
     this.combat = null;
-    this.state.startTrack('main_path');
+    this.state.startRun();
     this.tempMask = null;
   }
 }
