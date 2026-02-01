@@ -2791,8 +2791,17 @@ export class UI {
 
       <div class="mask-shop-grid">
         ${allMasks.map(mask => {
-          // Fix texture path for HTML img src - remove ./ prefix if present
-          const texturePath = mask.texture ? mask.texture.replace('./', '') : 'masks/fallback_mask.png';
+          // Fix texture path for HTML img src - use base URL for deployed builds
+          const base = import.meta.env.BASE_URL || './';
+          let texturePath;
+          if (mask.texture) {
+            // Remove ./ and prepend base URL if needed
+            texturePath = mask.texture.startsWith('./') 
+              ? mask.texture.replace('./', base)
+              : mask.texture;
+          } else {
+            texturePath = base + 'masks/fallback_mask.png';
+          }
           
           return `
           <div class="mask-shop-card ${mask.rarity} ${mask.sold ? 'sold-out' : ''}">
