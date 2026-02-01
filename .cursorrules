@@ -4,6 +4,7 @@
 - Always read configuration from config files (`config/*.json`) rather than hardcoding values
 - When creating prefabs, instantiating models, or displaying content, pull data from the appropriate config file
 - Never duplicate content definitions - the config files are the single source of truth
+- **DO NOT use git CLI commands** - the user will handle git operations manually
 
 ## Configuration Files
 - `config/masks.json` - All mask data (id, name, rarity, texture paths, traits)

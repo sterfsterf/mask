@@ -540,10 +540,11 @@ export class UI {
       .trait-card-choice {
         cursor: pointer;
         transition: all 0.2s;
+        transform: translateY(0) !important; /* Override base .card translateY */
       }
 
       .trait-card-choice:hover {
-        transform: scale(1.05);
+        transform: scale(1.05) !important; /* Keep at translateY(0), just scale */
         box-shadow: 0 10px 30px rgba(255, 0, 51, 0.8);
         z-index: 10;
       }
@@ -1139,10 +1140,11 @@ export class UI {
       .trait-card-choice {
         cursor: pointer;
         transition: all 0.2s;
+        transform: translateY(0) !important; /* Override base .card translateY */
       }
 
       .trait-card-choice:hover {
-        transform: scale(1.05);
+        transform: scale(1.05) !important; /* Keep at translateY(0), just scale */
         box-shadow: 0 10px 30px rgba(255, 0, 51, 0.8);
         z-index: 10;
       }
@@ -4875,12 +4877,20 @@ export class UI {
           } else if (state.soul.type === 'imp' || state.soul.type === 'brute') {
             // Imp and Brute use flesh-like models
             mountPoint = new THREE.Object3D();
-            mountPoint.position.set(0, 0.9, 0.5);
+            if (state.soul.type === 'brute') {
+              mountPoint.position.set(0, 1.45, 0.5); // Near eyes for brute
+            } else {
+              mountPoint.position.set(0, 0.9, 0.5); // Default for imp
+            }
             soulMesh.add(mountPoint);
           } else if (state.soul.type === 'hollow' || state.soul.type === 'blight') {
             // Hollow and Blight use bone-like models
             mountPoint = new THREE.Object3D();
-            mountPoint.position.set(0, 1.4, 0.45);
+            if (state.soul.type === 'blight') {
+              mountPoint.position.set(0, 1.25, 0.45); // Near eyes for blight
+            } else {
+              mountPoint.position.set(0, 1.4, 0.45); // Default for hollow
+            }
             soulMesh.add(mountPoint);
           } else if (state.soul.type === 'cur') {
             // Cur - dog head
@@ -4888,14 +4898,15 @@ export class UI {
             mountPoint.position.set(0.5, 0.9, 0.3);
             soulMesh.add(mountPoint);
           } else if (state.soul.type === 'scamp') {
-            // Scamp - small imp head
+            // Scamp - small imp head, near eyes
             mountPoint = new THREE.Object3D();
-            mountPoint.position.set(0, 1.2, 0.3);
+            mountPoint.position.set(0, 1.1, 0.3);
             soulMesh.add(mountPoint);
           } else if (state.soul.type === 'varmint') {
-            // Varmint - rat face
+            // Varmint - rat face, rotated to face forward
             mountPoint = new THREE.Object3D();
-            mountPoint.position.set(0.3, 0.85, 0.2);
+            mountPoint.position.set(0.3, 0.75, 0.2);
+            mountPoint.rotation.y = Math.PI / 2; // Rotate 90 degrees to face mask forward
             soulMesh.add(mountPoint);
           } else if (state.soul.type === 'knave') {
             // Knave - hooded face
@@ -6493,11 +6504,19 @@ export class UI {
             }
           } else if (soul.type === 'imp' || soul.type === 'brute') {
             mountPoint = new THREE.Object3D();
-            mountPoint.position.set(0, 0.9, 0.5);
+            if (soul.type === 'brute') {
+              mountPoint.position.set(0, 1.45, 0.5); // Near eyes for brute
+            } else {
+              mountPoint.position.set(0, 0.9, 0.5); // Default for imp
+            }
             soulMesh.add(mountPoint);
           } else if (soul.type === 'hollow' || soul.type === 'blight') {
             mountPoint = new THREE.Object3D();
-            mountPoint.position.set(0, 1.4, 0.45);
+            if (soul.type === 'blight') {
+              mountPoint.position.set(0, 1.25, 0.45); // Near eyes for blight
+            } else {
+              mountPoint.position.set(0, 1.4, 0.45); // Default for hollow
+            }
             soulMesh.add(mountPoint);
           } else if (soul.type === 'cur') {
             mountPoint = new THREE.Object3D();
@@ -6505,11 +6524,12 @@ export class UI {
             soulMesh.add(mountPoint);
           } else if (soul.type === 'scamp') {
             mountPoint = new THREE.Object3D();
-            mountPoint.position.set(0, 1.2, 0.3);
+            mountPoint.position.set(0, 1.1, 0.3);
             soulMesh.add(mountPoint);
           } else if (soul.type === 'varmint') {
             mountPoint = new THREE.Object3D();
-            mountPoint.position.set(0.3, 0.85, 0.2);
+            mountPoint.position.set(0.3, 0.75, 0.2);
+            mountPoint.rotation.y = Math.PI / 2; // Rotate 90 degrees to face mask forward
             soulMesh.add(mountPoint);
           } else if (soul.type === 'knave') {
             mountPoint = new THREE.Object3D();
