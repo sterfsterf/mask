@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  base: process.env.NODE_ENV === 'production' ? '/mask/' : './', // Change '/mask/' to your repo name
+  base: '/mask/', // GitHub Pages base path
   server: {
     port: 3000
   },
