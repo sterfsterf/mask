@@ -798,6 +798,7 @@ export class UI {
       }
 
       .soul-name {
+        font-family: 'IM Fell DW Pica SC', serif;
         font-size: 11px;
         font-weight: bold;
         margin-bottom: 2px;
@@ -1397,6 +1398,7 @@ export class UI {
       }
 
       .soul-name {
+        font-family: 'IM Fell DW Pica SC', serif;
         font-size: 11px;
         font-weight: bold;
       }
@@ -2704,7 +2706,7 @@ export class UI {
     `;
     nameForm.innerHTML = `
       <h3 style="margin: 0; text-align: center; color: #9d4edd;">${this.pendingSoul.type} Soul Summoned</h3>
-      <input type="text" id="void-soul-name-input" placeholder="Name your soul..." maxlength="20" style="width: 300px; padding: 10px; background: #1a1a1a; border: 2px solid #666; color: #fff; border-radius: 4px;" />
+      <input type="text" id="void-soul-name-input" placeholder="Name your soul..." maxlength="20" style="width: 300px; padding: 10px; background: #1a1a1a; border: 2px solid #666; color: #fff; border-radius: 4px; text-align: center; font-family: 'IM Fell DW Pica SC', serif; font-size: 1.17em;" />
       <button id="void-confirm-soul-name-btn" disabled style="padding: 10px 20px; background: #9d4edd; border: 2px solid #fff; color: #fff; cursor: pointer; border-radius: 4px; opacity: 0.5;">Confirm</button>
     `;
     document.body.appendChild(nameForm);
@@ -3631,8 +3633,8 @@ export class UI {
         <div id="speech-bubble" class="speech-bubble"></div>
         <div id="name-soul-form" style="position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); z-index: 3; background: rgba(10, 10, 10, 0.95); border: 2px solid #9d4edd; padding: 20px 40px; border-radius: 8px; opacity: 0; pointer-events: none;">
           <h3 style="margin: 0 0 15px 0; text-align: center;">${this.pendingSoul.type} Soul Summoned</h3>
-          <input type="text" id="soul-name-input" placeholder="Name your soul..." maxlength="20" style="width: 300px; padding: 10px; font-size: 16px; background: #1a1a1a; border: 2px solid #666; color: #fff; border-radius: 4px;" />
-          <button id="confirm-soul-name-btn" style="margin-left: 10px; padding: 10px 20px; font-size: 16px; background: #9d4edd; border: 2px solid #fff; color: #fff; cursor: pointer; border-radius: 4px;">Confirm</button>
+          <input type="text" id="soul-name-input" placeholder="Name your soul..." maxlength="20" style="width: 300px; padding: 10px; background: #1a1a1a; border: 2px solid #666; color: #fff; border-radius: 4px; text-align: center; font-family: 'IM Fell DW Pica SC', serif; font-size: 1.17em;" />
+          <button id="confirm-soul-name-btn" style="margin-left: 10px; padding: 10px 20px; background: #9d4edd; border: 2px solid #fff; color: #fff; cursor: pointer; border-radius: 4px;">Confirm</button>
         </div>
       </div>
     `;

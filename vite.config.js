@@ -1,11 +1,12 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  base: './', // Use relative paths for build
+  base: process.env.NODE_ENV === 'production' ? '/mask/' : './', // Change '/mask/' to your repo name
   server: {
     port: 3000
   },
   build: {
-    target: 'esnext'
+    target: 'esnext',
+    assetsInlineLimit: 0 // Don't inline assets, keep them as separate files
   }
 });
