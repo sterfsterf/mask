@@ -2795,10 +2795,11 @@ export class UI {
           const base = import.meta.env.BASE_URL || './';
           let texturePath;
           if (mask.texture) {
-            // Remove ./ and prepend base URL if needed
-            texturePath = mask.texture.startsWith('./') 
-              ? mask.texture.replace('./', base)
+            // Strip leading ./ and prepend base URL
+            const cleanPath = mask.texture.startsWith('./') 
+              ? mask.texture.slice(2)
               : mask.texture;
+            texturePath = base + cleanPath;
           } else {
             texturePath = base + 'masks/fallback_mask.png';
           }

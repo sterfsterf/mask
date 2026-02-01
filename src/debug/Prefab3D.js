@@ -1149,9 +1149,10 @@ export class MaskPrefab extends Prefab3D {
       
       // Resolve texture path with base URL
       const base = import.meta.env.BASE_URL || './';
-      const texturePath = this.config.texture.startsWith('./') 
-        ? this.config.texture.replace('./', base)
+      const cleanPath = this.config.texture.startsWith('./') 
+        ? this.config.texture.slice(2)
         : this.config.texture;
+      const texturePath = base + cleanPath;
       
       // Pure white material for maximum brightness - unlit
       maskMat = new THREE.MeshBasicMaterial({ 
