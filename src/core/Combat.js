@@ -192,6 +192,11 @@ export class Combat {
     this.enemyBlock = context.enemyBlock;
     this.energy = context.energy;
 
+    // If mask just broke, remove it from the soul
+    if (this.maskBroken && this.soul.mask) {
+      this.soul.breakMask();
+    }
+
     // Update soul's mask health if changed
     if (this.soul.mask) {
       this.soul.maskBlood = this.maskBlood;

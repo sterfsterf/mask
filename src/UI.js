@@ -69,6 +69,60 @@ export class UI {
     }
   }
 
+  updateSoulsBar() {
+    // Remove old souls bar if exists
+    const oldBar = document.querySelector('.souls-bar');
+    if (oldBar) oldBar.remove();
+    
+    const souls = this.game.getSouls();
+    if (souls.length === 0) return;
+    
+    // Rebuild souls bar
+    const soulsBar = document.createElement('div');
+    soulsBar.className = 'souls-bar';
+    soulsBar.innerHTML = `
+      ${souls.map(m => {
+        // Calculate health percentages for bars
+        const healthPercent = (m.blood / m.maxBlood) * 100;
+        
+        // Display actual mask health if equipped
+        let maskHealth = '';
+        if (m.mask && m.maskBlood !== undefined && m.maskMaxBlood !== undefined) {
+          const maskHealthPercent = (m.maskBlood / m.maskMaxBlood) * 100;
+          maskHealth = `<div class="mask-health">
+            <span class="stat-icon">🎭</span>
+            <span class="stat-values">${m.maskBlood}/${m.maskMaxBlood}</span>
+            <div class="health-bar"><div class="health-bar-fill" style="width: ${maskHealthPercent}%"></div></div>
+          </div>`;
+        } else {
+          // Reserve space for mask health even if no mask
+          maskHealth = `<div class="mask-health"></div>`;
+        }
+        
+        return `
+          <div class="soul-card-mini" data-soul-id="${m.id}">
+            <canvas class="soul-preview-mini" id="soul-preview-mini-${m.id}" width="80" height="80"></canvas>
+            <div class="soul-name">${m.name}</div>
+            <div class="soul-stats">
+              <span class="stat-icon">❤️</span>
+              <span class="stat-values">${m.blood}/${m.maxBlood}</span>
+              <div class="health-bar"><div class="health-bar-fill" style="width: ${healthPercent}%"></div></div>
+            </div>
+            ${maskHealth}
+            ${m.tired ? '<div class="is-tired">💤</div>' : ''}
+            <button class="view-deck-btn" onclick="window.ui.viewSoulDeck(${m.id}); event.stopPropagation();">🃏</button>
+          </div>
+        `;
+      }).join('')}
+    `;
+    document.body.appendChild(soulsBar);
+    
+    // Re-render soul previews
+    souls.forEach(soul => {
+      this.renderSoulPreview(soul, true);
+    });
+  }
+
   updateCurrencyHUD() {
     const currencies = this.game.getCurrencies();
     const hud = document.getElementById('currency-hud');
@@ -184,8 +238,8 @@ export class UI {
         padding: 10px 20px;
         margin: 5px;
         cursor: pointer;
-        font-family: 'Courier New', monospace;
-        font-size: 14px;
+        font-family: 'IM Fell DW Pica SC', serif;
+        font-size: 1.17em;
         transition: all 0.2s;
       }
 
@@ -2649,7 +2703,7 @@ export class UI {
       gap: 15px;
     `;
     nameForm.innerHTML = `
-      <h3 style="margin: 0; text-align: center; color: #9d4edd;">${this.pendingSoul.type.toUpperCase()} Soul Summoned</h3>
+      <h3 style="margin: 0; text-align: center; color: #9d4edd;">${this.pendingSoul.type} Soul Summoned</h3>
       <input type="text" id="void-soul-name-input" placeholder="Name your soul..." maxlength="20" style="width: 300px; padding: 10px; background: #1a1a1a; border: 2px solid #666; color: #fff; border-radius: 4px;" />
       <button id="void-confirm-soul-name-btn" disabled style="padding: 10px 20px; background: #9d4edd; border: 2px solid #fff; color: #fff; cursor: pointer; border-radius: 4px; opacity: 0.5;">Confirm</button>
     `;
@@ -3576,7 +3630,7 @@ export class UI {
         <div id="flash-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #9d4edd; opacity: 0; z-index: 2; pointer-events: none;"></div>
         <div id="speech-bubble" class="speech-bubble"></div>
         <div id="name-soul-form" style="position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); z-index: 3; background: rgba(10, 10, 10, 0.95); border: 2px solid #9d4edd; padding: 20px 40px; border-radius: 8px; opacity: 0; pointer-events: none;">
-          <h3 style="margin: 0 0 15px 0; text-align: center;">${this.pendingSoul.type.toUpperCase()} Soul Summoned</h3>
+          <h3 style="margin: 0 0 15px 0; text-align: center;">${this.pendingSoul.type} Soul Summoned</h3>
           <input type="text" id="soul-name-input" placeholder="Name your soul..." maxlength="20" style="width: 300px; padding: 10px; font-size: 16px; background: #1a1a1a; border: 2px solid #666; color: #fff; border-radius: 4px;" />
           <button id="confirm-soul-name-btn" style="margin-left: 10px; padding: 10px 20px; font-size: 16px; background: #9d4edd; border: 2px solid #fff; color: #fff; cursor: pointer; border-radius: 4px;">Confirm</button>
         </div>
@@ -4343,7 +4397,11 @@ export class UI {
               <div class="health-fill-back" id="soul-health-bar-back" style="width: ${Math.max(0, Math.min(100, (state.soul.blood / state.soul.maxBlood) * 100))}%"></div>
               <div class="health-fill" id="soul-health-bar-fill" style="width: ${Math.max(0, Math.min(100, (state.soul.blood / state.soul.maxBlood) * 100))}%"></div>
             </div>
-            <div style="font-size: 11px;">❤️ ${Math.max(0, state.soul.blood)}/${state.soul.maxBlood} ${state.soul.block > 0 ? `🛡️ ${state.soul.block}` : ''}</div>
+            <div style="font-size: 11px;">
+              ❤️ ${Math.max(0, state.soul.blood)}/${state.soul.maxBlood} 
+              ${state.soul.block > 0 ? `🛡️ ${state.soul.block}` : ''}
+              ${state.soul.statusEffects?.poison > 0 ? `☠️ ${state.soul.statusEffects.poison}` : ''}
+            </div>
             ${state.soul.mask && state.soul.maskBlood > 0 ? `
               <div style="margin-top: 6px; font-size: 10px; color: #ffd700;">${state.soul.mask.name}</div>
               <div class="health-bar" style="height: 8px;">
@@ -4363,7 +4421,12 @@ export class UI {
               <div class="health-fill-back" id="enemy-health-bar-back" style="width: ${Math.max(0, Math.min(100, (state.enemy.blood / state.enemy.maxBlood) * 100))}%"></div>
               <div class="health-fill" id="enemy-health-bar-fill" style="width: ${Math.max(0, Math.min(100, (state.enemy.blood / state.enemy.maxBlood) * 100))}%"></div>
             </div>
-            <div style="font-size: 11px;">❤️ ${Math.max(0, state.enemy.blood)}/${state.enemy.maxBlood} ${state.enemy.block > 0 ? `🛡️ ${state.enemy.block}` : ''}</div>
+            <div style="font-size: 11px;">
+              ❤️ ${Math.max(0, state.enemy.blood)}/${state.enemy.maxBlood} 
+              ${state.enemy.block > 0 ? `🛡️ ${state.enemy.block}` : ''}
+              ${state.enemy.statusEffects?.poison > 0 ? `☠️ ${state.enemy.statusEffects.poison}` : ''}
+              ${state.enemy.statusEffects?.stunned ? `💫` : ''}
+            </div>
           </div>
         </div>
       </div>
@@ -5837,6 +5900,9 @@ export class UI {
       
       // Dispose battle scene
       this.disposeBattleScene();
+      
+      // Re-render souls bar to update mask status
+      this.updateSoulsBar();
       
       // Show souls bar again when battle ends (but hide it if it's game over)
       const aliveSouls = this.game.state.souls.filter(s => s.blood > 0);
