@@ -5,7 +5,6 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { PrefabManager } from './Prefab3D.js';
-import { PixelShader, PIXELATION_CONFIG } from '../core/PixelationShader.js';
 
 export class PreviewViewport {
   constructor(game) {
@@ -165,9 +164,36 @@ export class PreviewViewport {
     this.composer.addPass(renderPass);
 
     // Pixelation shader
+    const PixelShader = {
+      uniforms: {
+        'tDiffuse': { value: null },
+        'resolution': { value: new THREE.Vector2() },
+        'pixelSize': { value: 4 }
+      },
+      vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform sampler2D tDiffuse;
+        uniform vec2 resolution;
+        uniform float pixelSize;
+        varying vec2 vUv;
+        
+        void main() {
+          vec2 dxy = pixelSize / resolution;
+          vec2 coord = dxy * floor(vUv / dxy);
+          gl_FragColor = texture2D(tDiffuse, coord);
+        }
+      `
+    };
+
     const pixelPass = new ShaderPass(PixelShader);
     pixelPass.uniforms['resolution'].value = new THREE.Vector2(container.clientWidth, container.clientHeight);
-    pixelPass.uniforms['pixelSize'].value = PIXELATION_CONFIG.pixelSize;
+    pixelPass.uniforms['pixelSize'].value = 3.84; // 20% smaller again (4.8 * 0.8)
     this.composer.addPass(pixelPass);
     
     // Store reference to pixel pass for toggling

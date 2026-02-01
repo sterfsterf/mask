@@ -27,9 +27,10 @@
     {
       "id": "tired",
       "name": "Tired",
-      "cost": 1,
+      "cost": 0,
       "type": "status",
-      "description": "Does nothing. Clogs your deck."
+      "unplayable": true,
+      "description": "Unplayable. Clogs your hand."
     },
     {
       "id": "rage_strike",

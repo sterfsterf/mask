@@ -4,22 +4,17 @@
       "id": "rage",
       "name": "Rage",
       "type": "positive",
-      "stat_mods": {
-        "attack": 3,
-        "defense": -1
-      },
+      "stat_mods": {},
       "card": "rage_strike",
-      "description": "+3 ATK, -1 DEF"
+      "description": "Adds Rage Strike card"
     },
     {
       "id": "fortify",
       "name": "Fortify",
       "type": "positive",
-      "stat_mods": {
-        "defense": 4
-      },
+      "stat_mods": {},
       "card": "fortify_block",
-      "description": "+4 DEF"
+      "description": "Adds Fortify card"
     },
     {
       "id": "swift",
@@ -33,31 +28,25 @@
       "id": "cracked",
       "name": "Cracked",
       "type": "negative",
-      "stat_mods": {
-        "defense": -3
-      },
+      "stat_mods": {},
       "card": "cracked_weakness",
-      "description": "-3 DEF, fragile"
+      "description": "Adds Cracked card"
     },
     {
       "id": "fearful",
       "name": "Fearful",
       "type": "negative",
-      "stat_mods": {
-        "attack": -2
-      },
+      "stat_mods": {},
       "card": "fearful_hesitation",
-      "description": "-2 ATK, hesitant"
+      "description": "Adds Hesitation card"
     },
     {
       "id": "cursed",
       "name": "Cursed",
       "type": "negative",
-      "stat_mods": {
-        "blood": -5
-      },
+      "stat_mods": {},
       "card": "curse_drain",
-      "description": "-5 max HP"
+      "description": "Adds Drain card"
     }
   ],
   "trait_cards": [
@@ -80,17 +69,18 @@
     {
       "id": "swift_strike",
       "name": "Swift Strike",
-      "cost": 0,
+      "cost": 1,
       "type": "attack",
       "damage": 4,
-      "description": "Deal 4 damage. Free."
+      "description": "Deal 4 damage. Quick."
     },
     {
       "id": "cracked_weakness",
       "name": "Cracked",
-      "cost": 1,
+      "cost": 0,
       "type": "status",
-      "description": "Does nothing. Fragile state."
+      "unplayable": true,
+      "description": "Unplayable. Fragile state."
     },
     {
       "id": "fearful_hesitation",
@@ -103,9 +93,10 @@
     {
       "id": "curse_drain",
       "name": "Drain",
-      "cost": 1,
+      "cost": 0,
       "type": "status",
-      "description": "Does nothing. Life drains away."
+      "unplayable": true,
+      "description": "Unplayable. Life drains away."
     }
   ]
 }

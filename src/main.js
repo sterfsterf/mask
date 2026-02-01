@@ -6,7 +6,8 @@ import { Game } from './Game.js';
 import { UI } from './UI.js';
 import { DebugMenu } from './debug/DebugMenu.js';
 import { PreviewViewport } from './debug/PreviewViewport.js';
-import { PixelShader, PIXELATION_CONFIG } from './core/PixelationShader.js';
+import { PixelShader, HalftoneShader, POST_PROCESSING_CONFIG } from './core/PixelationShader.js';
+import { sfx } from './core/SoundEffects.js';
 
 // Initialize Three.js scene
 const scene = new THREE.Scene();
@@ -36,8 +37,47 @@ composer.addPass(renderPass);
 // Pixelation shader
 const pixelPass = new ShaderPass(PixelShader);
 pixelPass.uniforms['resolution'].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
-pixelPass.uniforms['pixelSize'].value = PIXELATION_CONFIG.pixelSize;
-composer.addPass(pixelPass);
+pixelPass.uniforms['pixelSize'].value = POST_PROCESSING_CONFIG.pixelSize;
+
+// Halftone shader
+const halftonePass = new ShaderPass(HalftoneShader);
+halftonePass.uniforms['resolution'].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
+halftonePass.uniforms['dotSize'].value = POST_PROCESSING_CONFIG.halftoneSize;
+
+// Make the last pass render to screen
+if (POST_PROCESSING_CONFIG.mode === 'pixelation') {
+  pixelPass.renderToScreen = true;
+  composer.addPass(pixelPass);
+} else if (POST_PROCESSING_CONFIG.mode === 'halftone') {
+  halftonePass.renderToScreen = true;
+  composer.addPass(halftonePass);
+}
+
+// Store passes for toggling
+window.mainComposer = composer;
+window.mainPixelPass = pixelPass;
+window.mainHalftonePass = halftonePass;
+
+// Listen for post-processing changes
+window.addEventListener('postProcessingChanged', (e) => {
+  const { mode } = e.detail;
+  
+  // Remove effect passes (keep render pass which is first)
+  composer.passes = composer.passes.slice(0, 1);
+  
+  // Add appropriate pass and mark it to render to screen
+  if (mode === 'pixelation') {
+    pixelPass.renderToScreen = true;
+    composer.addPass(pixelPass);
+  } else if (mode === 'halftone') {
+    halftonePass.renderToScreen = true;
+    composer.addPass(halftonePass);
+  }
+  // 'none' = no additional pass, render pass will render to screen
+  else {
+    renderPass.renderToScreen = true;
+  }
+});
 
 // Lighting
 const ambientLight = new THREE.AmbientLight(0x404040, 2);
@@ -162,6 +202,7 @@ const ui = new UI(game);
 game.ui = ui; // Give game reference to UI
 window.ui = ui; // Expose for onclick handlers
 window.game = game; // Debug access
+window.sfx = sfx; // Expose for onclick/hover handlers
 
 // Initialize debug tools
 const debugPreview = new PreviewViewport(game);

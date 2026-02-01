@@ -26,6 +26,9 @@ export class Combat {
     this.turn = 0;
     this.playerTurn = true;
     
+    // Enemy intent
+    this.enemyIntent = null;
+    
     // Result
     this.result = null; // 'victory' | 'defeat' | null
   }
@@ -41,6 +44,7 @@ export class Combat {
 
   startCombat() {
     this.drawCards(5);
+    this.generateEnemyIntent();
     return this.getState();
   }
 
@@ -69,6 +73,10 @@ export class Combat {
 
     const card = this.hand[handIndex];
     
+    if (card.unplayable) {
+      return { success: false, error: 'Card cannot be played' };
+    }
+    
     if (card.cost > this.energy) {
       return { success: false, error: 'Not enough energy' };
     }
@@ -90,8 +98,8 @@ export class Combat {
   executeCardEffect(card, isPlayer) {
     if (card.type === 'attack') {
       if (isPlayer) {
-        const damage = Math.max(0, (card.damage + this.soulStats.attack) - this.enemyBlock);
-        this.enemyBlock = Math.max(0, this.enemyBlock - (card.damage + this.soulStats.attack));
+        const damage = Math.max(0, card.damage - this.enemyBlock);
+        this.enemyBlock = Math.max(0, this.enemyBlock - card.damage);
         this.enemyBlood -= damage;
         
         // Self-damage if card has it
@@ -99,15 +107,15 @@ export class Combat {
           this.soulBlood -= card.self_damage;
         }
       } else {
-        const damage = Math.max(0, (card.damage + this.enemy.attack) - this.soulBlock);
-        this.soulBlock = Math.max(0, this.soulBlock - (card.damage + this.enemy.attack));
+        const damage = Math.max(0, card.damage - this.soulBlock);
+        this.soulBlock = Math.max(0, this.soulBlock - card.damage);
         this.soulBlood -= damage;
       }
     } else if (card.type === 'defend') {
       if (isPlayer) {
-        this.soulBlock += card.block + this.soulStats.defense;
+        this.soulBlock += card.block;
       } else {
-        this.enemyBlock += card.block + this.enemy.defense;
+        this.enemyBlock += card.block;
       }
     }
     // 'status' cards do nothing
@@ -139,22 +147,92 @@ export class Combat {
       // Block decays each turn
       this.soulBlock = 0;
       this.enemyBlock = 0;
+      
+      // Generate new enemy intent for next turn
+      this.generateEnemyIntent();
     }
 
     return { success: true, state: this.getState() };
   }
 
-  enemyTurn() {
-    // Simple AI - just attack
-    const attackCard = {
-      id: 'enemy_attack',
-      name: 'Attack',
-      cost: 0,
-      type: 'attack',
-      damage: this.enemy.attack
-    };
+  generateEnemyIntent() {
+    // Random intent based on weights
+    // 60% normal attack, 20% defend, 10% big attack, 10% heal
+    const roll = Math.random() * 100;
+    
+    if (roll < 60) {
+      // Normal attack
+      this.enemyIntent = {
+        type: 'attack',
+        value: this.enemy.attack,
+        name: 'Attack',
+        icon: '⚔️'
+      };
+    } else if (roll < 80) {
+      // Defend
+      const blockAmount = Math.floor(this.enemy.defense * 2);
+      this.enemyIntent = {
+        type: 'defend',
+        value: blockAmount,
+        name: 'Defend',
+        icon: '🛡️'
+      };
+    } else if (roll < 90) {
+      // Big attack
+      const bigDamage = Math.floor(this.enemy.attack * 1.5);
+      this.enemyIntent = {
+        type: 'big_attack',
+        value: bigDamage,
+        name: 'Heavy Strike',
+        icon: '💥'
+      };
+    } else {
+      // Heal
+      const healAmount = Math.floor(this.enemy.blood * 0.15);
+      this.enemyIntent = {
+        type: 'heal',
+        value: healAmount,
+        name: 'Regenerate',
+        icon: '💚'
+      };
+    }
+  }
 
-    this.executeCardEffect(attackCard, false);
+  enemyTurn() {
+    if (!this.enemyIntent) {
+      this.generateEnemyIntent();
+    }
+
+    // Execute the intent
+    switch (this.enemyIntent.type) {
+      case 'attack':
+        this.executeCardEffect({
+          id: 'enemy_attack',
+          name: 'Attack',
+          cost: 0,
+          type: 'attack',
+          damage: this.enemyIntent.value
+        }, false);
+        break;
+        
+      case 'defend':
+        this.enemyBlock += this.enemyIntent.value;
+        break;
+        
+      case 'big_attack':
+        this.executeCardEffect({
+          id: 'enemy_big_attack',
+          name: 'Heavy Strike',
+          cost: 0,
+          type: 'attack',
+          damage: this.enemyIntent.value
+        }, false);
+        break;
+        
+      case 'heal':
+        this.enemyBlood = Math.min(this.enemy.blood, this.enemyBlood + this.enemyIntent.value);
+        break;
+    }
   }
 
   checkCombatEnd() {
@@ -184,7 +262,8 @@ export class Combat {
         blood: this.enemyBlood,
         maxBlood: this.enemy.blood,
         block: this.enemyBlock,
-        name: this.enemy.name
+        name: this.enemy.name,
+        intent: this.enemyIntent
       },
       hand: [...this.hand],
       deck: [...this.deck],

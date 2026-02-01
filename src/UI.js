@@ -4,7 +4,8 @@ import { PrefabManager } from './debug/Prefab3D.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
-import { PixelShader, PIXELATION_CONFIG } from './core/PixelationShader.js';
+import { POST_PROCESSING_CONFIG, PixelShader, HalftoneShader } from './core/PixelationShader.js';
+import { sfx } from './core/SoundEffects.js';
 
 export class UI {
   constructor(game) {
@@ -36,6 +37,18 @@ export class UI {
 
     this.addStyles();
     this.updateCurrencyHUD();
+    
+    // Global button hover SFX
+    this.setupButtonHoverSFX();
+  }
+
+  setupButtonHoverSFX() {
+    document.addEventListener('mouseover', (e) => {
+      const button = e.target.closest('button');
+      if (button && !button.disabled) {
+        sfx.buttonHover();
+      }
+    });
   }
 
   toggleDebug() {
@@ -222,6 +235,18 @@ export class UI {
       .card.defend { border-color: #3b82f6; }
       .card.status { border-color: #6b7280; }
 
+      .card.unplayable {
+        opacity: 0.5;
+        cursor: not-allowed;
+        border-color: #444;
+        background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+      }
+
+      .card.unplayable:hover {
+        transform: none;
+        box-shadow: none;
+      }
+
       .card-name {
         font-size: 14px;
         font-weight: bold;
@@ -297,6 +322,28 @@ export class UI {
         transition: width 0.3s;
       }
 
+      .enemy-intent {
+        background: rgba(255, 100, 100, 0.2);
+        border: 1px solid #ff6464;
+        padding: 6px 10px;
+        margin: 8px 0;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 12px;
+      }
+
+      .intent-icon {
+        font-size: 16px;
+      }
+
+      .intent-text {
+        color: #ffcccc;
+        font-weight: bold;
+      }
+
       .block-badge {
         display: inline-block;
         background: #3b82f6;
@@ -359,7 +406,9 @@ export class UI {
         gap: 10px;
         flex-wrap: wrap;
         justify-content: center;
-        margin: 20px 0;
+        margin: 80px auto 180px;
+        max-width: 800px;
+        padding: 0 20px;
       }
 
       .mask-shop-card {
@@ -805,7 +854,9 @@ export class UI {
         gap: 10px;
         flex-wrap: wrap;
         justify-content: center;
-        margin: 20px 0;
+        margin: 80px auto 180px;
+        max-width: 800px;
+        padding: 0 20px;
       }
 
       .mask-shop-card {
@@ -1090,6 +1141,201 @@ export class UI {
         background: #333;
         border-color: #fff;
       }
+
+      .shrine-soul-btn {
+        pointer-events: auto;
+        background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
+        border: 2px solid #fff;
+        color: #000;
+        padding: 6px 12px;
+        font-size: 12px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s;
+        border-radius: 4px;
+      }
+
+      .shrine-soul-btn:hover {
+        background: linear-gradient(135deg, #ffe44d 0%, #ffbb33 100%);
+        transform: scale(1.05);
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5);
+      }
+
+      #shrine-ui {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: auto;
+        max-width: 600px;
+        z-index: 10;
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 12px 20px;
+        background: rgba(10, 10, 10, 0.85);
+        border: 2px solid #ffd700;
+        border-radius: 6px;
+      }
+
+      #shrine-ui * {
+        pointer-events: auto;
+      }
+
+      #shrine-instruction {
+        position: fixed;
+        bottom: 160px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+        pointer-events: none;
+        padding: 8px 16px;
+        background: rgba(10, 10, 10, 0.85);
+        border: 2px solid #ffd700;
+        border-radius: 6px;
+        font-size: 13px;
+        text-align: center;
+      }
+
+      .shrine-skip-btn {
+        position: fixed;
+        bottom: 160px;
+        right: 20px;
+        z-index: 10;
+        pointer-events: auto;
+        background: #1a1a1a;
+        border: 2px solid #666;
+        color: #fff;
+        padding: 8px 16px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        border-radius: 4px;
+      }
+
+      .shrine-skip-btn:hover {
+        background: #333;
+        border-color: #fff;
+      }
+
+      #shop-ui {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: auto;
+        max-width: 600px;
+        z-index: 10;
+        pointer-events: none;
+        text-align: center;
+      }
+
+      #shop-instruction {
+        position: fixed;
+        bottom: 160px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+        pointer-events: none;
+        text-align: center;
+        font-size: 14px;
+      }
+
+      .shop-leave-btn {
+        position: fixed;
+        bottom: 160px;
+        right: 20px;
+        z-index: 10;
+        pointer-events: auto;
+        background: #1a1a1a;
+        border: 2px solid #666;
+        color: #fff;
+        padding: 8px 16px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        border-radius: 4px;
+      }
+
+      .shop-leave-btn:hover {
+        background: #333;
+        border-color: #fff;
+      }
+
+      #void-ui {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: auto;
+        max-width: 600px;
+        z-index: 10;
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 12px 20px;
+        background: rgba(10, 10, 10, 0.85);
+        border: 2px solid #9d4edd;
+        border-radius: 6px;
+      }
+
+      #void-ui * {
+        pointer-events: auto;
+      }
+
+      .void-summon-btn {
+        position: fixed;
+        bottom: 160px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+        pointer-events: auto;
+        background: linear-gradient(135deg, #9d4edd 0%, #7b2cbf 100%);
+        border: 2px solid #fff;
+        color: #fff;
+        padding: 12px 24px;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s;
+        border-radius: 6px;
+        box-shadow: 0 4px 15px rgba(157, 78, 221, 0.4);
+      }
+
+      .void-summon-btn:hover {
+        background: linear-gradient(135deg, #b47eee 0%, #9d4edd 100%);
+        transform: translateX(-50%) scale(1.05);
+        box-shadow: 0 6px 20px rgba(157, 78, 221, 0.6);
+      }
+
+      .void-summon-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        transform: translateX(-50%);
+      }
+
+      .void-leave-btn {
+        position: fixed;
+        bottom: 160px;
+        right: 20px;
+        z-index: 10;
+        pointer-events: auto;
+        background: #1a1a1a;
+        border: 2px solid #666;
+        color: #fff;
+        padding: 8px 16px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        border-radius: 4px;
+      }
+
+      .void-leave-btn:hover {
+        background: #333;
+        border-color: #fff;
+      }
     `;
     document.head.appendChild(style);
   }
@@ -1143,7 +1389,7 @@ export class UI {
     soulsBar.className = 'souls-bar';
     soulsBar.innerHTML = `
       ${souls.map(m => `
-        <div class="soul-card-mini">
+        <div class="soul-card-mini" data-soul-id="${m.id}">
           <canvas class="soul-preview-mini" id="soul-preview-mini-${m.id}" width="80" height="80"></canvas>
           <div class="soul-name">${m.name}</div>
           <div class="soul-stats">❤️${m.blood}/${m.maxBlood}</div>
@@ -1380,6 +1626,7 @@ export class UI {
   }
 
   enterCurrentNode() {
+    sfx.buttonClick();
     console.log('🚪 enterCurrentNode() called');
     const isComplete = this.game.state.isCurrentNodeComplete();
     if (isComplete) {
@@ -1412,6 +1659,7 @@ export class UI {
     console.log('🌀 renderVoidNode() called');
     const summonCost = this.game.config.soulConfig.summon_cost;
     const canAfford = this.game.state.darkEnergy >= summonCost;
+    const hasSouls = this.game.getSouls().length > 0;
 
     this.updateCurrencyHUD();
     console.log('About to build summoning screen HTML');
@@ -1426,12 +1674,14 @@ export class UI {
     const summoningScreen = document.getElementById('summoning-screen');
     summoningScreen.innerHTML = `
       <div id="summoning-canvas-container"></div>
-      <div id="summoning-ui">
-        <button class="summon-void-btn" onclick="window.ui.summonSoulFromVoid()" ${!canAfford ? 'disabled' : ''}>
-          Summon Soul (${summonCost} ⚡)
-        </button>
-        <button class="leave-void-btn" onclick="window.ui.backToMap()">Leave</button>
+      <div id="void-ui">
+        <h2 style="margin: 0 0 8px 0; text-align: center; font-size: 18px;">🌀 The Void</h2>
+        <p style="margin: 0; text-align: center; color: #ccc; font-size: 12px;">Summon a soul from the darkness</p>
       </div>
+      <button class="void-summon-btn" onclick="window.ui.summonSoulFromVoid()" ${!canAfford ? 'disabled' : ''}>
+        Summon Soul (${summonCost} ⚡)
+      </button>
+      ${hasSouls ? '<button class="void-leave-btn" onclick="window.ui.backToMap()">Leave</button>' : ''}
     `;
 
     console.log('Calling showScreen(summoning)');
@@ -1447,10 +1697,32 @@ export class UI {
     const container = document.getElementById('summoning-canvas-container');
     if (!container) return;
 
-    // Scene
+    // Scene with gradient background
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x7a5a8a);
-    scene.fog = new THREE.Fog(0x7a5a8a, 5, 15);
+    
+    // Create gradient background using a large plane with gradient material
+    const gradientCanvas = document.createElement('canvas');
+    gradientCanvas.width = 2;
+    gradientCanvas.height = 256;
+    const gradientCtx = gradientCanvas.getContext('2d');
+    const gradient = gradientCtx.createLinearGradient(0, 0, 0, 256);
+    gradient.addColorStop(0, '#2a1a3a'); // Lighter purple at top
+    gradient.addColorStop(1, '#000000'); // Black at bottom
+    gradientCtx.fillStyle = gradient;
+    gradientCtx.fillRect(0, 0, 2, 256);
+    
+    const gradientTexture = new THREE.CanvasTexture(gradientCanvas);
+    const backgroundGeometry = new THREE.PlaneGeometry(100, 100);
+    const backgroundMaterial = new THREE.MeshBasicMaterial({ 
+      map: gradientTexture,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    const background = new THREE.Mesh(backgroundGeometry, backgroundMaterial);
+    background.position.z = -10;
+    scene.add(background);
+    
+    scene.fog = new THREE.Fog(0x1a0a1a, 5, 15);
 
     // Camera
     const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -1468,79 +1740,161 @@ export class UI {
     const renderPass = new RenderPass(scene, camera);
     composer.addPass(renderPass);
 
-    const PixelShader = {
-      uniforms: {
-        'tDiffuse': { value: null },
-        'resolution': { value: new THREE.Vector2() },
-        'pixelSize': { value: 4 }
-      },
-      vertexShader: `
-        varying vec2 vUv;
-        void main() {
-          vUv = uv;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-      `,
-      fragmentShader: `
-        uniform sampler2D tDiffuse;
-        uniform vec2 resolution;
-        uniform float pixelSize;
-        varying vec2 vUv;
-        
-        void main() {
-          vec2 dxy = pixelSize / resolution;
-          vec2 coord = dxy * floor(vUv / dxy);
-          gl_FragColor = texture2D(tDiffuse, coord);
-        }
-      `
-    };
-
     const pixelPass = new ShaderPass(PixelShader);
     pixelPass.uniforms['resolution'].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
-    pixelPass.uniforms['pixelSize'].value = 6;
-    composer.addPass(pixelPass);
+    pixelPass.uniforms['pixelSize'].value = POST_PROCESSING_CONFIG.pixelSize;
 
-    // Create void portal
-    const portalGeom = new THREE.TorusGeometry(1.5, 0.3, 16, 32);
-    const portalMat = new THREE.MeshBasicMaterial({ 
-      color: 0x1a0a2e,
-      side: THREE.DoubleSide
+    const halftonePass = new ShaderPass(HalftoneShader);
+    halftonePass.uniforms['resolution'].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
+    halftonePass.uniforms['dotSize'].value = POST_PROCESSING_CONFIG.halftoneSize;
+
+    // Add appropriate pass based on current mode
+    if (POST_PROCESSING_CONFIG.mode === 'pixelation') {
+      pixelPass.renderToScreen = true;
+      composer.addPass(pixelPass);
+    } else if (POST_PROCESSING_CONFIG.mode === 'halftone') {
+      halftonePass.renderToScreen = true;
+      composer.addPass(halftonePass);
+    } else {
+      renderPass.renderToScreen = true;
+    }
+
+    // Create layered void portal with multiple offset toruses
+    const portalLayers = [];
+    const layerConfigs = [
+      { radius: 0.8, tube: 0.25, color: 0x0a0014, rotationSpeed: 0.02, offset: { x: 0, y: 0, z: 0 } },
+      { radius: 0.75, tube: 0.22, color: 0x1a0a2e, rotationSpeed: -0.025, offset: { x: 0.05, y: -0.03, z: 0.1 } },
+      { radius: 0.7, tube: 0.2, color: 0x2a1540, rotationSpeed: 0.03, offset: { x: -0.03, y: 0.05, z: -0.08 } },
+      { radius: 0.85, tube: 0.18, color: 0x150a24, rotationSpeed: -0.018, offset: { x: 0.02, y: 0.04, z: 0.05 } }
+    ];
+    
+    layerConfigs.forEach(config => {
+      const torusGeom = new THREE.TorusGeometry(config.radius, config.tube, 16, 32);
+      const torusMat = new THREE.MeshBasicMaterial({ 
+        color: config.color,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.8
+      });
+      const torus = new THREE.Mesh(torusGeom, torusMat);
+      torus.rotation.x = Math.PI / 2;
+      torus.position.y = 0.3 + config.offset.y;
+      torus.position.x = config.offset.x;
+      torus.position.z = config.offset.z;
+      torus.userData.rotationSpeed = config.rotationSpeed;
+      scene.add(torus);
+      portalLayers.push(torus);
     });
-    const portal = new THREE.Mesh(portalGeom, portalMat);
-    portal.rotation.x = Math.PI / 2;
-    portal.position.y = 0.3;
-    scene.add(portal);
 
-    // Purple light
-    const light = new THREE.PointLight(0x9d4edd, 5, 10);
+    // Create eerie particle system for magenta and purple sparkles
+    const particleCount = 60;
+    const particles = [];
+    
+    for (let i = 0; i < particleCount; i++) {
+      const isMagenta = Math.random() > 0.5;
+      const particleGeom = new THREE.SphereGeometry(0.02, 4, 4);
+      const particleMat = new THREE.MeshBasicMaterial({ 
+        color: isMagenta ? 0xff00ff : 0x9d4edd,
+        transparent: true,
+        opacity: 0.6,
+        depthTest: false // Render on top of everything
+      });
+      const particle = new THREE.Mesh(particleGeom, particleMat);
+      particle.renderOrder = 999; // Render after everything else
+      
+      // Random position, focusing more on lower part of screen
+      particle.position.x = (Math.random() - 0.5) * 6;
+      particle.position.y = Math.random() * 2 - 0.5; // Mostly lower
+      particle.position.z = (Math.random() - 0.5) * 6;
+      
+      // Very slow, eerie velocity
+      particle.userData.velocity = {
+        x: (Math.random() - 0.5) * 0.003,
+        y: (Math.random() - 0.5) * 0.002,
+        z: (Math.random() - 0.5) * 0.003
+      };
+      
+      scene.add(particle);
+      particles.push(particle);
+    }
+
+    // Purple light from portal (dimmer for eeriness)
+    const light = new THREE.PointLight(0x9d4edd, 2, 10);
     light.position.set(0, 0.3, 0);
     scene.add(light);
 
-    // Ambient light
-    const ambientLight = new THREE.AmbientLight(0xffffff, 2.5);
+    // Ambient light (much darker)
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
     scene.add(ambientLight);
 
-    // Directional lights
-    const mainLight = new THREE.DirectionalLight(0xffffff, 2.5);
+    // Directional lights (dimmer)
+    const mainLight = new THREE.DirectionalLight(0x9d4edd, 1.5);
     mainLight.position.set(5, 10, 5);
     scene.add(mainLight);
 
-    const fillLight = new THREE.DirectionalLight(0x9d4edd, 2.0);
+    const fillLight = new THREE.DirectionalLight(0xff00ff, 1.0);
     fillLight.position.set(-5, 5, -5);
     scene.add(fillLight);
 
-    const rimLight = new THREE.DirectionalLight(0xffffff, 1.5);
-    rimLight.position.set(0, 5, -10);
-    scene.add(rimLight);
+    // Rim light for souls - purple/magenta from behind to make them pop
+    const soulRimLight = new THREE.DirectionalLight(0xcc44ff, 3.0);
+    soulRimLight.position.set(0, 2, -5); // From behind and above
+    scene.add(soulRimLight);
 
     // Store scene data
-    this.voidScene = { scene, camera, renderer, composer, portal, light };
+    this.voidScene = { scene, camera, renderer, composer, renderPass, pixelPass, halftonePass, portalLayers, light, particles, background, soulRimLight };
+
+    // Listen for post-processing changes
+    const ppHandler = (e) => {
+      if (!this.voidScene) return;
+      const { mode } = e.detail;
+      
+      // Remove effect passes (keep render pass)
+      composer.passes = [renderPass];
+      
+      // Add appropriate pass
+      if (mode === 'pixelation') {
+        pixelPass.renderToScreen = true;
+        composer.addPass(pixelPass);
+      } else if (mode === 'halftone') {
+        halftonePass.renderToScreen = true;
+        composer.addPass(halftonePass);
+      } else {
+        renderPass.renderToScreen = true;
+      }
+    };
+    window.addEventListener('postProcessingChanged', ppHandler);
+    this.voidScene.ppHandler = ppHandler;
 
     // Animate
     const animate = () => {
       if (!this.voidScene) return;
       
-      portal.rotation.z += 0.005;
+      const time = Date.now() * 0.001;
+      
+      // Rotate each portal layer at different speeds for frenetic effect
+      portalLayers.forEach(layer => {
+        layer.rotation.z += layer.userData.rotationSpeed;
+      });
+      
+      // Pulse light slowly and eerily
+      light.intensity = 2 + Math.sin(time * 0.5) * 0.5;
+      
+      // Very slow eerie particle drift
+      particles.forEach((particle, i) => {
+        particle.position.x += particle.userData.velocity.x;
+        particle.position.y += particle.userData.velocity.y;
+        particle.position.z += particle.userData.velocity.z;
+        
+        // Wrap around if they drift too far
+        if (Math.abs(particle.position.x) > 4) particle.position.x *= -0.9;
+        if (Math.abs(particle.position.z) > 4) particle.position.z *= -0.9;
+        if (particle.position.y > 3) particle.position.y = -0.5;
+        if (particle.position.y < -1) particle.position.y = 3;
+        
+        // Very slow, eerie pulsing opacity
+        particle.material.opacity = 0.3 + Math.sin(time * 0.3 + i * 0.5) * 0.3;
+      });
       
       composer.render();
       this.voidAnimationId = requestAnimationFrame(animate);
@@ -1555,6 +1909,7 @@ export class UI {
       renderer.setSize(window.innerWidth, window.innerHeight);
       composer.setSize(window.innerWidth, window.innerHeight);
       pixelPass.uniforms['resolution'].value.set(window.innerWidth, window.innerHeight);
+      halftonePass.uniforms['resolution'].value.set(window.innerWidth, window.innerHeight);
     });
   }
 
@@ -1564,16 +1919,340 @@ export class UI {
       this.voidAnimationId = null;
     }
     if (this.voidScene) {
+      if (this.voidScene.ppHandler) {
+        window.removeEventListener('postProcessingChanged', this.voidScene.ppHandler);
+      }
       this.voidScene.renderer.dispose();
       this.voidScene = null;
     }
   }
 
   summonSoulFromVoid() {
-    // Dispose the idle void scene first
-    this.disposeVoidScene();
-    // Now trigger the actual summoning sequence
-    this.summonSoul();
+    sfx.buttonClick();
+    const result = this.game.summonSoul();
+    if (!result.success) {
+      sfx.error();
+      alert(result.error);
+      return;
+    }
+    
+    this.pendingSoul = result.soul;
+    
+    // Hide UI elements including souls bar
+    const voidUI = document.getElementById('void-ui');
+    const summonBtn = document.querySelector('.void-summon-btn');
+    const leaveBtn = document.querySelector('.void-leave-btn');
+    const soulsBar = document.querySelector('.souls-bar');
+    if (voidUI) voidUI.style.display = 'none';
+    if (summonBtn) summonBtn.style.display = 'none';
+    if (leaveBtn) leaveBtn.style.display = 'none';
+    if (soulsBar) soulsBar.style.display = 'none';
+    
+    // Trigger summoning animation in the existing void scene
+    if (this.voidScene) {
+      this.startVoidSummonAnimation();
+    }
+  }
+  
+  startVoidSummonAnimation() {
+    const { scene, portalLayers, light, particles, background } = this.voidScene;
+    
+    // Start the swelling sound that builds during particle acceleration
+    const swellSound = sfx.startVoidSwell(1.2);
+    
+    // Create flash overlay
+    const flashOverlay = document.createElement('div');
+    flashOverlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #9d4edd;
+      opacity: 0;
+      z-index: 5;
+      pointer-events: none;
+    `;
+    document.body.appendChild(flashOverlay);
+    
+    // Load soul mesh
+    const soulMesh = this.prefabManager.instantiate(`soul_${this.pendingSoul.type}`);
+    if (soulMesh) {
+      soulMesh.position.set(0, 0.3, 0);
+      soulMesh.scale.set(0, 0, 0);
+      scene.add(soulMesh);
+    }
+    
+    // Store initial particle positions for slam effect
+    const particleInitialPositions = particles.map(p => ({
+      x: p.position.x,
+      y: p.position.y,
+      z: p.position.z
+    }));
+    
+    // Animation phases
+    let phase = 'light_building'; // light_building -> flash -> reveal -> slam -> idle
+    let time = 0;
+    const startTime = Date.now();
+    let slamStarted = false;
+    
+    // Update animation loop to handle summoning
+    const originalAnimate = this.voidAnimationId;
+    cancelAnimationFrame(originalAnimate);
+    
+    const animateSummoning = () => {
+      if (!this.voidScene) return;
+      
+      const elapsed = (Date.now() - startTime) / 1000;
+      time += 0.016;
+      
+      // Rotate portal layers
+      portalLayers.forEach(layer => {
+        layer.rotation.z += layer.userData.rotationSpeed * 1.5; // Faster during summoning
+      });
+      
+      // Phase 1: Light building with ramping particles (1.2 seconds)
+      if (phase === 'light_building' && elapsed < 1.2) {
+        const progress = elapsed / 1.2;
+        const rampSpeed = progress * progress * progress; // Cubic ramp - faster at end
+        
+        light.intensity = 2 + progress * 13;
+        
+        // Particles zoom into the center point (0, 0.3, 0) - converge faster as time goes on
+        particles.forEach(particle => {
+          const targetX = 0;
+          const targetY = 0.3;
+          const targetZ = 0;
+          
+          const dx = (targetX - particle.position.x) * 0.05 * (1 + rampSpeed * 8);
+          const dy = (targetY - particle.position.y) * 0.05 * (1 + rampSpeed * 8);
+          const dz = (targetZ - particle.position.z) * 0.05 * (1 + rampSpeed * 8);
+          
+          particle.position.x += dx;
+          particle.position.y += dy;
+          particle.position.z += dz;
+          particle.material.opacity = 0.5 + rampSpeed * 0.5;
+        });
+      }
+      // Phase 2: Flash (0.2 seconds)
+      else if (phase === 'light_building' || (phase === 'flash' && elapsed < 1.4)) {
+        if (phase === 'light_building') {
+          phase = 'flash';
+          
+          // Particles continue converging into the exact center during flash
+          particles.forEach(particle => {
+            particle.position.set(0, 0.3, 0);
+          });
+          
+          // Start flash
+          flashOverlay.style.transition = 'opacity 0.2s';
+          flashOverlay.style.opacity = '0.9';
+          
+          // Play flash sound - high pitch impact
+          sfx.playTone(800, 0.2, 0.4, 'square');
+          setTimeout(() => sfx.playTone(600, 0.2, 0.3, 'square'), 50);
+        }
+        light.intensity = 20;
+      }
+      // Phase 3: Reveal soul with rumble (0.8 seconds)
+      else if (phase === 'flash' || (phase === 'reveal' && elapsed < 2.2)) {
+        if (phase === 'flash') {
+          phase = 'reveal';
+          // Fade out flash
+          flashOverlay.style.transition = 'opacity 0.3s';
+          flashOverlay.style.opacity = '0';
+          setTimeout(() => flashOverlay.remove(), 300);
+          
+          // Play rumble sound - low bass rumble
+          for (let i = 0; i < 5; i++) {
+            setTimeout(() => {
+              sfx.playTone(60 + Math.random() * 20, 0.1, 0.3, 'sawtooth');
+            }, i * 100);
+          }
+        }
+        
+        const revealProgress = (elapsed - 1.4) / 0.8;
+        const easeOut = 1 - Math.pow(1 - revealProgress, 3);
+        
+        if (soulMesh) {
+          // Rumble effect - shake while growing
+          const rumble = Math.sin(revealProgress * 40) * 0.05 * (1 - revealProgress);
+          soulMesh.scale.set(easeOut, easeOut, easeOut);
+          soulMesh.position.x = rumble;
+          soulMesh.rotation.z = rumble * 0.5;
+        }
+        light.intensity = 20 - (revealProgress * 18);
+        
+        // Particles stay near portal during reveal
+        particles.forEach(particle => {
+          particle.material.opacity = 0.8;
+        });
+      }
+      // Phase 4: SLAM particles outward (0.6 seconds)
+      else if (phase === 'reveal' || (phase === 'slam' && elapsed < 2.8)) {
+        if (phase === 'reveal') {
+          phase = 'slam';
+          slamStarted = true;
+          
+          // Lighten background gradient to medium dark purple
+          const ctx = background.material.map.image.getContext('2d');
+          const newGradient = ctx.createLinearGradient(0, 0, 0, 256);
+          newGradient.addColorStop(0, '#6a4a7a'); // Lighter purple at top
+          newGradient.addColorStop(1, '#2a1a3a'); // Medium purple at bottom
+          ctx.fillStyle = newGradient;
+          ctx.fillRect(0, 0, 2, 256);
+          background.material.map.needsUpdate = true;
+          scene.fog.color.set(0x4a2a5a);
+          
+          // Play slam sound - explosive burst
+          sfx.playTone(400, 0.3, 0.5, 'sawtooth');
+          setTimeout(() => sfx.playTone(200, 0.4, 0.4, 'square'), 50);
+          setTimeout(() => sfx.playTone(100, 0.5, 0.3, 'triangle'), 100);
+          
+          // Give particles explosive outward velocity
+          particles.forEach(particle => {
+            const angle = Math.random() * Math.PI * 2;
+            const upAngle = Math.random() * Math.PI * 0.5 - 0.2;
+            const speed = 0.15 + Math.random() * 0.1;
+            
+            particle.userData.slamVelocity = {
+              x: Math.cos(angle) * Math.cos(upAngle) * speed,
+              y: Math.sin(upAngle) * speed * 0.5,
+              z: Math.sin(angle) * Math.cos(upAngle) * speed
+            };
+          });
+        }
+        
+        const slamProgress = (elapsed - 2.2) / 0.6;
+        const damping = Math.pow(0.95, slamProgress * 60); // Slow down over time
+        
+        if (soulMesh) {
+          // Soul settles into position
+          soulMesh.position.x = 0;
+          soulMesh.rotation.z = 0;
+        }
+        
+        // Particles blast outward then slow down
+        particles.forEach(particle => {
+          if (particle.userData.slamVelocity) {
+            particle.position.x += particle.userData.slamVelocity.x * damping;
+            particle.position.y += particle.userData.slamVelocity.y * damping;
+            particle.position.z += particle.userData.slamVelocity.z * damping;
+            particle.material.opacity = 0.8 * (1 - slamProgress * 0.5);
+          }
+        });
+        
+        light.intensity = 2 + (1 - slamProgress) * 3;
+      }
+      // Phase 5: Idle - show naming UI
+      else if (phase === 'slam') {
+        phase = 'idle';
+        this.showVoidNamingUI();
+        
+        // Reset particles to normal drift
+        particles.forEach((particle, i) => {
+          particle.userData.slamVelocity = null;
+        });
+      }
+      
+      // Continue idle animation
+      if (phase === 'idle') {
+        if (soulMesh) {
+          soulMesh.position.y = 0.3 + Math.sin(time * 2) * 0.1;
+          soulMesh.rotation.y += 0.01;
+        }
+        light.intensity = 2 + Math.sin(time * 0.5) * 0.5;
+        
+        particles.forEach((particle, i) => {
+          particle.position.x += particle.userData.velocity.x;
+          particle.position.y += particle.userData.velocity.y;
+          particle.position.z += particle.userData.velocity.z;
+          
+          if (Math.abs(particle.position.x) > 4) particle.position.x *= -0.9;
+          if (Math.abs(particle.position.z) > 4) particle.position.z *= -0.9;
+          if (particle.position.y > 3) particle.position.y = -0.5;
+          if (particle.position.y < -1) particle.position.y = 3;
+          
+          particle.material.opacity = 0.3 + Math.sin(time * 0.3 + i * 0.5) * 0.3;
+        });
+      }
+      
+      this.voidScene.composer.render();
+      this.voidAnimationId = requestAnimationFrame(animateSummoning);
+    };
+    
+    animateSummoning();
+  }
+  
+  showVoidNamingUI() {
+    const nameForm = document.createElement('div');
+    nameForm.id = 'void-name-form';
+    nameForm.style.cssText = `
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      background: rgba(10, 10, 10, 0.95);
+      border: 2px solid #9d4edd;
+      padding: 20px 30px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    `;
+    nameForm.innerHTML = `
+      <h3 style="margin: 0; text-align: center; color: #9d4edd;">${this.pendingSoul.type.toUpperCase()} Soul Summoned</h3>
+      <input type="text" id="void-soul-name-input" placeholder="Name your soul..." maxlength="20" style="width: 300px; padding: 10px; font-size: 16px; background: #1a1a1a; border: 2px solid #666; color: #fff; border-radius: 4px;" />
+      <button id="void-confirm-soul-name-btn" disabled style="padding: 10px 20px; font-size: 16px; background: #9d4edd; border: 2px solid #fff; color: #fff; cursor: pointer; border-radius: 4px; opacity: 0.5;">Confirm</button>
+    `;
+    document.body.appendChild(nameForm);
+    
+    const input = document.getElementById('void-soul-name-input');
+    const confirmBtn = document.getElementById('void-confirm-soul-name-btn');
+    
+    // Enable button when text is entered
+    input.addEventListener('input', () => {
+      if (input.value.trim().length > 0) {
+        confirmBtn.disabled = false;
+        confirmBtn.style.opacity = '1';
+        confirmBtn.style.cursor = 'pointer';
+      } else {
+        confirmBtn.disabled = true;
+        confirmBtn.style.opacity = '0.5';
+        confirmBtn.style.cursor = 'not-allowed';
+      }
+    });
+    
+    const confirmHandler = () => {
+      const name = input.value.trim();
+      if (!name) return;
+      
+      this.pendingSoul.name = name;
+      console.log('Summoned:', this.pendingSoul.name);
+      
+      // Remove naming UI
+      nameForm.remove();
+      
+      // Dispose void scene and return to map
+      this.disposeVoidScene();
+      this.pendingSoul = null;
+      
+      // Mark void as complete and go back to map
+      this.game.state.completeCurrentNode();
+      this.renderMap();
+    };
+    
+    confirmBtn.onclick = confirmHandler;
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && input.value.trim().length > 0) {
+        confirmHandler();
+      }
+    });
+    
+    // Auto-focus input
+    setTimeout(() => input.focus(), 100);
   }
 
   renderMaskShop() {
@@ -1595,16 +2274,14 @@ export class UI {
     ];
 
     nodeScreen.innerHTML = `
-      <h2>🎭 Mask Vendor</h2>
+      <div id="shop-ui">
+        <h2 style="margin: 0 0 8px 0; text-align: center; font-size: 18px;">🎭 Mask Vendor</h2>
+        <p style="margin: 0; text-align: center; color: #ccc; font-size: 12px;">Purchase masks to empower your souls</p>
+      </div>
 
       ${tempMask ? `
-        <div class="panel temp-mask-panel">
-          <strong>Purchased: ${tempMask.name}</strong> - Select soul to equip:
-          ${souls.map(m => `
-            <button class="mini-btn" onclick="window.ui.equipTempMaskTo(${m.id})">
-              ${m.name}${m.mask ? ' ⚠️' : ''}
-            </button>
-          `).join('')}
+        <div id="shop-instruction">
+          <strong style="color: #ffd700;">Choose a soul to equip "${tempMask.name}" ↓</strong>
         </div>
       ` : ''}
 
@@ -1634,42 +2311,317 @@ export class UI {
         `).join('')}
       </div>
 
-      <button onclick="window.ui.backToMap()">Leave</button>
+      <button class="shop-leave-btn" onclick="window.ui.backToMap()">Leave</button>
     `;
 
     this.showScreen('node');
+
+    // If there's a temp mask, make soul cards clickable
+    if (tempMask) {
+      setTimeout(() => {
+        const soulCards = document.querySelectorAll('.souls-bar .soul-card-mini');
+        soulCards.forEach(card => {
+          card.style.cursor = 'pointer';
+          card.style.border = '2px solid #ffd700';
+          card.style.boxShadow = '0 0 10px rgba(255, 215, 0, 0.5)';
+          card.addEventListener('click', () => {
+            const soulId = parseInt(card.dataset.soulId);
+            this.equipTempMaskTo(soulId);
+          });
+        });
+      }, 50);
+    }
   }
 
   renderShrine() {
-    const nodeScreen = document.getElementById('node-screen');
     const shrine = this.game.state.currentShrine;
     const souls = this.game.getSouls();
 
-    nodeScreen.innerHTML = `
-      <h2>✨ ${shrine.name}</h2>
-      
-      <div class="panel">
-        <p>${shrine.description}</p>
-        
-        ${souls.length > 0 ? `
-          <h4>Choose a soul:</h4>
-          ${souls.map(m => `
-            <button onclick="window.ui.applyShrineEffect(${m.id}, '${shrine.effect}', ${shrine.value || 0})">
-              ${m.name}
-            </button>
-          `).join('')}
-        ` : '<p>No souls to bless.</p>'}
-      </div>
+    this.updateCurrencyHUD();
 
-      <button onclick="window.ui.skipShrine()">Skip Blessing</button>
+    // Show the shrine screen with 3D scene
+    const summoningScreen = document.getElementById('summoning-screen');
+    summoningScreen.innerHTML = `
+      <div id="summoning-canvas-container"></div>
+      <div id="shrine-ui">
+        <h2 style="margin: 0 0 8px 0; text-align: center; font-size: 18px;">✨ ${shrine.name}</h2>
+        <p style="margin: 0; text-align: center; color: #ccc; font-size: 12px;">${shrine.description}</p>
+      </div>
+      <div id="shrine-instruction">
+        ${souls.length > 0 ? 
+          '<strong style="color: #ffd700;">Choose a soul to bless ↓</strong>' : 
+          '<span style="color: #999;">No souls to bless</span>'
+        }
+      </div>
+      <button class="shrine-skip-btn" onclick="window.ui.skipShrine()">Skip</button>
     `;
 
-    this.showScreen('node');
+    this.showScreen('summoning');
+    
+    // Initialize the shrine scene after DOM is ready
+    setTimeout(() => this.initShrineScene(), 50);
+    
+    // Store the shrine effect details for when a soul is clicked
+    this.pendingShrineEffect = {
+      effect: shrine.effect,
+      value: shrine.value || 0
+    };
+    
+    // Make soul cards clickable for blessing
+    setTimeout(() => {
+      document.querySelectorAll('.souls-bar .soul-card-mini').forEach((card) => {
+        card.style.cursor = 'pointer';
+        card.style.border = '2px solid #ffd700';
+        card.style.boxShadow = '0 0 10px rgba(255, 215, 0, 0.5)';
+        card.addEventListener('click', () => {
+          if (this.pendingShrineEffect) {
+            const soulId = parseInt(card.dataset.soulId);
+            this.applyShrineEffect(soulId, this.pendingShrineEffect.effect, this.pendingShrineEffect.value);
+          }
+        });
+      });
+    }, 100);
   }
 
   skipShrine() {
+    sfx.buttonClick();
+    this.disposeShrineScene();
     this.game.state.completeCurrentNode();
     this.renderMap();
+  }
+
+  initShrineScene() {
+    console.log('🏛️ initShrineScene() called');
+    sfx.startShrineAmbience();
+    const container = document.getElementById('summoning-canvas-container');
+    if (!container) {
+      console.error('❌ summoning-canvas-container not found!');
+      return;
+    }
+    console.log('✓ Container found:', container);
+
+    // Scene
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x1a1a1a);
+    scene.fog = new THREE.Fog(0x1a1a1a, 5, 15);
+
+    // Camera
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 2, 5);
+    camera.lookAt(0, 1, 0);
+
+    // Renderer
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    container.appendChild(renderer.domElement);
+
+    // Post-processing
+    const composer = new EffectComposer(renderer);
+    const renderPass = new RenderPass(scene, camera);
+    composer.addPass(renderPass);
+
+    const pixelPass = new ShaderPass(PixelShader);
+    pixelPass.uniforms['resolution'].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
+    pixelPass.uniforms['pixelSize'].value = POST_PROCESSING_CONFIG.pixelSize;
+
+    const halftonePass = new ShaderPass(HalftoneShader);
+    halftonePass.uniforms['resolution'].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
+    halftonePass.uniforms['dotSize'].value = POST_PROCESSING_CONFIG.halftoneSize;
+
+    // Add appropriate pass based on current mode
+    if (POST_PROCESSING_CONFIG.mode === 'pixelation') {
+      pixelPass.renderToScreen = true;
+      composer.addPass(pixelPass);
+    } else if (POST_PROCESSING_CONFIG.mode === 'halftone') {
+      halftonePass.renderToScreen = true;
+      composer.addPass(halftonePass);
+    } else {
+      renderPass.renderToScreen = true;
+    }
+
+    // Create altar (pedestal)
+    const altarBase = new THREE.BoxGeometry(1.5, 0.2, 1.5);
+    const altarMid = new THREE.BoxGeometry(1.2, 0.6, 1.2);
+    const altarTop = new THREE.BoxGeometry(1.4, 0.1, 1.4);
+    const altarMat = new THREE.MeshStandardMaterial({ 
+      color: 0x4a4a4a,
+      roughness: 0.7,
+      metalness: 0.3
+    });
+    
+    const altar1 = new THREE.Mesh(altarBase, altarMat);
+    altar1.position.set(0, 0.1, 0);
+    scene.add(altar1);
+    
+    const altar2 = new THREE.Mesh(altarMid, altarMat);
+    altar2.position.set(0, 0.5, 0);
+    scene.add(altar2);
+    
+    const altar3 = new THREE.Mesh(altarTop, altarMat);
+    altar3.position.set(0, 0.85, 0);
+    scene.add(altar3);
+
+    // Create small statue on altar
+    const statueGeom = new THREE.ConeGeometry(0.2, 0.6, 8);
+    const statueMat = new THREE.MeshStandardMaterial({ 
+      color: 0xffd700,
+      roughness: 0.3,
+      metalness: 0.7,
+      emissive: 0x443300,
+      emissiveIntensity: 0.3
+    });
+    const statue = new THREE.Mesh(statueGeom, statueMat);
+    statue.position.set(0, 1.25, 0);
+    scene.add(statue);
+
+    // Create particle system for gold and green sparkles
+    const particleCount = 100;
+    const particles = [];
+    
+    for (let i = 0; i < particleCount; i++) {
+      const isGold = Math.random() > 0.4;
+      const particleGeom = new THREE.SphereGeometry(0.03, 4, 4);
+      const particleMat = new THREE.MeshBasicMaterial({ 
+        color: isGold ? 0xffd700 : 0x00ff88,
+        transparent: true,
+        opacity: 0.8
+      });
+      const particle = new THREE.Mesh(particleGeom, particleMat);
+      
+      // Random position around the altar
+      particle.position.x = (Math.random() - 0.5) * 4;
+      particle.position.y = Math.random() * 4;
+      particle.position.z = (Math.random() - 0.5) * 4;
+      
+      // Store velocity for drifting
+      particle.userData.velocity = {
+        x: (Math.random() - 0.5) * 0.01,
+        y: (Math.random() - 0.5) * 0.01,
+        z: (Math.random() - 0.5) * 0.01
+      };
+      particle.userData.initialY = particle.position.y;
+      
+      scene.add(particle);
+      particles.push(particle);
+    }
+
+    // Golden point light from statue
+    const statueLight = new THREE.PointLight(0xffd700, 3, 10);
+    statueLight.position.set(0, 1.25, 0);
+    scene.add(statueLight);
+
+    // Green accent light
+    const accentLight = new THREE.PointLight(0x00ff88, 2, 8);
+    accentLight.position.set(2, 2, 2);
+    scene.add(accentLight);
+
+    // Ambient light
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
+    scene.add(ambientLight);
+
+    // Directional lights
+    const mainLight = new THREE.DirectionalLight(0xffffff, 2.0);
+    mainLight.position.set(5, 10, 5);
+    scene.add(mainLight);
+
+    const fillLight = new THREE.DirectionalLight(0xffd700, 1.5);
+    fillLight.position.set(-5, 5, -5);
+    scene.add(fillLight);
+
+    // Store scene data
+    this.shrineScene = { 
+      scene, 
+      camera, 
+      renderer, 
+      composer, 
+      renderPass, 
+      pixelPass, 
+      halftonePass, 
+      particles, 
+      statue,
+      statueLight 
+    };
+
+    // Listen for post-processing changes
+    const ppHandler = (e) => {
+      if (!this.shrineScene) return;
+      const { mode } = e.detail;
+      
+      // Remove effect passes (keep render pass)
+      composer.passes = [renderPass];
+      
+      // Add appropriate pass
+      if (mode === 'pixelation') {
+        pixelPass.renderToScreen = true;
+        composer.addPass(pixelPass);
+      } else if (mode === 'halftone') {
+        halftonePass.renderToScreen = true;
+        composer.addPass(halftonePass);
+      } else {
+        renderPass.renderToScreen = true;
+      }
+    };
+    window.addEventListener('postProcessingChanged', ppHandler);
+    this.shrineScene.ppHandler = ppHandler;
+
+    // Animate
+    const animate = () => {
+      if (!this.shrineScene) return;
+      
+      // Rotate statue slowly
+      statue.rotation.y += 0.005;
+      
+      // Pulse statue light
+      const time = Date.now() * 0.001;
+      statueLight.intensity = 3 + Math.sin(time * 2) * 0.5;
+      
+      // Drift particles
+      particles.forEach(particle => {
+        particle.position.x += particle.userData.velocity.x;
+        particle.position.y += particle.userData.velocity.y;
+        particle.position.z += particle.userData.velocity.z;
+        
+        // Wrap around if they drift too far
+        if (Math.abs(particle.position.x) > 3) particle.position.x *= -0.9;
+        if (Math.abs(particle.position.z) > 3) particle.position.z *= -0.9;
+        if (particle.position.y > 5) particle.position.y = 0;
+        if (particle.position.y < 0) particle.position.y = 5;
+        
+        // Gentle pulsing opacity
+        particle.material.opacity = 0.6 + Math.sin(time * 3 + particle.position.x * 10) * 0.3;
+      });
+      
+      composer.render();
+      this.shrineAnimationId = requestAnimationFrame(animate);
+    };
+    animate();
+
+    // Handle resize
+    window.addEventListener('resize', () => {
+      if (!this.shrineScene) return;
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      composer.setSize(window.innerWidth, window.innerHeight);
+      pixelPass.uniforms['resolution'].value.set(window.innerWidth, window.innerHeight);
+      halftonePass.uniforms['resolution'].value.set(window.innerWidth, window.innerHeight);
+    });
+  }
+
+  disposeShrineScene() {
+    sfx.stopShrineAmbience();
+    if (this.shrineAnimationId) {
+      cancelAnimationFrame(this.shrineAnimationId);
+      this.shrineAnimationId = null;
+    }
+    if (this.shrineScene) {
+      if (this.shrineScene.ppHandler) {
+        window.removeEventListener('postProcessingChanged', this.shrineScene.ppHandler);
+      }
+      this.shrineScene.renderer.dispose();
+      this.shrineScene = null;
+    }
   }
 
   renderBattlePrep() {
@@ -1821,8 +2773,22 @@ export class UI {
 
     const pixelPass = new ShaderPass(PixelShader);
     pixelPass.uniforms['resolution'].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
-    pixelPass.uniforms['pixelSize'].value = PIXELATION_CONFIG.pixelSize;
-    composer.addPass(pixelPass);
+    pixelPass.uniforms['pixelSize'].value = POST_PROCESSING_CONFIG.pixelSize;
+
+    const halftonePass = new ShaderPass(HalftoneShader);
+    halftonePass.uniforms['resolution'].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
+    halftonePass.uniforms['dotSize'].value = POST_PROCESSING_CONFIG.halftoneSize;
+
+    // Add appropriate pass based on current mode
+    if (POST_PROCESSING_CONFIG.mode === 'pixelation') {
+      pixelPass.renderToScreen = true;
+      composer.addPass(pixelPass);
+    } else if (POST_PROCESSING_CONFIG.mode === 'halftone') {
+      halftonePass.renderToScreen = true;
+      composer.addPass(halftonePass);
+    } else {
+      renderPass.renderToScreen = true;
+    }
 
     // Create void portal (dark torus)
     const portalGeom = new THREE.TorusGeometry(1.5, 0.3, 16, 32);
@@ -1980,12 +2946,34 @@ export class UI {
 
     animate();
 
+    // Listen for post-processing changes
+    const ppHandler = (e) => {
+      if (!composer) return;
+      const { mode } = e.detail;
+      
+      // Remove effect passes (keep render pass)
+      composer.passes = [renderPass];
+      
+      // Add appropriate pass
+      if (mode === 'pixelation') {
+        pixelPass.renderToScreen = true;
+        composer.addPass(pixelPass);
+      } else if (mode === 'halftone') {
+        halftonePass.renderToScreen = true;
+        composer.addPass(halftonePass);
+      } else {
+        renderPass.renderToScreen = true;
+      }
+    };
+    window.addEventListener('postProcessingChanged', ppHandler);
+
     // Store reference for cleanup
     this.summoningScene = {
       renderer,
       composer,
       animId,
-      container
+      container,
+      ppHandler
     };
 
     // Bind confirm button
@@ -2039,6 +3027,9 @@ export class UI {
     if (!this.summoningScene) return;
 
     cancelAnimationFrame(this.summoningScene.animId);
+    if (this.summoningScene.ppHandler) {
+      window.removeEventListener('postProcessingChanged', this.summoningScene.ppHandler);
+    }
     if (this.summoningScene.renderer) {
       this.summoningScene.renderer.dispose();
     }
@@ -2051,14 +3042,17 @@ export class UI {
   buyMask(rarity, index) {
     const result = this.game.buyMask(rarity, index);
     if (result.success) {
+      sfx.purchase();
       console.log('Bought mask:', result.mask.name);
       this.renderMaskShop();
     } else {
+      sfx.error();
       alert(result.error);
     }
   }
 
   equipTempMaskTo(soulId) {
+    sfx.buttonClick();
     const result = this.game.equipTempMask(soulId);
     if (result.success) {
       console.log('Mask equipped!');
@@ -2074,6 +3068,7 @@ export class UI {
   }
 
   applyShrineEffect(soulId, effect, value) {
+    sfx.shrineTwinkle();
     const soul = this.game.state.souls.find(m => m.id === soulId);
     if (!soul) return;
 
@@ -2110,7 +3105,8 @@ export class UI {
         break;
     }
 
-    // Mark shrine as complete
+    // Dispose shrine scene and mark shrine as complete
+    this.disposeShrineScene();
     this.game.state.completeCurrentNode();
     this.renderMap();
   }
@@ -2125,6 +3121,7 @@ export class UI {
   }
 
   backToMap() {
+    sfx.buttonClick();
     // Mark node as complete when leaving void/shop
     const node = this.game.getCurrentNode();
     const actualType = node.type === 'mystery' ? this.game.state.mysteryRevealed : node.type;
@@ -2168,19 +3165,25 @@ export class UI {
           <div class="health-bar-floating">
             <strong>${state.soul.name || 'Your Soul'}</strong>
             <div class="health-bar">
-              <div class="health-fill" style="width: ${(state.soul.blood / state.soul.maxBlood) * 100}%"></div>
+              <div class="health-fill" style="width: ${Math.max(0, (state.soul.blood / state.soul.maxBlood) * 100)}%"></div>
             </div>
-            <div style="font-size: 11px;">❤️ ${state.soul.blood}/${state.soul.maxBlood} ${state.soul.block > 0 ? `🛡️ ${state.soul.block}` : ''}</div>
+            <div style="font-size: 11px;">❤️ ${Math.max(0, state.soul.blood)}/${state.soul.maxBlood} ${state.soul.block > 0 ? `🛡️ ${state.soul.block}` : ''}</div>
           </div>
         </div>
 
         <div class="combatant" style="text-align: right;">
           <div class="health-bar-floating">
             <strong>${state.enemy.name}</strong>
+            ${state.enemy.intent ? `
+              <div class="enemy-intent">
+                <span class="intent-icon">${state.enemy.intent.icon}</span>
+                <span class="intent-text">${state.enemy.intent.name}: ${state.enemy.intent.value}</span>
+              </div>
+            ` : ''}
             <div class="health-bar">
-              <div class="health-fill" style="width: ${(state.enemy.blood / state.enemy.maxBlood) * 100}%"></div>
+              <div class="health-fill" style="width: ${Math.max(0, (state.enemy.blood / state.enemy.maxBlood) * 100)}%"></div>
             </div>
-            <div style="font-size: 11px;">❤️ ${state.enemy.blood}/${state.enemy.maxBlood} ${state.enemy.block > 0 ? `🛡️ ${state.enemy.block}` : ''}</div>
+            <div style="font-size: 11px;">❤️ ${Math.max(0, state.enemy.blood)}/${state.enemy.maxBlood} ${state.enemy.block > 0 ? `🛡️ ${state.enemy.block}` : ''}</div>
           </div>
         </div>
       </div>
@@ -2201,9 +3204,11 @@ export class UI {
 
       <div class="hand">
         ${state.hand.map((card, i) => `
-          <div class="card ${card.type}" onclick="window.ui.playCard(${i})">
+          <div class="card ${card.type} ${card.unplayable ? 'unplayable' : ''}" 
+               onclick="window.ui.playCard(${i})"
+               onmouseenter="window.sfx.cardHover()">
             <div class="card-name">${card.name}</div>
-            <div class="card-cost">Cost: ${card.cost}</div>
+            <div class="card-cost">${card.unplayable ? 'Unplayable' : `Cost: ${card.cost}`}</div>
             <div class="card-desc">${card.description || ''}</div>
           </div>
         `).join('')}
@@ -2245,8 +3250,22 @@ export class UI {
 
     const pixelPass = new ShaderPass(PixelShader);
     pixelPass.uniforms['resolution'].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
-    pixelPass.uniforms['pixelSize'].value = PIXELATION_CONFIG.pixelSize;
-    composer.addPass(pixelPass);
+    pixelPass.uniforms['pixelSize'].value = POST_PROCESSING_CONFIG.pixelSize;
+
+    const halftonePass = new ShaderPass(HalftoneShader);
+    halftonePass.uniforms['resolution'].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
+    halftonePass.uniforms['dotSize'].value = POST_PROCESSING_CONFIG.halftoneSize;
+
+    // Add appropriate pass based on current mode
+    if (POST_PROCESSING_CONFIG.mode === 'pixelation') {
+      pixelPass.renderToScreen = true;
+      composer.addPass(pixelPass);
+    } else if (POST_PROCESSING_CONFIG.mode === 'halftone') {
+      halftonePass.renderToScreen = true;
+      composer.addPass(halftonePass);
+    } else {
+      renderPass.renderToScreen = true;
+    }
 
     // Lights
     const ambientLight = new THREE.AmbientLight(0xffffff, 2.0);
@@ -2282,7 +3301,7 @@ export class UI {
     const soulMesh = this.prefabManager.instantiate(`soul_${state.soul.type}`);
     console.log('Soul mesh:', soulMesh);
     if (soulMesh) {
-      soulMesh.position.set(-2, 0, 0);
+      soulMesh.position.set(-1.2, 0, 0);
       soulMesh.rotation.y = Math.PI / 4; // Face right
       scene.add(soulMesh);
 
@@ -2345,7 +3364,7 @@ export class UI {
     const enemyMesh = this.prefabManager.instantiate(`enemy_${state.enemy.id}`);
     console.log('Enemy mesh:', enemyMesh);
     if (enemyMesh) {
-      enemyMesh.position.set(2, 0, 0);
+      enemyMesh.position.set(1.2, 0, 0);
       enemyMesh.rotation.y = -Math.PI / 4; // Face left
       scene.add(enemyMesh);
     }
@@ -2356,10 +3375,35 @@ export class UI {
       camera,
       renderer,
       composer,
+      renderPass,
+      pixelPass,
+      halftonePass,
       soulMesh,
       enemyMesh,
       cameraAngle: 0
     };
+
+    // Listen for post-processing changes
+    const ppHandler = (e) => {
+      if (!this.battleScene) return;
+      const { mode } = e.detail;
+      
+      // Remove effect passes (keep render pass)
+      composer.passes = [renderPass];
+      
+      // Add appropriate pass
+      if (mode === 'pixelation') {
+        pixelPass.renderToScreen = true;
+        composer.addPass(pixelPass);
+      } else if (mode === 'halftone') {
+        halftonePass.renderToScreen = true;
+        composer.addPass(halftonePass);
+      } else {
+        renderPass.renderToScreen = true;
+      }
+    };
+    window.addEventListener('postProcessingChanged', ppHandler);
+    this.battleScene.ppHandler = ppHandler;
 
     // Handle resize
     const resizeHandler = () => {
@@ -2369,6 +3413,7 @@ export class UI {
       renderer.setSize(window.innerWidth, window.innerHeight);
       composer.setSize(window.innerWidth, window.innerHeight);
       pixelPass.uniforms['resolution'].value.set(window.innerWidth, window.innerHeight);
+      halftonePass.uniforms['resolution'].value.set(window.innerWidth, window.innerHeight);
     };
     window.addEventListener('resize', resizeHandler);
     this.battleScene.resizeHandler = resizeHandler;
@@ -2421,6 +3466,10 @@ export class UI {
     container.classList.remove('active');
     container.innerHTML = '';
 
+    if (this.battleScene.ppHandler) {
+      window.removeEventListener('postProcessingChanged', this.battleScene.ppHandler);
+    }
+
     if (this.battleScene.resizeHandler) {
       window.removeEventListener('resize', this.battleScene.resizeHandler);
     }
@@ -2435,13 +3484,16 @@ export class UI {
   playCard(handIndex) {
     const result = this.game.playCard(handIndex);
     if (result.success) {
+      sfx.cardPlay();
       this.renderBattle(result.state);
     } else {
+      sfx.error();
       console.log(result.error);
     }
   }
 
   endTurn() {
+    sfx.buttonClick();
     const result = this.game.endTurn();
     if (result.success) {
       this.renderBattle(result.state);
@@ -2449,6 +3501,7 @@ export class UI {
   }
 
   viewDrawPile() {
+    sfx.buttonClick();
     const state = this.game.getCombatState();
     if (!state) return;
 
@@ -2456,6 +3509,7 @@ export class UI {
   }
 
   viewDiscardPile() {
+    sfx.buttonClick();
     const state = this.game.getCombatState();
     if (!state) return;
 
@@ -2536,6 +3590,11 @@ export class UI {
   }
 
   chooseTrait(traitId, isPositive) {
+    if (isPositive) {
+      sfx.positive();
+    } else {
+      sfx.negative();
+    }
     this.game.applyTraitChoice(traitId, isPositive);
     
     // Mark battle node as complete

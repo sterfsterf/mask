@@ -13,8 +13,8 @@
       "base_blood": 30,
       "base_attack": 8,
       "base_defense": 3,
-      "starter_trait": "swift",
-      "base_cards": ["slash", "defend", "swift_strike"],
+      "starter_trait": "rage",
+      "base_cards": ["slash", "slash", "defend"],
       "quotes": [
         "oh the agony",
         "suffering... endless suffering",
@@ -64,8 +64,8 @@
       "base_blood": 35,
       "base_attack": 7,
       "base_defense": 4,
-      "starter_trait": "swift",
-      "base_cards": ["slash", "swift_strike", "defend"],
+      "starter_trait": "fortify",
+      "base_cards": ["slash", "slash", "defend"],
       "quotes": [
         "woof... I mean, yes master",
         "I'll fetch their souls",
@@ -81,8 +81,8 @@
       "base_blood": 28,
       "base_attack": 9,
       "base_defense": 2,
-      "starter_trait": "swift",
-      "base_cards": ["slash", "swift_strike", "swift_strike"],
+      "starter_trait": "rage",
+      "base_cards": ["slash", "slash", "defend"],
       "quotes": [
         "catch me if you can!",
         "too fast for you",
@@ -115,8 +115,8 @@
       "base_blood": 38,
       "base_attack": 8,
       "base_defense": 4,
-      "starter_trait": "cunning",
-      "base_cards": ["slash", "swift_strike", "defend"],
+      "starter_trait": "rage",
+      "base_cards": ["slash", "heavy_strike", "defend"],
       "quotes": [
         "deceit is my blade",
         "trust no one",
@@ -149,7 +149,7 @@
       "base_blood": 45,
       "base_attack": 11,
       "base_defense": 6,
-      "starter_trait": "poison",
+      "starter_trait": "rage",
       "base_cards": ["slash", "heavy_strike", "defend"],
       "quotes": [
         "pestilence incarnate",
