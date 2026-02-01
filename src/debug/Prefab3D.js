@@ -1176,8 +1176,9 @@ export class MaskPrefab extends Prefab3D {
         (err) => {
           console.warn('Could not load texture, using fallback:', this.config.texture, err);
           // Load fallback texture
+          const base = import.meta.env.BASE_URL || './';
           const fallbackTexture = textureLoader.load(
-            './masks/fallback_mask.png',
+            `${base}masks/fallback_mask.png`,
             (tex) => {
               tex.minFilter = THREE.LinearFilter;
               tex.magFilter = THREE.NearestFilter;
@@ -1201,8 +1202,9 @@ export class MaskPrefab extends Prefab3D {
         alphaTest: 0.5
       });
       
+      const base = import.meta.env.BASE_URL || './';
       const fallbackTexture = textureLoader.load(
-        '/masks/fallback_mask.png',
+        `${base}masks/fallback_mask.png`,
         (tex) => {
           tex.minFilter = THREE.LinearFilter;
           tex.magFilter = THREE.NearestFilter;

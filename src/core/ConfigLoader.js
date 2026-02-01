@@ -8,12 +8,13 @@ export class ConfigLoader {
   }
 
   async loadAll() {
+    const base = import.meta.env.BASE_URL || './';
     const [cards, soulTypes, masks, enemies, shrines] = await Promise.all([
-      fetch('./config/cards.json').then(r => r.json()),
-      fetch('./config/soul_types.json').then(r => r.json()),
-      fetch('./config/masks.json').then(r => r.json()),
-      fetch('./config/enemies.json').then(r => r.json()),
-      fetch('./config/shrines.json').then(r => r.json())
+      fetch(`${base}config/cards.json`).then(r => r.json()),
+      fetch(`${base}config/soul_types.json`).then(r => r.json()),
+      fetch(`${base}config/masks.json`).then(r => r.json()),
+      fetch(`${base}config/enemies.json`).then(r => r.json()),
+      fetch(`${base}config/shrines.json`).then(r => r.json())
     ]);
 
     // Store raw configs for access
