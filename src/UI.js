@@ -80,6 +80,8 @@ export class UI {
   addStyles() {
     const style = document.createElement('style');
     style.textContent = `
+      @import url('https://fonts.googleapis.com/css2?family=IM+Fell+DW+Pica+SC&display=swap');
+
       #ui-overlay {
         position: fixed;
         top: 0;
@@ -108,6 +110,14 @@ export class UI {
         padding: 15px;
         margin: 10px 0;
         border-radius: 4px;
+      }
+      
+      h1, h2, h3, h4, button {
+        font-family: 'IM Fell DW Pica SC', serif;
+      }
+      
+      input, button {
+        font-size: 16px;
       }
 
       #battle-canvas-container {
@@ -314,12 +324,44 @@ export class UI {
         border: 2px solid #666;
         position: relative;
         margin: 10px 0;
+        overflow: hidden;
+      }
+
+      .health-bar-shake {
+        animation: healthShake 0.08s ease-in-out 5;
+      }
+
+      @keyframes healthShake {
+        0%, 100% { transform: translateX(0) translateY(0); }
+        10% { transform: translateX(-6px) translateY(2px); }
+        20% { transform: translateX(6px) translateY(-2px); }
+        30% { transform: translateX(-6px) translateY(-1px); }
+        40% { transform: translateX(6px) translateY(1px); }
+        50% { transform: translateX(-5px) translateY(-2px); }
+        60% { transform: translateX(5px) translateY(2px); }
+        70% { transform: translateX(-4px) translateY(1px); }
+        80% { transform: translateX(4px) translateY(-1px); }
+        90% { transform: translateX(-3px) translateY(0); }
+      }
+
+      .health-fill-back {
+        position: absolute;
+        top: 0;
+        left: 0;
+        background: rgba(255, 100, 100, 0.4);
+        height: 100%;
+        transition: none;
+        z-index: 1;
       }
 
       .health-fill {
+        position: absolute;
+        top: 0;
+        left: 0;
         background: linear-gradient(90deg, #ff0033 0%, #ff6666 100%);
         height: 100%;
-        transition: width 0.3s;
+        transition: none;
+        z-index: 2;
       }
 
       .enemy-intent {
@@ -2144,9 +2186,14 @@ export class UI {
         
         light.intensity = 2 + (1 - slamProgress) * 3;
       }
-      // Phase 5: Idle - show naming UI
+      // Phase 5: Idle - show speech bubble and naming UI together
       else if (phase === 'slam') {
         phase = 'idle';
+        
+        // Show speech bubble and naming UI at the same time
+        if (this.pendingSoul.quote) {
+          this.showSoulSpeechBubble(this.pendingSoul.quote);
+        }
         this.showVoidNamingUI();
         
         // Reset particles to normal drift
@@ -2184,6 +2231,84 @@ export class UI {
     animateSummoning();
   }
   
+  showSoulSpeechBubble(text, onComplete) {
+    // Randomly choose left or right side
+    const isLeft = Math.random() < 0.5;
+    
+    const speechBubble = document.createElement('div');
+    speechBubble.id = 'soul-speech-bubble';
+    speechBubble.style.cssText = `
+      position: fixed;
+      top: 50%;
+      ${isLeft ? 'left: 15%' : 'right: 15%'};
+      transform: translateY(-50%);
+      z-index: 15;
+      background: #000000;
+      padding: 15px 20px;
+      border-radius: 15px;
+      max-width: 250px;
+      pointer-events: none;
+    `;
+    
+    // Add pointer triangle
+    const pointer = document.createElement('div');
+    pointer.style.cssText = `
+      position: absolute;
+      top: 50%;
+      ${isLeft ? 'right: -15px' : 'left: -15px'};
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-top: 15px solid transparent;
+      border-bottom: 15px solid transparent;
+      ${isLeft ? 'border-left: 15px solid #000000' : 'border-right: 15px solid #000000'};
+    `;
+    speechBubble.appendChild(pointer);
+    
+    const textElement = document.createElement('p');
+    textElement.style.cssText = `
+      margin: 0;
+      color: #fff;
+      font-size: 14px;
+      font-style: italic;
+      text-align: center;
+      line-height: 1.4;
+    `;
+    speechBubble.appendChild(textElement);
+    document.body.appendChild(speechBubble);
+    
+    // Typewriter effect with sound
+    let charIndex = 0;
+    const typeSpeed = 50; // milliseconds per character
+    
+    const typeNextChar = () => {
+      if (charIndex < text.length) {
+        textElement.textContent += text[charIndex];
+        
+        // Play MIDI sound for each character (skip spaces)
+        if (text[charIndex] !== ' ') {
+          const pitch = 200 + Math.random() * 200; // Random pitch for variety
+          sfx.playTone(pitch, 0.05, 0.15, 'square');
+        }
+        
+        charIndex++;
+        setTimeout(typeNextChar, typeSpeed);
+      } else {
+        // Text complete, wait a bit then fade out
+        setTimeout(() => {
+          speechBubble.style.transition = 'opacity 0.5s';
+          speechBubble.style.opacity = '0';
+          setTimeout(() => {
+            speechBubble.remove();
+            if (onComplete) onComplete();
+          }, 500);
+        }, 1500); // Show complete text for 1.5 seconds
+      }
+    };
+    
+    typeNextChar();
+  }
+
   showVoidNamingUI() {
     const nameForm = document.createElement('div');
     nameForm.id = 'void-name-form';
@@ -2204,8 +2329,8 @@ export class UI {
     `;
     nameForm.innerHTML = `
       <h3 style="margin: 0; text-align: center; color: #9d4edd;">${this.pendingSoul.type.toUpperCase()} Soul Summoned</h3>
-      <input type="text" id="void-soul-name-input" placeholder="Name your soul..." maxlength="20" style="width: 300px; padding: 10px; font-size: 16px; background: #1a1a1a; border: 2px solid #666; color: #fff; border-radius: 4px;" />
-      <button id="void-confirm-soul-name-btn" disabled style="padding: 10px 20px; font-size: 16px; background: #9d4edd; border: 2px solid #fff; color: #fff; cursor: pointer; border-radius: 4px; opacity: 0.5;">Confirm</button>
+      <input type="text" id="void-soul-name-input" placeholder="Name your soul..." maxlength="20" style="width: 300px; padding: 10px; background: #1a1a1a; border: 2px solid #666; color: #fff; border-radius: 4px;" />
+      <button id="void-confirm-soul-name-btn" disabled style="padding: 10px 20px; background: #9d4edd; border: 2px solid #fff; color: #fff; cursor: pointer; border-radius: 4px; opacity: 0.5;">Confirm</button>
     `;
     document.body.appendChild(nameForm);
     
@@ -2288,14 +2413,7 @@ export class UI {
       <div class="mask-shop-grid">
         ${allMasks.map(mask => `
           <div class="mask-shop-card ${mask.rarity} ${mask.sold ? 'sold-out' : ''}">
-            ${mask.texture ? `
-              <img src="${mask.texture}" alt="${mask.name}" class="mask-image">
-            ` : `
-              <div class="mask-placeholder" style="background: ${
-                mask.rarity === 'legendary' ? '#fbbf24' : 
-                mask.rarity === 'rare' ? '#a855f7' : '#666'
-              }"></div>
-            `}
+            <img src="${mask.texture || 'masks/fallback_mask.png'}" alt="${mask.name}" class="mask-image">
             <div class="mask-card-info">
               <strong>${mask.name}</strong>
               <div class="mask-traits">${mask.traits.join(', ')}</div>
@@ -2390,6 +2508,81 @@ export class UI {
     this.renderMap();
   }
 
+  getShrineTheme(effect) {
+    switch(effect) {
+      case 'heal_full':
+      case 'increase_max_hp':
+        return {
+          color: 0xff3333,
+          particleColor: 0xff0000,
+          geometry: () => new THREE.SphereGeometry(0.25, 6, 6), // Blood drop shape
+          lightColor: 0xff3333
+        };
+      case 'coins':
+        return {
+          color: 0xffd700,
+          particleColor: 0xffaa00,
+          geometry: () => {
+            // Pile of coins (cylinders)
+            const group = new THREE.Group();
+            for (let i = 0; i < 3; i++) {
+              const coin = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.15, 0.15, 0.05, 12),
+                new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.8, roughness: 0.2 })
+              );
+              coin.position.y = i * 0.06;
+              coin.rotation.x = Math.random() * 0.3;
+              group.add(coin);
+            }
+            return group;
+          },
+          lightColor: 0xffd700
+        };
+      case 'add_positive_trait':
+        return {
+          color: 0x00ffff,
+          particleColor: 0x00ddff,
+          geometry: () => new THREE.TetrahedronGeometry(0.3), // Triangle/pyramid
+          lightColor: 0x00ffff
+        };
+      case 'remove_negative_trait':
+        return {
+          color: 0xccff00,
+          particleColor: 0xffff00,
+          geometry: () => {
+            // Stack of oblong stones
+            const group = new THREE.Group();
+            for (let i = 0; i < 3; i++) {
+              const stone = new THREE.Mesh(
+                new THREE.BoxGeometry(0.2, 0.15, 0.1),
+                new THREE.MeshStandardMaterial({ color: 0xccff00, roughness: 0.8 })
+              );
+              stone.position.y = i * 0.16;
+              stone.rotation.y = i * 0.5;
+              group.add(stone);
+            }
+            return group;
+          },
+          lightColor: 0xccff00
+        };
+      case 'dark_energy':
+        return {
+          color: 0x9d4edd,
+          particleColor: 0x6a0dad,
+          geometry: () => new THREE.OctahedronGeometry(0.25), // Crystal
+          lightColor: 0x9d4edd
+        };
+      default:
+        // Default gold/green theme
+        return {
+          color: 0xffd700,
+          particleColor: 0x00ff88,
+          geometry: () => new THREE.ConeGeometry(0.2, 0.6, 8),
+          lightColor: 0xffd700
+        };
+    }
+  }
+
   initShrineScene() {
     console.log('🏛️ initShrineScene() called');
     sfx.startShrineAmbience();
@@ -2399,6 +2592,10 @@ export class UI {
       return;
     }
     console.log('✓ Container found:', container);
+
+    // Get shrine theme based on effect
+    const shrine = this.game.state.currentShrine;
+    const theme = this.getShrineTheme(shrine.effect);
 
     // Scene
     const scene = new THREE.Scene();
@@ -2462,28 +2659,35 @@ export class UI {
     altar3.position.set(0, 0.85, 0);
     scene.add(altar3);
 
-    // Create small statue on altar
-    const statueGeom = new THREE.ConeGeometry(0.2, 0.6, 8);
-    const statueMat = new THREE.MeshStandardMaterial({ 
-      color: 0xffd700,
-      roughness: 0.3,
-      metalness: 0.7,
-      emissive: 0x443300,
-      emissiveIntensity: 0.3
-    });
-    const statue = new THREE.Mesh(statueGeom, statueMat);
+    // Create themed statue/idol on altar
+    const statueObj = theme.geometry();
+    let statue;
+    
+    if (statueObj.type === 'Group') {
+      statue = statueObj;
+    } else {
+      const statueMat = new THREE.MeshStandardMaterial({ 
+        color: theme.color,
+        roughness: 0.3,
+        metalness: 0.7,
+        emissive: theme.color,
+        emissiveIntensity: 0.3
+      });
+      statue = new THREE.Mesh(statueObj, statueMat);
+    }
+    
     statue.position.set(0, 1.25, 0);
     scene.add(statue);
 
-    // Create particle system for gold and green sparkles
+    // Create particle system with themed colors
     const particleCount = 100;
     const particles = [];
     
     for (let i = 0; i < particleCount; i++) {
-      const isGold = Math.random() > 0.4;
+      const isPrimary = Math.random() > 0.4;
       const particleGeom = new THREE.SphereGeometry(0.03, 4, 4);
       const particleMat = new THREE.MeshBasicMaterial({ 
-        color: isGold ? 0xffd700 : 0x00ff88,
+        color: isPrimary ? theme.color : theme.particleColor,
         transparent: true,
         opacity: 0.8
       });
@@ -2506,13 +2710,13 @@ export class UI {
       particles.push(particle);
     }
 
-    // Golden point light from statue
-    const statueLight = new THREE.PointLight(0xffd700, 3, 10);
+    // Themed point light from statue
+    const statueLight = new THREE.PointLight(theme.lightColor, 3, 10);
     statueLight.position.set(0, 1.25, 0);
     scene.add(statueLight);
 
-    // Green accent light
-    const accentLight = new THREE.PointLight(0x00ff88, 2, 8);
+    // Themed accent light
+    const accentLight = new THREE.PointLight(theme.particleColor, 2, 8);
     accentLight.position.set(2, 2, 2);
     scene.add(accentLight);
 
@@ -2525,7 +2729,7 @@ export class UI {
     mainLight.position.set(5, 10, 5);
     scene.add(mainLight);
 
-    const fillLight = new THREE.DirectionalLight(0xffd700, 1.5);
+    const fillLight = new THREE.DirectionalLight(theme.lightColor, 1.5);
     fillLight.position.set(-5, 5, -5);
     scene.add(fillLight);
 
@@ -3069,46 +3273,191 @@ export class UI {
 
   applyShrineEffect(soulId, effect, value) {
     sfx.shrineTwinkle();
+    
+    // Hide the instruction text
+    const instructionElement = document.getElementById('shrine-instruction');
+    if (instructionElement) {
+      instructionElement.style.display = 'none';
+    }
+    
     const soul = this.game.state.souls.find(m => m.id === soulId);
     if (!soul) return;
 
+    let effectText = '';
+    
     switch(effect) {
       case 'remove_negative_trait':
         if (soul.negativeTraits.length > 0) {
+          const removedTrait = soul.negativeTraits[soul.negativeTraits.length - 1];
+          const traitData = this.game.config.traits[removedTrait];
           soul.negativeTraits.pop();
+          effectText = `${traitData ? traitData.name : 'Curse'} Removed!`;
           console.log('Negative trait removed');
         }
         break;
       case 'add_positive_trait':
         if (soul.mask) {
           const traits = this.game.getRandomPositiveTraits(1);
+          const traitData = this.game.config.traits[traits[0].id];
           soul.addPositiveTraitToMask(traits[0].id);
+          effectText = `${traitData ? traitData.name : 'New Trait'}!`;
           console.log('Positive trait added');
         }
         break;
       case 'dark_energy':
         this.game.state.darkEnergy += value;
+        effectText = `+${value} ⚡ Dark Energy`;
         console.log(`Gained ${value} dark energy`);
         break;
       case 'coins':
         this.game.state.coins += value;
+        effectText = `+${value} 💰 Coins`;
         console.log(`Gained ${value} coins`);
         break;
       case 'heal_full':
+        const healAmount = soul.maxBlood - soul.blood;
         soul.blood = soul.maxBlood;
+        effectText = `+${healAmount} ❤️ Fully Healed!`;
         console.log('Soul fully healed');
         break;
       case 'increase_max_hp':
         soul.maxBlood += value;
         soul.blood += value;
+        effectText = `+${value} ❤️ Max HP`;
         console.log(`Max HP increased by ${value}`);
         break;
     }
 
-    // Dispose shrine scene and mark shrine as complete
-    this.disposeShrineScene();
-    this.game.state.completeCurrentNode();
-    this.renderMap();
+    // Show floating effect text and soul quote
+    this.showShrineReaction(soulId, effectText, soul.getBlessingQuote());
+  }
+  
+  showShrineReaction(soulId, effectText, quote) {
+    // Find the soul card in the souls bar
+    const soulCard = document.querySelector(`.soul-card-mini[data-soul-id="${soulId}"]`);
+    if (!soulCard) return;
+    
+    const rect = soulCard.getBoundingClientRect();
+    
+    // Show floating effect text (higher z-index, above the quote)
+    if (effectText) {
+      const floatingText = document.createElement('div');
+      floatingText.style.cssText = `
+        position: fixed;
+        left: ${rect.left + rect.width / 2}px;
+        top: ${rect.top - 40}px;
+        transform: translateX(-50%);
+        z-index: 22;
+        color: #ffd700;
+        font-size: 20px;
+        font-weight: bold;
+        pointer-events: none;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        animation: floatUp 1.5s ease-out forwards;
+      `;
+      floatingText.textContent = effectText;
+      document.body.appendChild(floatingText);
+      
+      // Add keyframe animation if not exists
+      if (!document.getElementById('float-up-animation')) {
+        const style = document.createElement('style');
+        style.id = 'float-up-animation';
+        style.textContent = `
+          @keyframes floatUp {
+            0% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-50px); }
+          }
+        `;
+        document.head.appendChild(style);
+      }
+      
+      setTimeout(() => floatingText.remove(), 1500);
+    }
+    
+    // Show soul quote in speech bubble (lower z-index, below the effect text)
+    if (quote) {
+      const speechBubble = document.createElement('div');
+      speechBubble.style.cssText = `
+        position: fixed;
+        left: ${rect.left + rect.width / 2}px;
+        top: ${rect.top - 120}px;
+        transform: translateX(-50%);
+        z-index: 21;
+        background: #000000;
+        padding: 10px 15px;
+        border-radius: 10px;
+        max-width: 250px;
+        pointer-events: none;
+      `;
+      
+      // Add pointer triangle pointing down toward soul
+      const pointer = document.createElement('div');
+      pointer.style.cssText = `
+        position: absolute;
+        left: 50%;
+        bottom: -10px;
+        transform: translateX(-50%);
+        width: 0;
+        height: 0;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-top: 10px solid #000000;
+      `;
+      speechBubble.appendChild(pointer);
+      
+      const textElement = document.createElement('p');
+      textElement.style.cssText = `
+        margin: 0;
+        color: #fff;
+        font-size: 12px;
+        font-style: italic;
+        line-height: 1.3;
+        text-align: center;
+      `;
+      speechBubble.appendChild(textElement);
+      document.body.appendChild(speechBubble);
+      
+      // Typewriter effect
+      let charIndex = 0;
+      const typeSpeed = 40;
+      
+      const typeNextChar = () => {
+        if (charIndex < quote.length) {
+          textElement.textContent += quote[charIndex];
+          
+          if (quote[charIndex] !== ' ') {
+            const pitch = 300 + Math.random() * 150;
+            sfx.playTone(pitch, 0.04, 0.12, 'sine');
+          }
+          
+          charIndex++;
+          setTimeout(typeNextChar, typeSpeed);
+        } else {
+          // Wait then remove and proceed
+          setTimeout(() => {
+            speechBubble.style.transition = 'opacity 0.3s';
+            speechBubble.style.opacity = '0';
+            setTimeout(() => {
+              speechBubble.remove();
+              
+              // Now mark shrine as complete and return to map
+              this.disposeShrineScene();
+              this.game.state.completeCurrentNode();
+              this.renderMap();
+            }, 300);
+          }, 1000);
+        }
+      };
+      
+      typeNextChar();
+    } else {
+      // No quote, just wait a moment then proceed
+      setTimeout(() => {
+        this.disposeShrineScene();
+        this.game.state.completeCurrentNode();
+        this.renderMap();
+      }, 1500);
+    }
   }
 
   startBattleWith(soulId) {
@@ -3145,11 +3494,18 @@ export class UI {
   renderBattle(state) {
     const battleScreen = document.getElementById('battle-screen');
     
+    // Debug: Log health values
+    console.log('renderBattle - Enemy health:', state.enemy.blood, '/', state.enemy.maxBlood, '=', ((state.enemy.blood / state.enemy.maxBlood) * 100).toFixed(1) + '%');
+    console.log('renderBattle - Soul health:', state.soul.blood, '/', state.soul.maxBlood, '=', ((state.soul.blood / state.soul.maxBlood) * 100).toFixed(1) + '%');
+    
     // Hide souls bar during battle
     const soulsBar = document.querySelector('.souls-bar');
     if (soulsBar) {
       soulsBar.style.display = 'none';
     }
+    
+    // Check if we have an active health bar animation to preserve
+    const activeHealthAnim = this.battleScene ? this.battleScene.healthBarAnim : null;
     
     // Setup 3D battle scene if not already initialized
     if (!this.battleScene) {
@@ -3165,7 +3521,8 @@ export class UI {
           <div class="health-bar-floating">
             <strong>${state.soul.name || 'Your Soul'}</strong>
             <div class="health-bar">
-              <div class="health-fill" style="width: ${Math.max(0, (state.soul.blood / state.soul.maxBlood) * 100)}%"></div>
+              <div class="health-fill-back" id="soul-health-bar-back" style="width: ${Math.max(0, Math.min(100, (state.soul.blood / state.soul.maxBlood) * 100))}%"></div>
+              <div class="health-fill" id="soul-health-bar-fill" style="width: ${Math.max(0, Math.min(100, (state.soul.blood / state.soul.maxBlood) * 100))}%"></div>
             </div>
             <div style="font-size: 11px;">❤️ ${Math.max(0, state.soul.blood)}/${state.soul.maxBlood} ${state.soul.block > 0 ? `🛡️ ${state.soul.block}` : ''}</div>
           </div>
@@ -3181,7 +3538,8 @@ export class UI {
               </div>
             ` : ''}
             <div class="health-bar">
-              <div class="health-fill" style="width: ${Math.max(0, (state.enemy.blood / state.enemy.maxBlood) * 100)}%"></div>
+              <div class="health-fill-back" id="enemy-health-bar-back" style="width: ${Math.max(0, Math.min(100, (state.enemy.blood / state.enemy.maxBlood) * 100))}%"></div>
+              <div class="health-fill" id="enemy-health-bar-fill" style="width: ${Math.max(0, Math.min(100, (state.enemy.blood / state.enemy.maxBlood) * 100))}%"></div>
             </div>
             <div style="font-size: 11px;">❤️ ${Math.max(0, state.enemy.blood)}/${state.enemy.maxBlood} ${state.enemy.block > 0 ? `🛡️ ${state.enemy.block}` : ''}</div>
           </div>
@@ -3216,6 +3574,49 @@ export class UI {
     `;
 
     this.showScreen('battle');
+    
+    // If there was an active health bar animation, restore it with new DOM references
+    if (activeHealthAnim && this.battleScene) {
+      const frontId = activeHealthAnim.attacker === 'soul' ? 'enemy-health-bar-fill' : 'soul-health-bar-fill';
+      const backId = activeHealthAnim.attacker === 'soul' ? 'enemy-health-bar-back' : 'soul-health-bar-back';
+      const newFrontBar = document.getElementById(frontId);
+      const newBackBar = document.getElementById(backId);
+      
+      if (newFrontBar && newBackBar) {
+        // Update references
+        activeHealthAnim.frontBar = newFrontBar;
+        activeHealthAnim.backBar = newBackBar;
+        this.battleScene.healthBarAnim = activeHealthAnim;
+        
+        // Restore the bar widths to their animated state (don't let HTML reset override)
+        const newPercentage = Math.max(0, (activeHealthAnim.newHealth / activeHealthAnim.maxHealth) * 100);
+        newFrontBar.style.width = newPercentage + '%';
+        
+        // Back bar should be at the current animated position
+        const elapsed = Date.now() - activeHealthAnim.startTime;
+        if (elapsed < activeHealthAnim.shakeDuration + activeHealthAnim.stallDuration) {
+          // Still in stall period - keep at previous health
+          const prevPercentage = Math.max(0, (activeHealthAnim.prevHealth / activeHealthAnim.maxHealth) * 100);
+          newBackBar.style.width = prevPercentage + '%';
+        } else if (elapsed < activeHealthAnim.shakeDuration + activeHealthAnim.stallDuration + activeHealthAnim.lerpDuration) {
+          // In lerp period - calculate current lerp position
+          const lerpElapsed = elapsed - activeHealthAnim.shakeDuration - activeHealthAnim.stallDuration;
+          const lerpProgress = Math.min(lerpElapsed / activeHealthAnim.lerpDuration, 1);
+          const eased = 1 - Math.pow(1 - lerpProgress, 3);
+          const currentHealth = activeHealthAnim.prevHealth - (activeHealthAnim.damage * eased);
+          const percentage = Math.max(0, (currentHealth / activeHealthAnim.maxHealth) * 100);
+          newBackBar.style.width = percentage + '%';
+        } else {
+          // Animation should be done, set to final
+          newBackBar.style.width = newPercentage + '%';
+        }
+        
+        // Reapply shake class if still in shake period
+        if (elapsed < activeHealthAnim.shakeDuration) {
+          newFrontBar.parentElement.classList.add('health-bar-shake');
+        }
+      }
+    }
 
     if (state.result) {
       setTimeout(() => this.handleBattleEnd(), 1000);
@@ -3295,6 +3696,85 @@ export class UI {
 
     const gridHelper = new THREE.GridHelper(10, 20, 0x333333, 0x222222);
     scene.add(gridHelper);
+
+    // Add spikey mountains at the edges
+    const mountainMat = new THREE.MeshStandardMaterial({ 
+      color: 0x1a1a1a,
+      roughness: 0.9,
+      flatShading: true
+    });
+
+    // Create jagged mountain geometry
+    const createMountain = (scale) => {
+      const geom = new THREE.ConeGeometry(1, 2, 4, 1);
+      const posAttr = geom.attributes.position;
+      // Randomize vertex positions for jagged look
+      for (let i = 0; i < posAttr.count; i++) {
+        if (posAttr.getY(i) > 0) { // Only offset upper vertices
+          posAttr.setX(i, posAttr.getX(i) * (0.8 + Math.random() * 0.4));
+          posAttr.setZ(i, posAttr.getZ(i) * (0.8 + Math.random() * 0.4));
+          posAttr.setY(i, posAttr.getY(i) * (0.7 + Math.random() * 0.6));
+        }
+      }
+      geom.computeVertexNormals();
+      const mesh = new THREE.Mesh(geom, mountainMat);
+      mesh.scale.set(scale, scale, scale);
+      return mesh;
+    };
+
+    // Place mountains around the battlefield
+    const mountainPositions = [
+      { x: -5, z: -3, scale: 2.5 },
+      { x: -4.5, z: -2, scale: 1.8 },
+      { x: -6, z: 1, scale: 2.0 },
+      { x: 5, z: -3, scale: 2.2 },
+      { x: 4.8, z: -1.5, scale: 1.9 },
+      { x: 5.5, z: 0.5, scale: 2.4 },
+      { x: -1, z: -4, scale: 1.6 },
+      { x: 1, z: -4.5, scale: 1.7 },
+      { x: -2, z: 3, scale: 1.5 },
+      { x: 2.5, z: 3.5, scale: 1.8 },
+    ];
+
+    mountainPositions.forEach(pos => {
+      const mountain = createMountain(pos.scale);
+      mountain.position.set(pos.x, 0, pos.z);
+      scene.add(mountain);
+    });
+
+    // Add floating particles
+    const particleCount = 150;
+    const particleGeom = new THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+    const velocities = new Float32Array(particleCount * 3);
+
+    for (let i = 0; i < particleCount; i++) {
+      const i3 = i * 3;
+      // Spread particles around the battlefield
+      positions[i3] = (Math.random() - 0.5) * 12;
+      positions[i3 + 1] = Math.random() * 4 + 0.5;
+      positions[i3 + 2] = (Math.random() - 0.5) * 10;
+
+      // Random velocities
+      velocities[i3] = (Math.random() - 0.5) * 0.02;
+      velocities[i3 + 1] = (Math.random() - 0.5) * 0.01;
+      velocities[i3 + 2] = (Math.random() - 0.5) * 0.02;
+    }
+
+    particleGeom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    particleGeom.userData.velocities = velocities;
+
+    const particleMat = new THREE.PointsMaterial({
+      color: 0x8844aa,
+      size: 0.08,
+      transparent: true,
+      opacity: 0.6,
+      depthTest: false
+    });
+
+    const particles = new THREE.Points(particleGeom, particleMat);
+    particles.renderOrder = 999;
+    scene.add(particles);
 
     // Load soul on the left
     console.log('Loading soul:', `soul_${state.soul.type}`);
@@ -3380,7 +3860,13 @@ export class UI {
       halftonePass,
       soulMesh,
       enemyMesh,
-      cameraAngle: 0
+      particles,
+      cameraAngle: 0,
+      // Animation state
+      soulBasePos: soulMesh ? soulMesh.position.clone() : null,
+      enemyBasePos: enemyMesh ? enemyMesh.position.clone() : null,
+      attackAnim: null,
+      healthBarAnim: null
     };
 
     // Listen for post-processing changes
@@ -3432,7 +3918,7 @@ export class UI {
 
     this.battleAnimationId = requestAnimationFrame(() => this.animateBattleScene());
 
-    const { scene, camera, composer, soulMesh, enemyMesh, cameraAngle } = this.battleScene;
+    const { scene, camera, composer, soulMesh, enemyMesh, particles, cameraAngle } = this.battleScene;
 
     // Slowly pan camera around the characters
     this.battleScene.cameraAngle += 0.001;
@@ -3451,6 +3937,123 @@ export class UI {
         sphere.position.x += Math.sin(time * data.speed + data.phase) * data.amplitude;
         sphere.position.y += Math.cos(time * data.speed + data.phase) * data.amplitude;
       });
+    }
+
+    // Handle attack animation
+    if (this.battleScene.attackAnim) {
+      const anim = this.battleScene.attackAnim;
+      const elapsed = Date.now() - anim.startTime;
+      const totalDuration = anim.jabDuration + anim.returnDuration;
+
+      if (elapsed < totalDuration) {
+        // Attacker jab animation with ease-in
+        if (elapsed < anim.jabDuration) {
+          // Jab forward - cubic ease-in (slow start, fast acceleration)
+          const t = elapsed / anim.jabDuration;
+          const eased = t * t * t; // Cubic ease-in
+          
+          anim.attackerMesh.position.copy(anim.attackerBasePos);
+          anim.attackerMesh.position.add(anim.targetOffset.clone().multiplyScalar(eased));
+          
+          // Play sound at 70% of jab (just before impact)
+          if (!anim.soundPlayed && t > 0.7) {
+            if (anim.wasBlocked) {
+              sfx.blockTink();
+            } else {
+              sfx.attack();
+            }
+            anim.soundPlayed = true;
+          }
+        } else {
+          // Return back - ease-out
+          const returnElapsed = elapsed - anim.jabDuration;
+          const t = returnElapsed / anim.returnDuration;
+          const eased = 1 - (1 - t) * (1 - t) * (1 - t); // Cubic ease-out
+          
+          anim.attackerMesh.position.copy(anim.attackerBasePos);
+          anim.attackerMesh.position.add(anim.targetOffset.clone().multiplyScalar(1 - eased));
+        }
+        
+        // Victim wobble animation (starts at impact) - only if not blocked
+        if (!anim.wasBlocked && anim.victimMesh && anim.victimBasePos && elapsed > anim.jabDuration * 0.7) {
+          const wobbleElapsed = elapsed - (anim.jabDuration * 0.7);
+          if (wobbleElapsed < anim.wobbleDuration) {
+            const wobbleProgress = wobbleElapsed / anim.wobbleDuration;
+            // Damped oscillation
+            const wobbleAmount = Math.sin(wobbleProgress * Math.PI * 4) * (1 - wobbleProgress) * 0.15;
+            
+            anim.victimMesh.position.copy(anim.victimBasePos);
+            anim.victimMesh.position.x += wobbleAmount;
+            anim.victimMesh.rotation.z = wobbleAmount * 0.3;
+          } else {
+            // Reset victim
+            anim.victimMesh.position.copy(anim.victimBasePos);
+            anim.victimMesh.rotation.z = 0;
+          }
+        }
+      } else {
+        // Animation complete, reset positions
+        anim.attackerMesh.position.copy(anim.attackerBasePos);
+        if (anim.victimMesh && anim.victimBasePos) {
+          anim.victimMesh.position.copy(anim.victimBasePos);
+          anim.victimMesh.rotation.z = 0;
+        }
+        this.battleScene.attackAnim = null;
+      }
+    }
+
+    // Handle health bar animation
+    if (this.battleScene.healthBarAnim) {
+      const anim = this.battleScene.healthBarAnim;
+      const elapsed = Date.now() - anim.startTime;
+      const totalDuration = anim.shakeDuration + anim.stallDuration + anim.lerpDuration;
+
+      if (elapsed < totalDuration) {
+        if (elapsed < anim.shakeDuration + anim.stallDuration) {
+          // Keep back bar at previous health during shake and stall
+          const prevPercentage = Math.max(0, (anim.prevHealth / anim.maxHealth) * 100);
+          anim.backBar.style.width = prevPercentage + '%';
+        } else {
+          // Lerp back bar down to match front bar
+          const lerpElapsed = elapsed - anim.shakeDuration - anim.stallDuration;
+          const lerpProgress = Math.min(lerpElapsed / anim.lerpDuration, 1);
+          
+          // Ease out the lerp
+          const eased = 1 - Math.pow(1 - lerpProgress, 3);
+          
+          const currentHealth = anim.prevHealth - (anim.damage * eased);
+          const percentage = Math.max(0, (currentHealth / anim.maxHealth) * 100);
+          anim.backBar.style.width = percentage + '%';
+        }
+      } else {
+        // Animation complete - ensure final state
+        const finalPercentage = Math.max(0, (anim.newHealth / anim.maxHealth) * 100);
+        anim.backBar.style.width = finalPercentage + '%';
+        this.battleScene.healthBarAnim = null;
+      }
+    }
+
+    // Animate particles
+    if (particles) {
+      const posAttr = particles.geometry.attributes.position;
+      const velocities = particles.geometry.userData.velocities;
+
+      for (let i = 0; i < posAttr.count; i++) {
+        const i3 = i * 3;
+        
+        // Update positions
+        posAttr.array[i3] += velocities[i3];
+        posAttr.array[i3 + 1] += velocities[i3 + 1];
+        posAttr.array[i3 + 2] += velocities[i3 + 2];
+
+        // Wrap around boundaries
+        if (Math.abs(posAttr.array[i3]) > 6) posAttr.array[i3] *= -0.9;
+        if (posAttr.array[i3 + 1] > 5) posAttr.array[i3 + 1] = 0.5;
+        if (posAttr.array[i3 + 1] < 0.5) posAttr.array[i3 + 1] = 5;
+        if (Math.abs(posAttr.array[i3 + 2]) > 5) posAttr.array[i3 + 2] *= -0.9;
+      }
+
+      posAttr.needsUpdate = true;
     }
 
     composer.render();
@@ -3485,6 +4088,17 @@ export class UI {
     const result = this.game.playCard(handIndex);
     if (result.success) {
       sfx.cardPlay();
+      
+      // Trigger attack animation if card was an attack
+      if (result.animEvent && result.animEvent.type === 'soul_attack') {
+        this.startAttackAnimation('soul', result.animEvent);
+      }
+      
+      // Trigger defend animation if card was a defend
+      if (result.animEvent && result.animEvent.type === 'soul_defend') {
+        this.startDefendAnimation('soul', result.animEvent);
+      }
+      
       this.renderBattle(result.state);
     } else {
       sfx.error();
@@ -3496,6 +4110,11 @@ export class UI {
     sfx.buttonClick();
     const result = this.game.endTurn();
     if (result.success) {
+      // Trigger enemy attack animation if enemy attacked
+      if (result.enemyAnimEvent && result.enemyAnimEvent.type === 'enemy_attack') {
+        this.startAttackAnimation('enemy', result.enemyAnimEvent);
+      }
+      
       this.renderBattle(result.state);
     }
   }
@@ -3541,6 +4160,201 @@ export class UI {
     `;
 
     document.body.appendChild(modal);
+  }
+
+  startAttackAnimation(attacker, animEvent) {
+    if (!this.battleScene) return;
+
+    const { soulMesh, enemyMesh, soulBasePos, enemyBasePos } = this.battleScene;
+
+    // Set up animation
+    const isSoulAttacking = attacker === 'soul';
+    const attackerMesh = isSoulAttacking ? soulMesh : enemyMesh;
+    const victimMesh = isSoulAttacking ? enemyMesh : soulMesh;
+    const attackerBasePos = isSoulAttacking ? soulBasePos : enemyBasePos;
+    const victimBasePos = isSoulAttacking ? enemyBasePos : soulBasePos;
+    const targetPos = victimBasePos;
+
+    if (!attackerMesh || !attackerBasePos || !targetPos) return;
+
+    const jabDistance = 0.6;
+    const direction = new THREE.Vector3()
+      .subVectors(targetPos, attackerBasePos)
+      .normalize()
+      .multiplyScalar(jabDistance);
+
+    // Check if attack was fully blocked (no damage dealt)
+    const wasBlocked = animEvent && animEvent.damage === 0;
+
+    this.battleScene.attackAnim = {
+      attackerMesh,
+      victimMesh,
+      attackerBasePos: attackerBasePos.clone(),
+      victimBasePos: victimBasePos ? victimBasePos.clone() : null,
+      targetOffset: direction,
+      startTime: Date.now(),
+      jabDuration: 350,      // Faster jab forward
+      returnDuration: 250,   // Quick return
+      wobbleDuration: 400,   // Victim wobble
+      soundPlayed: false,
+      wasBlocked,
+      attacker
+    };
+
+    // Start health bar animation or shield swell
+    if (wasBlocked) {
+      this.startShieldSwellAnimation(attacker);
+    } else {
+      this.startHealthBarAnimation(attacker, animEvent);
+    }
+  }
+
+  startHealthBarAnimation(attacker, animEvent) {
+    if (!animEvent) return;
+
+    const frontId = attacker === 'soul' ? 'enemy-health-bar-fill' : 'soul-health-bar-fill';
+    const backId = attacker === 'soul' ? 'enemy-health-bar-back' : 'soul-health-bar-back';
+    const frontBar = document.getElementById(frontId);
+    const backBar = document.getElementById(backId);
+    
+    if (!frontBar || !backBar) return;
+
+    // Get max health
+    const combatState = this.game.getCombatState();
+    let maxHealth;
+    if (attacker === 'soul') {
+      maxHealth = combatState.enemy.maxBlood;
+    } else {
+      maxHealth = combatState.soul.maxBlood;
+    }
+
+    // Instantly snap front bar to new health
+    const newPercentage = Math.max(0, (animEvent.newHealth / maxHealth) * 100);
+    frontBar.style.width = newPercentage + '%';
+
+    this.battleScene.healthBarAnim = {
+      frontBar,
+      backBar,
+      prevHealth: animEvent.prevHealth,
+      newHealth: animEvent.newHealth,
+      damage: animEvent.damage,
+      maxHealth,
+      startTime: Date.now(),
+      shakeDuration: 400,      // Shake duration (5 shakes * 80ms = 400ms)
+      stallDuration: 100,      // Brief stall after shake
+      lerpDuration: 500,       // Lerp down duration
+      attacker
+    };
+
+    // Add shake class to parent
+    frontBar.parentElement.classList.add('health-bar-shake');
+    setTimeout(() => {
+      if (frontBar.parentElement) {
+        frontBar.parentElement.classList.remove('health-bar-shake');
+      }
+    }, 400);
+  }
+
+  startShieldSwellAnimation(attacker) {
+    // Find the shield icon for the victim (opposite of attacker)
+    const victimSelector = attacker === 'soul' ? '.combatant:nth-child(2)' : '.combatant:nth-child(1)';
+    const victimDiv = document.querySelector(victimSelector);
+    
+    if (!victimDiv) return;
+
+    // Find or create shield icon element
+    const shieldText = victimDiv.textContent;
+    const shieldMatch = shieldText.match(/🛡️\s*(\d+)/);
+    
+    if (!shieldMatch) return; // No shield to animate
+
+    // Create a temporary animated shield element
+    const animShield = document.createElement('div');
+    animShield.style.position = 'fixed';
+    animShield.style.fontSize = '48px';
+    animShield.style.zIndex = '10000';
+    animShield.style.pointerEvents = 'none';
+    animShield.textContent = '🛡️';
+    animShield.style.transition = 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s';
+    animShield.style.transform = 'scale(1)';
+    animShield.style.opacity = '1';
+    
+    // Position near the victim's health bar
+    const healthBarRect = victimDiv.querySelector('.health-bar').getBoundingClientRect();
+    animShield.style.left = (healthBarRect.left + healthBarRect.width / 2 - 24) + 'px';
+    animShield.style.top = (healthBarRect.top + healthBarRect.height / 2 - 24) + 'px';
+    
+    document.body.appendChild(animShield);
+    
+    // Trigger animation
+    requestAnimationFrame(() => {
+      animShield.style.transform = 'scale(2)';
+      animShield.style.opacity = '0';
+    });
+    
+    // Remove element after animation
+    setTimeout(() => {
+      animShield.remove();
+    }, 300);
+  }
+
+  startDefendAnimation(defender, animEvent) {
+    if (!animEvent) return;
+    
+    // Play tink sound
+    sfx.blockTink();
+    
+    // Find the defender's shield icon
+    const defenderSelector = defender === 'soul' ? '.combatant:nth-child(1)' : '.combatant:nth-child(2)';
+    const defenderDiv = document.querySelector(defenderSelector);
+    
+    if (!defenderDiv) return;
+    
+    // Find the health bar area to position the shield animation
+    const healthBarFloating = defenderDiv.querySelector('.health-bar-floating');
+    if (!healthBarFloating) return;
+    
+    // Create a temporary animated shield element
+    const animShield = document.createElement('div');
+    animShield.style.position = 'fixed';
+    animShield.style.fontSize = '32px';
+    animShield.style.zIndex = '10000';
+    animShield.style.pointerEvents = 'none';
+    animShield.textContent = '🛡️';
+    animShield.className = 'shield-shake-anim';
+    
+    // Position near the defender's health bar
+    const rect = healthBarFloating.getBoundingClientRect();
+    animShield.style.left = (rect.left + rect.width / 2 - 16) + 'px';
+    animShield.style.top = (rect.top + rect.height / 2 - 16) + 'px';
+    
+    document.body.appendChild(animShield);
+    
+    // Shake animation using keyframes
+    const keyframes = [
+      { transform: 'translate(0, 0) rotate(0deg)', offset: 0 },
+      { transform: 'translate(-3px, -2px) rotate(-5deg)', offset: 0.1 },
+      { transform: 'translate(3px, -1px) rotate(5deg)', offset: 0.2 },
+      { transform: 'translate(-2px, 1px) rotate(-3deg)', offset: 0.3 },
+      { transform: 'translate(2px, -1px) rotate(3deg)', offset: 0.4 },
+      { transform: 'translate(-1px, 0px) rotate(-2deg)', offset: 0.5 },
+      { transform: 'translate(1px, 1px) rotate(2deg)', offset: 0.6 },
+      { transform: 'translate(0, 0) rotate(0deg)', offset: 0.7 },
+      { transform: 'translate(0, 0) rotate(0deg)', offset: 1 }
+    ];
+    
+    const timing = {
+      duration: 400,
+      iterations: 1,
+      easing: 'linear'
+    };
+    
+    animShield.animate(keyframes, timing);
+    
+    // Remove element after animation
+    setTimeout(() => {
+      animShield.remove();
+    }, 400);
   }
 
   handleBattleEnd() {

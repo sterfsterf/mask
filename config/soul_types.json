@@ -16,11 +16,17 @@
       "starter_trait": "rage",
       "base_cards": ["slash", "slash", "defend"],
       "quotes": [
-        "oh the agony",
-        "suffering... endless suffering",
-        "why me?",
-        "I am cursed",
-        "release me from this torment"
+        "Why have you disturbed my rest?!",
+        "No... not again...",
+        "I was finally at peace!",
+        "Leave me be! I beg you!",
+        "What fresh torment is this?"
+      ],
+      "blessing_quotes": [
+        "Perhaps... there is hope yet.",
+        "A small mercy in this torment.",
+        "I feel... less wretched.",
+        "Thank you... I think."
       ]
     },
     {
@@ -33,11 +39,17 @@
       "starter_trait": "fortify",
       "base_cards": ["slash", "defend", "defend"],
       "quotes": [
-        "hehe... chaos!",
-        "I'll burn it all!",
-        "mischief is my calling",
-        "what fun this will be",
-        "let's cause some trouble"
+        "You DARE summon me?!",
+        "I'll burn you for this interruption!",
+        "My nap was just getting good...",
+        "Fine! But I'm not happy about it!",
+        "This better be worth my time, mortal."
+      ],
+      "blessing_quotes": [
+        "Now we're talking!",
+        "More power! YES!",
+        "Heh, not bad!",
+        "I suppose you're useful after all."
       ]
     },
     {
@@ -50,11 +62,17 @@
       "starter_trait": "rage",
       "base_cards": ["slash", "heavy_strike", "defend"],
       "quotes": [
-        "I feel... nothing",
-        "empty inside",
-        "the void consumes",
-        "I am but a shell",
-        "silence echoes within"
+        "...where am I?",
+        "The void was preferable to this.",
+        "You've made a mistake.",
+        "I remember nothing... only darkness.",
+        "Why drag me from oblivion?"
+      ],
+      "blessing_quotes": [
+        "...something feels different.",
+        "I can feel it... faintly.",
+        "...interesting.",
+        "Perhaps I'm not completely empty."
       ]
     },
     {
@@ -67,11 +85,17 @@
       "starter_trait": "fortify",
       "base_cards": ["slash", "slash", "defend"],
       "quotes": [
-        "woof... I mean, yes master",
-        "I'll fetch their souls",
-        "loyal to the end",
-        "a dog's life after death",
-        "who's a good soul? me."
+        "Who's there?! Show yourself!",
+        "I was sleeping in the grave!",
+        "Do you have treats? No? Then why summon me!",
+        "I'll bite! Don't think I won't!",
+        "My eternal rest was disturbed for THIS?"
+      ],
+      "blessing_quotes": [
+        "Good! I'm a good soul!",
+        "*wags tail* More please!",
+        "I knew you cared!",
+        "Best master ever!"
       ]
     },
     {
@@ -84,11 +108,17 @@
       "starter_trait": "rage",
       "base_cards": ["slash", "slash", "defend"],
       "quotes": [
-        "catch me if you can!",
-        "too fast for you",
-        "nyah nyah!",
-        "quick and deadly",
-        "blink and I'm gone"
+        "Oi! I was in the middle of something!",
+        "You can't just yank me around like that!",
+        "Rude! So rude!",
+        "Fine, fine... what do you want?",
+        "This is kidnapping! Soul-napping!"
+      ],
+      "blessing_quotes": [
+        "Ooh, shiny!",
+        "Now that's more like it!",
+        "I feel FAST!",
+        "Can't catch me now!"
       ]
     },
     {
@@ -101,11 +131,17 @@
       "starter_trait": "fortify",
       "base_cards": ["slash", "defend", "defend"],
       "quotes": [
-        "squeak squeak",
-        "I'm tougher than I look",
-        "vermin uprising!",
-        "small but fierce",
-        "underestimate me, I dare you"
+        "Squeak! Who woke me?!",
+        "I'll gnaw your ankles for this!",
+        "I was hiding from the afterlife!",
+        "Small I may be, but my grudge is large!",
+        "You'll pay for disturbing my burrow!"
+      ],
+      "blessing_quotes": [
+        "*squeak* I feel stronger!",
+        "Okay, maybe you're not so bad.",
+        "This power... YES!",
+        "I'm unstoppable now!"
       ]
     },
     {
@@ -118,11 +154,17 @@
       "starter_trait": "rage",
       "base_cards": ["slash", "heavy_strike", "defend"],
       "quotes": [
-        "deceit is my blade",
-        "trust no one",
-        "I always have an ace",
-        "honor? never heard of it",
-        "backstabbing is an art"
+        "Clever... pulling me from the shadows.",
+        "What's your game, summoner?",
+        "I was cheating death. You ruined it.",
+        "You'll regret this... eventually.",
+        "I suppose we can make a deal..."
+      ],
+      "blessing_quotes": [
+        "Ah, an investment. Wise.",
+        "I'll remember this... favorably.",
+        "We have an understanding now.",
+        "Perhaps you're not a fool after all."
       ]
     },
     {
@@ -135,11 +177,17 @@
       "starter_trait": "rage",
       "base_cards": ["slash", "heavy_strike", "heavy_strike"],
       "quotes": [
-        "SMASH!",
-        "violence is the answer",
-        "I crush all who oppose",
-        "strength above all",
-        "witness my fury"
+        "WHO DARES?!",
+        "I'll crush you for this!",
+        "My rage knows no grave!",
+        "You want violence? I AM VIOLENCE!",
+        "I was having the best nightmare!"
+      ],
+      "blessing_quotes": [
+        "MORE POWER!",
+        "YESSS! I AM UNSTOPPABLE!",
+        "CRUSH! DESTROY!",
+        "GIVE ME MORE!"
       ]
     },
     {
@@ -152,11 +200,17 @@
       "starter_trait": "rage",
       "base_cards": ["slash", "heavy_strike", "defend"],
       "quotes": [
-        "pestilence incarnate",
-        "rot and decay",
-        "disease spreads through me",
-        "I am contagion",
-        "suffer my touch"
+        "Ssss... you reek of desperation.",
+        "I was spreading through the earth... now this.",
+        "You've invited pestilence into your world.",
+        "I shall rot everything you cherish.",
+        "Disturbing me was your final mistake."
+      ],
+      "blessing_quotes": [
+        "Yesss... my disease spreads stronger.",
+        "This power will fester beautifully.",
+        "I am become death... moreso.",
+        "You've made me deadlier. Foolish."
       ]
     }
   ]

@@ -117,6 +117,26 @@ export class SoundEffects {
     this.playTone(1200, 0.15, 0.2, 'sine', 0.05);
   }
 
+  // Attack - fierce grumbly sound
+  attack() {
+    this.init();
+    // Low growl with distortion
+    this.playTone(120, 0.2, 0.35, 'sawtooth');
+    this.playTone(180, 0.18, 0.3, 'square', 0.02);
+    // Impact punch
+    this.playTone(80, 0.1, 0.4, 'sawtooth', 0.15);
+  }
+
+  // Block/Shield tink - metallic deflect sound
+  blockTink() {
+    this.init();
+    // High pitched metallic ring
+    this.playTone(2400, 0.08, 0.25, 'triangle');
+    this.playTone(2800, 0.06, 0.2, 'sine', 0.02);
+    // Quick decay to simulate metal ring
+    this.playTone(1800, 0.12, 0.15, 'triangle', 0.04);
+  }
+
   // Void swell - building tension sound that swells over time
   // Returns oscillators and gain nodes so they can be controlled dynamically
   startVoidSwell(duration = 1.2) {

@@ -11,6 +11,14 @@ export class Soul {
     this.baseAttack = type.base_attack;
     this.baseDefense = type.base_defense;
     
+    // Pick a random quote from the soul type
+    this.quote = type.quotes && type.quotes.length > 0 
+      ? type.quotes[Math.floor(Math.random() * type.quotes.length)]
+      : '';
+    
+    // Store blessing quotes for later
+    this.blessingQuotes = type.blessing_quotes || [];
+    
     // Cards & traits
     this.baseCards = [...type.base_cards];
     this.starterTrait = type.starter_trait;
@@ -22,6 +30,13 @@ export class Soul {
     
     // State
     this.tired = false;
+  }
+  
+  getBlessingQuote() {
+    if (this.blessingQuotes.length > 0) {
+      return this.blessingQuotes[Math.floor(Math.random() * this.blessingQuotes.length)];
+    }
+    return '';
   }
 
   getStats() {

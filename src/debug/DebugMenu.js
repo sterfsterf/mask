@@ -44,6 +44,14 @@ export class DebugMenu {
     document.body.appendChild(debugContainer);
 
     this.bindEvents();
+    
+    // Add keyboard shortcut for Tab to toggle debug menu
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        this.toggleVisibility();
+      }
+    });
   }
 
   bindEvents() {
@@ -165,6 +173,15 @@ export class DebugMenu {
       panel.classList.remove('hidden');
     } else {
       panel.classList.add('hidden');
+    }
+  }
+  
+  toggleVisibility() {
+    const debugMenu = document.getElementById('debug-menu');
+    if (debugMenu.style.display === 'none') {
+      debugMenu.style.display = 'block';
+    } else {
+      debugMenu.style.display = 'none';
     }
   }
 

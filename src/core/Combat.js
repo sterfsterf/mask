@@ -86,39 +86,50 @@ export class Combat {
     const playedCard = this.hand.splice(handIndex, 1)[0];
     this.discardPile.push(playedCard);
 
-    // Execute card effect
-    this.executeCardEffect(playedCard, true);
+    // Execute card effect and get animation event
+    const animEvent = this.executeCardEffect(playedCard, true);
 
     // Check for death
     this.checkCombatEnd();
 
-    return { success: true, card: playedCard, state: this.getState() };
+    return { success: true, card: playedCard, state: this.getState(), animEvent };
   }
 
   executeCardEffect(card, isPlayer) {
+    let animEvent = null;
+
     if (card.type === 'attack') {
       if (isPlayer) {
+        const prevHealth = this.enemyBlood;
         const damage = Math.max(0, card.damage - this.enemyBlock);
         this.enemyBlock = Math.max(0, this.enemyBlock - card.damage);
         this.enemyBlood -= damage;
+        
+        animEvent = { type: 'soul_attack', damage, prevHealth, newHealth: this.enemyBlood };
         
         // Self-damage if card has it
         if (card.self_damage) {
           this.soulBlood -= card.self_damage;
         }
       } else {
+        const prevHealth = this.soulBlood;
         const damage = Math.max(0, card.damage - this.soulBlock);
         this.soulBlock = Math.max(0, this.soulBlock - card.damage);
         this.soulBlood -= damage;
+        
+        animEvent = { type: 'enemy_attack', damage, prevHealth, newHealth: this.soulBlood };
       }
     } else if (card.type === 'defend') {
       if (isPlayer) {
         this.soulBlock += card.block;
+        animEvent = { type: 'soul_defend', blockGained: card.block };
       } else {
         this.enemyBlock += card.block;
       }
     }
     // 'status' cards do nothing
+    
+    return animEvent;
   }
 
   endTurn() {
@@ -132,7 +143,7 @@ export class Combat {
 
     // Enemy turn
     this.playerTurn = false;
-    this.enemyTurn();
+    const enemyAnimEvent = this.enemyTurn();
 
     // Check death
     this.checkCombatEnd();
@@ -152,7 +163,7 @@ export class Combat {
       this.generateEnemyIntent();
     }
 
-    return { success: true, state: this.getState() };
+    return { success: true, state: this.getState(), enemyAnimEvent };
   }
 
   generateEnemyIntent() {
@@ -203,10 +214,12 @@ export class Combat {
       this.generateEnemyIntent();
     }
 
+    let animEvent = null;
+
     // Execute the intent
     switch (this.enemyIntent.type) {
       case 'attack':
-        this.executeCardEffect({
+        animEvent = this.executeCardEffect({
           id: 'enemy_attack',
           name: 'Attack',
           cost: 0,
@@ -220,7 +233,7 @@ export class Combat {
         break;
         
       case 'big_attack':
-        this.executeCardEffect({
+        animEvent = this.executeCardEffect({
           id: 'enemy_big_attack',
           name: 'Heavy Strike',
           cost: 0,
@@ -233,6 +246,8 @@ export class Combat {
         this.enemyBlood = Math.min(this.enemy.blood, this.enemyBlood + this.enemyIntent.value);
         break;
     }
+
+    return animEvent;
   }
 
   checkCombatEnd() {
