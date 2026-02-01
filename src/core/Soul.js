@@ -29,7 +29,7 @@ export class Soul {
     this.baseCards = [...type.base_cards];
     this.starterTrait = type.starter_trait;
     this.specialCard = type.special_card;
-    this.negativeTraits = [];
+    this.negativeCards = []; // Negative cards that go in deck
     
     // Mask
     this.mask = null;
@@ -72,13 +72,10 @@ export class Soul {
     let defense = this.baseDefense;
     let blood = this.maxBlood;
 
-    // Apply trait modifiers
-    const allTraits = [this.starterTrait, ...this.negativeTraits];
-    if (this.mask) {
-      allTraits.push(...this.mask.traits);
-    }
+    // Return stats with mask cards count
+    const maskCards = this.mask && this.mask.cards ? this.mask.cards.length : 0;
 
-    return { attack, defense, blood, traits: allTraits };
+    return { attack, defense, blood, maskCards };
   }
 
   buildDeck(config) {
@@ -96,24 +93,18 @@ export class Soul {
       if (specialCard) deck.push({ ...specialCard, source: 'soul' });
     }
 
-    // Mask trait cards (mask source)
-    if (this.mask) {
-      this.mask.traits.forEach(traitId => {
-        const trait = config.getTrait(traitId);
-        if (trait) {
-          const traitCard = config.getCard(trait.card);
-          if (traitCard) deck.push({ ...traitCard, source: 'mask' });
-        }
+    // Mask cards directly (mask source)
+    if (this.mask && this.mask.cards) {
+      this.mask.cards.forEach(cardId => {
+        const maskCard = config.getCard(cardId);
+        if (maskCard) deck.push({ ...maskCard, source: 'mask' });
       });
     }
 
     // Negative trait cards (soul source)
-    this.negativeTraits.forEach(traitId => {
-      const trait = config.getTrait(traitId);
-      if (trait) {
-        const traitCard = config.getCard(trait.card);
-        if (traitCard) deck.push({ ...traitCard, source: 'soul' });
-      }
+    this.negativeCards.forEach(cardId => {
+      const negCard = config.getCard(cardId);
+      if (negCard) deck.push({ ...negCard, source: 'soul' });
     });
 
     // Tired cards if any (soul source)
@@ -147,6 +138,8 @@ export class Soul {
     const removedMask = this.mask ? { ...this.mask, bind_duration: this.mask.bind_duration } : null;
     this.mask = null;
     this.maskBattlesRemaining = 0;
+    this.maskBlood = undefined;
+    this.maskMaxBlood = undefined;
     return removedMask;
   }
 
@@ -172,6 +165,8 @@ export class Soul {
     const removedMask = this.mask ? { ...this.mask, bind_duration: this.mask.bind_duration } : null;
     this.mask = null;
     this.maskBattlesRemaining = 0;
+    this.maskBlood = undefined;
+    this.maskMaxBlood = undefined;
     return removedMask;
   }
 
@@ -179,15 +174,20 @@ export class Soul {
     // Mask breaks on defeat - remove it
     this.mask = null;
     this.maskBattlesRemaining = 0;
+    this.maskBlood = undefined;
+    this.maskMaxBlood = undefined;
   }
 
-  addNegativeTrait(traitId) {
-    this.negativeTraits.push(traitId);
+  addNegativeCard(cardId) {
+    this.negativeCards.push(cardId);
   }
 
-  addPositiveTraitToMask(traitId) {
+  addPositiveCardToMask(cardId) {
     if (this.mask) {
-      this.mask.traits.push(traitId);
+      if (!this.mask.cards) {
+        this.mask.cards = [];
+      }
+      this.mask.cards.push(cardId);
     }
   }
 

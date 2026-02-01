@@ -2,25 +2,21 @@
 export class ConfigLoader {
   constructor() {
     this.cards = null;
-    this.traits = null;
     this.soulTypes = null;
     this.masks = null;
     this.enemies = null;
   }
 
   async loadAll() {
-    const [cards, traits, soulTypes, masks, enemies, shrines] = await Promise.all([
-      fetch('/config/cards.json').then(r => r.json()),
-      fetch('/config/traits.json').then(r => r.json()),
-      fetch('/config/soul_types.json').then(r => r.json()),
-      fetch('/config/masks.json').then(r => r.json()),
-      fetch('/config/enemies.json').then(r => r.json()),
-      fetch('/config/shrines.json').then(r => r.json())
+    const [cards, soulTypes, masks, enemies, shrines] = await Promise.all([
+      fetch('./config/cards.json').then(r => r.json()),
+      fetch('./config/soul_types.json').then(r => r.json()),
+      fetch('./config/masks.json').then(r => r.json()),
+      fetch('./config/enemies.json').then(r => r.json()),
+      fetch('./config/shrines.json').then(r => r.json())
     ]);
 
     this.cards = this.indexById(cards.cards);
-    this.traitCards = this.indexById(traits.trait_cards);
-    this.traits = this.indexById(traits.traits);
     this.soulTypes = this.indexById(soulTypes.types);
     this.soulConfig = soulTypes;
     this.maskConfig = masks;
@@ -40,11 +36,7 @@ export class ConfigLoader {
   }
 
   getCard(id) {
-    return this.cards[id] || this.traitCards[id];
-  }
-
-  getTrait(id) {
-    return this.traits[id];
+    return this.cards[id];
   }
 
   getSoulType(id) {

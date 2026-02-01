@@ -1,0 +1,550 @@
+{
+  "summon_cost": 5,
+  "rarity_table": [
+    { "rarity": "common", "weight": 60 },
+    { "rarity": "rare", "weight": 30 },
+    { "rarity": "legendary", "weight": 10 }
+  ],
+  "types": [
+    {
+      "id": "wretch",
+      "name": "Wretch",
+      "rarity": "common",
+      "base_blood": 30,
+      "base_attack": 8,
+      "base_defense": 3,
+      "starter_trait": "rage",
+      "special_card": "rage_strike",
+      "base_cards": ["slash", "slash", "slash", "slash", "defend", "defend", "defend", "defend"],
+      "quotes": [
+        "Why have you disturbed my rest?!",
+        "No... not again...",
+        "I was finally at peace!",
+        "Leave me be! I beg you!",
+        "What fresh torment is this?"
+      ],
+      "blessing_quotes": [
+        "Perhaps... there is hope yet.",
+        "A small mercy in this torment.",
+        "I feel... less wretched.",
+        "Thank you... I think."
+      ],
+      "mask_break_quotes": [
+        "NO! My face!",
+        "It's... shattered!",
+        "My only protection!",
+        "This pain... unbearable!"
+      ],
+      "mask_binding_quotes": {
+        "flesh": "Agh! It burns... but I feel... alive?",
+        "bone": "The cold... it's so cold... I am hollow.",
+        "shadow": "Darkness seeps in... I fade... yet remain.",
+        "universal": "What IS this?! I am... everything and nothing!"
+      },
+      "maskless_victory_cards": ["rage_strike", "heavy_strike", "slash"],
+      "maskless_victory_quotes": [
+        "I don't need a mask! I am strong!",
+        "My own strength is enough!",
+        "No mask can contain my power!",
+        "I am free and strong!"
+      ],
+      "affection_quotes": {
+        "-5": ["You're a monster! Worse than death!", "I HATE you! LET ME DIE!", "This torture is YOUR doing!"],
+        "-4": ["Every moment with you is agony!", "I despise everything about you!", "You're cruel and heartless!"],
+        "-3": ["You don't care about me at all!", "I'm just a tool to you, aren't I?", "This is misery..."],
+        "-2": ["I still don't trust you.", "You've given me nothing but pain.", "Why should I believe you care?"],
+        "-1": ["...I suppose you're not the worst.", "Maybe... maybe you're trying.", "I'm still wretched... but less so."],
+        "1": ["You... you're actually helping me?", "I feel... different. Less alone.", "Perhaps I misjudged you."],
+        "2": ["Thank you. I mean it.", "You've shown me kindness I forgot existed.", "I trust you now."],
+        "3": ["You've given me hope again!", "I would fight for you willingly!", "You're more than a master... a friend."],
+        "4": ["I owe you my very existence!", "You saved me from eternal torment!", "I am yours, always!"]
+      },
+      "defeat_quotes": [
+        "No... not like this...",
+        "I'm... I'm sorry...",
+        "Back to the void...",
+        "At least... it's finally over..."
+      ]
+    },
+    {
+      "id": "imp",
+      "name": "Imp",
+      "rarity": "common",
+      "base_blood": 40,
+      "base_attack": 6,
+      "base_defense": 5,
+      "starter_trait": "fortify",
+      "special_card": "iron_defense",
+      "base_cards": ["slash", "slash", "slash", "slash", "defend", "defend", "defend", "defend"],
+      "quotes": [
+        "You DARE summon me?!",
+        "I'll burn you for this interruption!",
+        "My nap was just getting good...",
+        "Fine! But I'm not happy about it!",
+        "This better be worth my time, mortal."
+      ],
+      "blessing_quotes": [
+        "Now we're talking!",
+        "More power! YES!",
+        "Heh, not bad!",
+        "I suppose you're useful after all."
+      ],
+      "mask_break_quotes": [
+        "ARGH! My mask!",
+        "You'll pay for that!",
+        "That was expensive!",
+        "Gah! Right in the face!"
+      ],
+      "mask_binding_quotes": {
+        "flesh": "IT BURNS! But... I like it!",
+        "bone": "Sharp edges... cold and cruel. Perfect.",
+        "shadow": "Darkness clings to me... feels natural.",
+        "universal": "What power! I'm BURNING with it!"
+      },
+      "maskless_victory_cards": ["iron_defense", "defend", "heavy_strike"],
+      "maskless_victory_quotes": [
+        "Hah! Who needs a mask?!",
+        "I'm tougher than any mask!",
+        "My own hide is enough!",
+        "Masks are for the weak!"
+      ],
+      "affection_quotes": {
+        "-5": ["I'll BURN you for this!", "You're DEAD when I get free!", "I hope you ROT!"],
+        "-4": ["I'm going to make you PAY!", "You're the WORST summoner ever!", "I LOATHE you!"],
+        "-3": ["You're terrible at this!", "I'd rather be anywhere else!", "Stop making me do this!"],
+        "-2": ["I'm still mad at you.", "You owe me BIG TIME.", "Don't think I've forgiven you."],
+        "-1": ["Fine, you're not COMPLETELY useless.", "I guess you're okay... barely.", "Maybe you're trying."],
+        "1": ["Alright, you're actually pretty cool.", "I'm starting to like this arrangement!", "You know what? Not bad!"],
+        "2": ["You're a great summoner!", "I'm glad you pulled me from the grave!", "This is actually FUN!"],
+        "3": ["You're AMAZING!", "I'd follow you anywhere!", "Best summoner EVER!"],
+        "4": ["You're like family to me!", "I'll NEVER leave your side!", "You're the BEST thing that ever happened to me!"]
+      },
+      "defeat_quotes": [
+        "Ow! That hurt!",
+        "I tried my best!",
+        "Sorry... I wasn't strong enough...",
+        "No fair!"
+      ]
+    },
+    {
+      "id": "hollow",
+      "name": "Hollow",
+      "rarity": "rare",
+      "base_blood": 35,
+      "base_attack": 10,
+      "base_defense": 2,
+      "starter_trait": "rage",
+      "special_card": "void_strike",
+      "base_cards": ["slash", "slash", "slash", "slash", "defend", "defend", "defend", "defend"],
+      "quotes": [
+        "...where am I?",
+        "The void was preferable to this.",
+        "You've made a mistake.",
+        "I remember nothing... only darkness.",
+        "Why drag me from oblivion?"
+      ],
+      "blessing_quotes": [
+        "...something feels different.",
+        "I can feel it... faintly.",
+        "...interesting.",
+        "Perhaps I'm not completely empty."
+      ],
+      "mask_break_quotes": [
+        "...empty again.",
+        "The void claims another piece.",
+        "...shattered.",
+        "Nothing lasts."
+      ],
+      "mask_binding_quotes": {
+        "flesh": "...warm. Unfamiliar. Wrong.",
+        "bone": "...cold. Like me. Fitting.",
+        "shadow": "...the void welcomes it.",
+        "universal": "...everything at once. Too much."
+      },
+      "maskless_victory_cards": ["void_strike", "heavy_strike", "slash"],
+      "maskless_victory_quotes": [
+        "...I need nothing.",
+        "Masks are... unnecessary.",
+        "...empty. But strong.",
+        "The void provides."
+      ],
+      "affection_quotes": {
+        "-5": ["...you fill me with hate.", "...I wish you didn't exist.", "...oblivion was better than you."],
+        "-4": ["...you make emptiness painful.", "...I remember anger. Because of you.", "...leave me alone."],
+        "-3": ["...you're a burden.", "...I feel nothing. Except for you. It hurts.", "...why do you do this?"],
+        "-2": ["...still empty. Still hurting.", "...you haven't helped.", "...I don't understand you."],
+        "-1": ["...perhaps you mean well.", "...something small. Not quite empty.", "...you're... trying?"],
+        "1": ["...I feel something. Unfamiliar.", "...you've given me... something.", "...interesting."],
+        "2": ["...I think I understand now.", "...you care. Strange.", "...thank you."],
+        "3": ["...I feel... warmth?", "...you've filled part of the void.", "...I am grateful."],
+        "4": ["...I would be lost without you.", "...you gave me purpose.", "...I am yours."]
+      },
+      "defeat_quotes": [
+        "...empty again.",
+        "...back to nothing.",
+        "...the void calls.",
+        "...I fade..."
+      ]
+    },
+    {
+      "id": "cur",
+      "name": "Cur",
+      "rarity": "common",
+      "base_blood": 35,
+      "base_attack": 7,
+      "base_defense": 4,
+      "starter_trait": "fortify",
+      "special_card": "feral_bite",
+      "base_cards": ["slash", "slash", "slash", "slash", "defend", "defend", "defend", "defend"],
+      "quotes": [
+        "Who's there?! Show yourself!",
+        "I was sleeping in the grave!",
+        "Do you have treats? No? Then why summon me!",
+        "I'll bite! Don't think I won't!",
+        "My eternal rest was disturbed for THIS?"
+      ],
+      "blessing_quotes": [
+        "Good! I'm a good soul!",
+        "*wags tail* More please!",
+        "I knew you cared!",
+        "Best master ever!"
+      ],
+      "mask_break_quotes": [
+        "*whimpers* It broke!",
+        "Ow ow ow!",
+        "That hurt!",
+        "*yelps* My face!"
+      ],
+      "mask_binding_quotes": {
+        "flesh": "*whimpers* It's warm... smells like meat...",
+        "bone": "*sniffs* Bone! I smell bone! Mine now!",
+        "shadow": "*growls nervously* Dark... scary... but mine.",
+        "universal": "*excited whimpering* So many smells!"
+      },
+      "maskless_victory_cards": ["feral_bite", "slash", "defend"],
+      "maskless_victory_quotes": [
+        "I'm a good dog! Strong dog!",
+        "No mask needed! Just teeth!",
+        "*proudly barks* I did it myself!",
+        "My own fur protects me!"
+      ],
+      "affection_quotes": {
+        "-5": ["*vicious snarling* BAD MASTER!", "*snaps teeth* I'll BITE!", "*howls* I HATE YOU!"],
+        "-4": ["*growls constantly*", "*bares teeth* You're MEAN!", "*whimpers angrily* Bad! Bad!"],
+        "-3": ["*ears back* I don't like you!", "*reluctant growl*", "You hurt me..."],
+        "-2": ["*suspicious sniffing*", "Still don't trust...", "*keeps distance*"],
+        "-1": ["*cautious tail wag*", "...maybe okay?", "*sniffs hesitantly* Not so bad?"],
+        "1": ["*tail wags*", "*happy panting* You're nice!", "*playful bark*"],
+        "2": ["*excited jumping* GOOD MASTER!", "*licks face* Friend!", "*tail wagging furiously* I like you!"],
+        "3": ["*constant happy barking* BEST FRIEND!", "*rolls over* I trust you!", "*nuzzles* Love!"],
+        "4": ["*devotedly follows everywhere*", "*whimpers when apart* Need you!", "*protectively stays close* My pack!"]
+      },
+      "defeat_quotes": [
+        "*whimpers* I failed...",
+        "*sad whining* I'm sorry...",
+        "*yelps* Too strong!",
+        "*lies down* I tried..."
+      ]
+    },
+    {
+      "id": "scamp",
+      "name": "Scamp",
+      "rarity": "common",
+      "base_blood": 28,
+      "base_attack": 9,
+      "base_defense": 2,
+      "starter_trait": "rage",
+      "special_card": "quick_strike",
+      "base_cards": ["slash", "slash", "slash", "slash", "defend", "defend", "defend", "defend"],
+      "quotes": [
+        "Oi! I was in the middle of something!",
+        "You can't just yank me around like that!",
+        "Rude! So rude!",
+        "Fine, fine... what do you want?",
+        "This is kidnapping! Soul-napping!"
+      ],
+      "blessing_quotes": [
+        "Ooh, shiny!",
+        "Now that's more like it!",
+        "I feel FAST!",
+        "Can't catch me now!"
+      ],
+      "mask_break_quotes": [
+        "Oi! That's my face!",
+        "Not cool!",
+        "Seriously?!",
+        "That was my good side!"
+      ],
+      "mask_binding_quotes": {
+        "flesh": "Ugh! Gross! It's squishy!",
+        "bone": "Sharp! OW! Hey, that's kinda cool!",
+        "shadow": "Whoa... I can't see my own hands!",
+        "universal": "THIS IS INSANE! I love it!"
+      },
+      "maskless_victory_cards": ["quick_strike", "slash", "defend"],
+      "maskless_victory_quotes": [
+        "Fast and free! No mask slowing me down!",
+        "I'm better without it!",
+        "Look at me! No mask and still winning!",
+        "Who needs a mask when you're this quick?!"
+      ],
+      "affection_quotes": {
+        "-5": ["You're the WORST!", "I'll get you back for this!", "You're a NIGHTMARE!"],
+        "-4": ["You're SO annoying!", "I can't STAND you!", "Why are you like this?!"],
+        "-3": ["Ugh, you again!", "Leave me alone!", "You're insufferable!"],
+        "-2": ["I'm still angry with you.", "Don't expect me to be nice.", "Hmph!"],
+        "-1": ["...I guess you're not THAT bad.", "Okay, MAYBE you're trying.", "Fine, whatever."],
+        "1": ["Hey, you're actually alright!", "This is kinda fun now!", "You're growing on me!"],
+        "2": ["You're pretty cool!", "I'm glad we're together!", "This is great!"],
+        "3": ["You're AWESOME!", "I'd do anything for you!", "You're my best friend!"],
+        "4": ["You're EVERYTHING to me!", "I can't imagine life without you!", "You're PERFECT!"]
+      },
+      "defeat_quotes": [
+        "Ow! Not cool!",
+        "I messed up...",
+        "Sorry! I'll do better!",
+        "That was rough!"
+      ]
+    },
+    {
+      "id": "varmint",
+      "name": "Varmint",
+      "rarity": "common",
+      "base_blood": 32,
+      "base_attack": 6,
+      "base_defense": 6,
+      "starter_trait": "fortify",
+      "special_card": "burrow",
+      "base_cards": ["slash", "slash", "slash", "slash", "defend", "defend", "defend", "defend"],
+      "quotes": [
+        "Squeak! Who woke me?!",
+        "I'll gnaw your ankles for this!",
+        "I was hiding from the afterlife!",
+        "Small I may be, but my grudge is large!",
+        "You'll pay for disturbing my burrow!"
+      ],
+      "blessing_quotes": [
+        "*squeak* I feel stronger!",
+        "Okay, maybe you're not so bad.",
+        "This power... YES!",
+        "I'm unstoppable now!"
+      ],
+      "mask_break_quotes": [
+        "*squeak* NO!",
+        "My defense!",
+        "This is bad!",
+        "*angry squeaking*"
+      ],
+      "mask_binding_quotes": {
+        "flesh": "*squeak!* Heavy! Warm! Strange!",
+        "bone": "*nibble nibble* Tastes like... bone.",
+        "shadow": "*frightened squeak* Where am I?!",
+        "universal": "*confused squeaking* Too much!"
+      },
+      "maskless_victory_cards": ["burrow", "defend", "slash"],
+      "maskless_victory_quotes": [
+        "*squeak* I'm strong on my own!",
+        "No mask can hold this varmint!",
+        "I won! Without a mask! *squeak*",
+        "My own claws are enough!"
+      ],
+      "affection_quotes": {
+        "-5": ["*angry squeaking* I'll gnaw your face off!", "*hisses* ENEMY!", "*violent squeaking*"],
+        "-4": ["*hostile chittering*", "*defensive squeak* Stay away!", "I'll bite!"],
+        "-3": ["*nervous squeaking*", "*suspicious sniffing* Don't like you!", "*squeak* Scary!"],
+        "-2": ["*cautious squeak*", "Still scared...", "*keeps distance*"],
+        "-1": ["*curious squeak*", "...maybe not so bad?", "*tentative sniff*"],
+        "1": ["*happy squeak!*", "*friendly chittering*", "*explores nearby* Nice!"],
+        "2": ["*excited squeaking!*", "*nuzzles* Friend!", "*playful squeaks* Fun!"],
+        "3": ["*joyful chittering!*", "*climbs on shoulder* Best friend!", "*squeaks happily* Love!"],
+        "4": ["*constant happy noises*", "*never leaves side*", "*protective squeak* My human!"]
+      },
+      "defeat_quotes": [
+        "*pained squeak*",
+        "*weak chittering* Sorry...",
+        "*squeaks sadly* Failed...",
+        "*faint squeak*"
+      ]
+    },
+    {
+      "id": "knave",
+      "name": "Knave",
+      "rarity": "rare",
+      "base_blood": 38,
+      "base_attack": 8,
+      "base_defense": 4,
+      "starter_trait": "rage",
+      "special_card": "backstab",
+      "base_cards": ["slash", "slash", "slash", "slash", "defend", "defend", "defend", "defend"],
+      "quotes": [
+        "Clever... pulling me from the shadows.",
+        "What's your game, summoner?",
+        "I was cheating death. You ruined it.",
+        "You'll regret this... eventually.",
+        "I suppose we can make a deal..."
+      ],
+      "blessing_quotes": [
+        "Ah, an investment. Wise.",
+        "I'll remember this... favorably.",
+        "We have an understanding now.",
+        "Perhaps you're not a fool after all."
+      ],
+      "mask_break_quotes": [
+        "Clever shot...",
+        "You'll regret that.",
+        "A costly mistake.",
+        "Tch... my mask."
+      ],
+      "mask_binding_quotes": {
+        "flesh": "Agony... but a useful agony.",
+        "bone": "Cold calculation. I can work with this.",
+        "shadow": "Secrets hide in shadows... I approve.",
+        "universal": "Dangerous power. I'll master it."
+      },
+      "maskless_victory_cards": ["backstab", "heavy_strike", "slash"],
+      "maskless_victory_quotes": [
+        "My skill needs no mask.",
+        "Raw talent is all I need.",
+        "Masks are for amateurs.",
+        "I work better unmasked."
+      ],
+      "affection_quotes": {
+        "-5": ["You'll regret crossing me.", "I'll ruin you for this.", "You've made a fatal mistake."],
+        "-4": ["I despise you.", "You're a fool and a tyrant.", "I'll find a way out of this."],
+        "-3": ["You're not as clever as you think.", "I don't trust you one bit.", "This arrangement displeases me."],
+        "-2": ["I'm keeping score, you know.", "You still owe me.", "Don't think I've forgotten."],
+        "-1": ["Perhaps we can work together... reluctantly.", "You're marginally competent.", "I suppose you're tolerable."],
+        "1": ["You're sharper than I thought.", "I see potential in you.", "Perhaps this partnership has merit."],
+        "2": ["You've earned my respect.", "I trust your judgment.", "We make a good team."],
+        "3": ["You're quite remarkable.", "I'm proud to serve you.", "You've exceeded my expectations."],
+        "4": ["You're the finest ally I could ask for.", "My loyalty is yours completely.", "I would die for you."]
+      },
+      "defeat_quotes": [
+        "Clever... too clever...",
+        "I miscalculated...",
+        "Well played...",
+        "I... underestimated them..."
+      ]
+    },
+    {
+      "id": "brute",
+      "name": "Brute",
+      "rarity": "rare",
+      "base_blood": 50,
+      "base_attack": 12,
+      "base_defense": 3,
+      "starter_trait": "rage",
+      "special_card": "crushing_blow",
+      "base_cards": ["slash", "slash", "slash", "slash", "defend", "defend", "defend", "defend"],
+      "quotes": [
+        "WHO DARES?!",
+        "I'll crush you for this!",
+        "My rage knows no grave!",
+        "You want violence? I AM VIOLENCE!",
+        "I was having the best nightmare!"
+      ],
+      "blessing_quotes": [
+        "MORE POWER!",
+        "YESSS! I AM UNSTOPPABLE!",
+        "CRUSH! DESTROY!",
+        "GIVE ME MORE!"
+      ],
+      "mask_break_quotes": [
+        "RAAAGH! BROKEN!",
+        "MY FACE!",
+        "I'LL TEAR YOU APART!",
+        "SHATTERED!"
+      ],
+      "mask_binding_quotes": {
+        "flesh": "RAAAAGH! BLOOD AND FURY!",
+        "bone": "CRUNCH! SNAP! I AM DEATH!",
+        "shadow": "DARKNESS FUELS MY RAGE!",
+        "universal": "UNLIMITED POWER! DESTROY!"
+      },
+      "maskless_victory_cards": ["crushing_blow", "heavy_strike", "rage_strike"],
+      "maskless_victory_quotes": [
+        "I NEED NO MASK! ONLY RAGE!",
+        "MY FISTS ARE MY MASK!",
+        "PURE STRENGTH! NO HIDING!",
+        "MASKS ARE WEAK! I AM STRONG!"
+      ],
+      "affection_quotes": {
+        "-5": ["I'LL RIP YOU APART!", "YOU'RE DEAD! DEAD!", "I HATE YOU WITH EVERY FIBER!"],
+        "-4": ["YOU MAKE ME SICK!", "I'LL DESTROY YOU!", "ENDLESS RAGE!"],
+        "-3": ["YOU'RE PATHETIC!", "I DON'T WANT TO BE HERE!", "RELEASE ME!"],
+        "-2": ["STILL ANGRY!", "YOU OWE ME BLOOD!", "DON'T TOUCH ME!"],
+        "-1": ["...fine. You're okay.", "MAYBE you're not worthless.", "I guess... not terrible."],
+        "1": ["YOU'RE STRONG!", "I RESPECT POWER!", "GOOD FIGHTS!"],
+        "2": ["YOU'RE A WARRIOR!", "I FIGHT FOR YOU!", "WE ARE MIGHTY!"],
+        "3": ["YOU'RE LEGENDARY!", "BROTHERS IN BATTLE!", "I WOULD DIE FOR YOU!"],
+        "4": ["YOU ARE MY CHIEFTAIN!", "MY STRENGTH IS YOURS!", "ETERNAL LOYALTY!"]
+      },
+      "defeat_quotes": [
+        "NOOO! DEFEATED!",
+        "I... FAILED!",
+        "FORGIVE ME!",
+        "NOT... STRONG... ENOUGH..."
+      ]
+    },
+    {
+      "id": "blight",
+      "name": "Blight",
+      "rarity": "legendary",
+      "base_blood": 45,
+      "base_attack": 11,
+      "base_defense": 6,
+      "starter_trait": "rage",
+      "special_card": "plague_touch",
+      "base_cards": ["slash", "slash", "slash", "slash", "defend", "defend", "defend", "defend"],
+      "quotes": [
+        "Ssss... you reek of desperation.",
+        "I was spreading through the earth... now this.",
+        "You've invited pestilence into your world.",
+        "I shall rot everything you cherish.",
+        "Disturbing me was your final mistake."
+      ],
+      "blessing_quotes": [
+        "Yesss... my disease spreads stronger.",
+        "This power will fester beautifully.",
+        "I am become death... moreso.",
+        "You've made me deadlier. Foolish."
+      ],
+      "mask_break_quotes": [
+        "Sssss... my visage!",
+        "The rot spreads to me now.",
+        "Cracked... like everything else.",
+        "Even I decay..."
+      ],
+      "mask_binding_quotes": {
+        "flesh": "Sssss... festering flesh upon me...",
+        "bone": "Bone and blight... a perfect union.",
+        "shadow": "Darkness corrupts... just like me.",
+        "universal": "All things rot... now I am all things."
+      },
+      "maskless_victory_cards": ["plague_touch", "heavy_strike", "void_strike"],
+      "maskless_victory_quotes": [
+        "Sssss... my disease is mask enough.",
+        "I am pestilence... I need no disguise.",
+        "Masks rot away... I remain.",
+        "My corruption is my strength."
+      ],
+      "affection_quotes": {
+        "-5": ["Sssss... I'll rot you from within.", "You will SUFFER my plague!", "I curse your existence!"],
+        "-4": ["Your flesh will decay...", "I spread hatred for you.", "Sssss... you disgust me."],
+        "-3": ["You reek of failure.", "I am YOUR disease now.", "Sssss... leave me be."],
+        "-2": ["Still bitter...", "You've given me nothing.", "Sssss... distrust."],
+        "-1": ["...perhapsss you're useful.", "Sssss... tolerable.", "I suppose... you try."],
+        "1": ["Sssss... interesting.", "You've earned... respect.", "I sense... kinship?"],
+        "2": ["You understand decay... and growth.", "Sssss... I trust you.", "We are aligned."],
+        "3": ["You are... magnificent.", "Sssss... I serve willingly.", "My blight is yours to command."],
+        "4": ["You are my purpose.", "Sssss... eternal devotion.", "I am yours, always."]
+      },
+      "defeat_quotes": [
+        "Sssss... I rot...",
+        "The decay... claims me...",
+        "Sssss... forgive me...",
+        "Even pestilence... dies..."
+      ]
+    }
+  ]
+}

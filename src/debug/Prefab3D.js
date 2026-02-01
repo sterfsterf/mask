@@ -1177,7 +1177,7 @@ export class MaskPrefab extends Prefab3D {
           console.warn('Could not load texture, using fallback:', this.config.texture, err);
           // Load fallback texture
           const fallbackTexture = textureLoader.load(
-            '/masks/fallback_mask.png',
+            './masks/fallback_mask.png',
             (tex) => {
               tex.minFilter = THREE.LinearFilter;
               tex.magFilter = THREE.NearestFilter;
@@ -1250,15 +1250,15 @@ export class PrefabManager {
 
     // Masks - based on actual mask types from config
     this.prefabs.set('mask_gnarled_visage', new MaskPrefab('mask', { 
-      texture: '/masks/gnarled_visage.png', 
+      texture: './masks/gnarled_visage.png', 
       rarity: 'common' 
     }));
     this.prefabs.set('mask_fleshy_grin', new MaskPrefab('mask', { 
-      texture: '/masks/fleshy_grin.png', 
+      texture: './masks/fleshy_grin.png', 
       rarity: 'common' 
     }));
     this.prefabs.set('mask_iron_grimace', new MaskPrefab('mask', { 
-      texture: '/masks/iron_grimace.png',
+      texture: './masks/iron_grimace.png',
       rarity: 'rare' 
     }));
     this.prefabs.set('mask_scrimshaw_awe', new MaskPrefab('mask', { 

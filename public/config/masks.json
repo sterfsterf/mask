@@ -12,7 +12,7 @@
       "type": "shadow",
       "cards": ["swift_strike"],
       "bind_duration": 3,
-      "texture": "./masks/gnarled_visage.png"
+      "texture": "/masks/gnarled_visage.png"
     },
     {
       "id": "iron_grimace",
@@ -21,7 +21,7 @@
       "type": "flesh",
       "cards": ["fortify_block", "rage_strike_trait"],
       "bind_duration": 5,
-      "texture": "./masks/iron_grimace.png"
+      "texture": "/masks/iron_grimace.png"
     },
     {
       "id": "fleshy_grin",
@@ -30,7 +30,7 @@
       "type": "flesh",
       "cards": ["fortify_block"],
       "bind_duration": 3,
-      "texture": "./masks/fleshy_grin.png"
+      "texture": "/masks/fleshy_grin.png"
     },
     {
       "id": "scrimshaw_awe",

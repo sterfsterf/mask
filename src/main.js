@@ -157,7 +157,7 @@ const createMask = (x, y, z, texturePath = null) => {
 };
 
 // Add floating masks to scene
-const mask1 = createMask(-3, 0, 0, '/masks/gnarled_visage.png');
+const mask1 = createMask(-3, 0, 0, './masks/gnarled_visage.png');
 const mask2 = createMask(3, 0, 0);
 scene.add(mask1);
 scene.add(mask2);

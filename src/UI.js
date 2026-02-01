@@ -2739,7 +2739,7 @@ export class UI {
             <img src="${mask.texture || 'masks/fallback_mask.png'}" alt="${mask.name}" class="mask-image">
             <div class="mask-card-info">
               <strong>${mask.name}</strong>
-              <div class="mask-traits">${mask.traits.join(', ')}</div>
+              <div class="mask-traits">${mask.cards ? mask.cards.join(', ') : ''}</div>
               ${mask.sold ? `
                 <button class="buy-btn sold-btn" disabled>SOLD OUT</button>
               ` : `
@@ -4072,23 +4072,23 @@ export class UI {
         }
         break;
       case 'remove_negative_trait':
-        if (soul.negativeTraits.length > 0) {
-          const removedTrait = soul.negativeTraits[soul.negativeTraits.length - 1];
-          const traitData = this.game.config.traits[removedTrait];
-          soul.negativeTraits.pop();
-          effectText = `${traitData ? traitData.name : 'Curse'} Removed!`;
+        if (soul.negativeCards.length > 0) {
+          const removedCard = soul.negativeCards[soul.negativeCards.length - 1];
+          const cardData = this.game.config.getCard(removedCard);
+          soul.negativeCards.pop();
+          effectText = `${cardData ? cardData.name : 'Curse'} Removed!`;
           affectionQuote = soul.changeAffection(8); // +8 for removing curse
-          console.log('Negative trait removed');
+          console.log('Negative card removed');
         }
         break;
       case 'add_positive_trait':
         if (soul.mask) {
-          const traits = this.game.getRandomPositiveTraits(1);
-          const traitData = this.game.config.traits[traits[0].id];
-          soul.addPositiveTraitToMask(traits[0].id);
-          effectText = `${traitData ? traitData.name : 'New Trait'}!`;
-          affectionQuote = soul.changeAffection(6); // +6 for positive trait
-          console.log('Positive trait added');
+          const cards = this.game.getRandomPositiveCards(1);
+          const cardData = this.game.config.getCard(cards[0]);
+          soul.addPositiveCardToMask(cards[0]);
+          effectText = `${cardData ? cardData.name : 'New Card'}!`;
+          affectionQuote = soul.changeAffection(6); // +6 for positive card
+          console.log('Positive card added');
         }
         break;
       case 'dark_energy':
@@ -5842,7 +5842,7 @@ export class UI {
         soulsBar.style.display = 'flex';
       }
       
-      this.renderTraitChoice(result);
+      this.renderCardChoice(result);
     }
   }
 
@@ -6156,8 +6156,8 @@ export class UI {
     typeNextChar();
   }
 
-  renderTraitChoice(battleResult) {
-    const traitScreen = document.getElementById('trait-choice-screen');
+  renderCardChoice(battleResult) {
+    const cardScreen = document.getElementById('trait-choice-screen');
     const isPositive = battleResult.result === 'victory';
     const soul = this.game.combat.soul;
     const hasMask = soul && soul.mask;
@@ -6171,7 +6171,7 @@ export class UI {
       
       if (isLastSoul) {
         // Game Over screen
-        traitScreen.innerHTML = `
+        cardScreen.innerHTML = `
           <div class="panel" style="display: flex; flex-direction: column; align-items: center;">
             <h2>💀 GAME OVER</h2>
             <p>${soul.name} was your last soul...</p>
@@ -6183,7 +6183,7 @@ export class UI {
         `;
       } else {
         // Regular defeat - just return to map
-        traitScreen.innerHTML = `
+        cardScreen.innerHTML = `
           <div class="panel" style="display: flex; flex-direction: column; align-items: center;">
             <h2>💀 DEFEAT</h2>
             <p>${soul.name} was defeated...</p>
@@ -6198,12 +6198,12 @@ export class UI {
       return;
     }
     
-    // If victory and no mask (or mask was broken), show soul-specific cards instead of traits
+    // If victory and no mask (or mask was broken), show soul-specific cards instead of mask cards
     if (isPositive && (!hasMask || maskBroken)) {
       const soulType = this.game.config.soulConfig.types.find(t => t.id === soul.type);
       const masklessCards = soulType?.maskless_victory_cards || ['slash', 'defend', 'heavy_strike'];
       
-      traitScreen.innerHTML = `
+      cardScreen.innerHTML = `
         <div class="panel">
           <h2>🎉 VICTORY!</h2>
           <p>Choose a card to add to ${soul.name}'s deck:</p>
@@ -6237,22 +6237,21 @@ export class UI {
       return;
     }
     
-    traitScreen.innerHTML = `
+    cardScreen.innerHTML = `
       <div class="panel">
         <h2>${isPositive ? '🎉 VICTORY!' : '💀 DEFEAT'}</h2>
-        <p>${isPositive ? 'Choose a trait to add to your mask:' : 'Your mask broke! Choose a curse for your soul:'}</p>
+        <p>${isPositive ? 'Choose a card to add to your mask:' : 'Your mask broke! Choose a curse for your soul:'}</p>
       </div>
 
       <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 20px;">
-        ${battleResult.availableTraits.map(trait => {
-          // Get the card for this trait
-          const card = this.game.config.getCard(trait.card);
+        ${battleResult.availableCards.map(cardId => {
+          const card = this.game.config.getCard(cardId);
           if (!card) return '';
           
           const sourceIcon = isPositive ? '👺' : '👿';
           
           return `
-            <div class="card ${card.type} trait-card-choice" onclick="window.ui.chooseTrait('${trait.id}', ${isPositive})">
+            <div class="card ${card.type} trait-card-choice" onclick="window.ui.chooseCard('${cardId}', ${isPositive})">
               <div class="card-cost-circle">${card.cost}</div>
               <div class="card-source-icon">${sourceIcon}</div>
               <div class="card-header">
@@ -6289,13 +6288,13 @@ export class UI {
     this.renderMap();
   }
 
-  chooseTrait(traitId, isPositive) {
+  chooseCard(cardId, isPositive) {
     if (isPositive) {
       sfx.positive();
     } else {
       sfx.negative();
     }
-    this.game.applyTraitChoice(traitId, isPositive);
+    this.game.applyCardChoice(cardId, isPositive);
     
     // Mark battle node as complete
     this.game.state.completeCurrentNode();

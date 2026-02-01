@@ -225,8 +225,8 @@ export class Game {
       return {
         success: true,
         result: 'victory',
-        needsTraitChoice: true,
-        availableTraits: this.getRandomPositiveTraits(3)
+        needsCardChoice: true,
+        availableCards: this.getRandomPositiveCards(3)
       };
     } else {
       // Mask breaks on defeat
@@ -237,19 +237,19 @@ export class Game {
       return {
         success: true,
         result: 'defeat',
-        needsTraitChoice: true,
-        availableTraits: this.getRandomNegativeTraits(3)
+        needsCardChoice: true,
+        availableCards: this.getRandomNegativeCards(3)
       };
     }
   }
 
-  getRandomPositiveTraits(count) {
-    const positive = Object.values(this.config.traits).filter(t => t.type === 'positive');
+  getRandomPositiveCards(count) {
+    const positive = ['rage_strike_trait', 'fortify_block', 'swift_strike', 'iron_defense', 'void_strike'];
     return this.sampleArray(positive, count);
   }
 
-  getRandomNegativeTraits(count) {
-    const negative = Object.values(this.config.traits).filter(t => t.type === 'negative');
+  getRandomNegativeCards(count) {
+    const negative = ['cracked_weakness', 'fearful_hesitation', 'curse_drain'];
     return this.sampleArray(negative, count);
   }
 
@@ -258,19 +258,19 @@ export class Game {
     return shuffled.slice(0, count);
   }
 
-  applyTraitChoice(traitId, isPositive) {
+  applyCardChoice(cardId, isPositive) {
     const soul = this.combat.soul;
     
     if (isPositive) {
       if (soul.mask) {
-        soul.addPositiveTraitToMask(traitId);
-        console.log(`✓ Added positive trait ${traitId} to ${soul.name}'s mask`);
+        soul.addPositiveCardToMask(cardId);
+        console.log(`✓ Added positive card ${cardId} to ${soul.name}'s mask`);
       } else {
-        console.log(`⚠️ ${soul.name} has no mask - positive trait ${traitId} forfeited`);
+        console.log(`⚠️ ${soul.name} has no mask - positive card ${cardId} forfeited`);
       }
     } else {
-      soul.addNegativeTrait(traitId);
-      console.log(`✓ Added negative trait ${traitId} to ${soul.name}`);
+      soul.addNegativeCard(cardId);
+      console.log(`✓ Added negative card ${cardId} to ${soul.name}`);
     }
 
     this.combat = null;
