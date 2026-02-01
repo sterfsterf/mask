@@ -432,6 +432,26 @@ export class UI {
         90% { transform: translateX(-3px) translateY(0); }
       }
 
+      @keyframes soul-card-shake {
+        0%, 100% { transform: translateX(0) translateY(0); }
+        10% { transform: translateX(-8px) translateY(3px); }
+        20% { transform: translateX(8px) translateY(-3px); }
+        30% { transform: translateX(-8px) translateY(-2px); }
+        40% { transform: translateX(8px) translateY(2px); }
+        50% { transform: translateX(-6px) translateY(-3px); }
+        60% { transform: translateX(6px) translateY(3px); }
+        70% { transform: translateX(-5px) translateY(2px); }
+        80% { transform: translateX(5px) translateY(-2px); }
+        90% { transform: translateX(-3px) translateY(0); }
+      }
+
+      @keyframes fade-in-out {
+        0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        15% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        85% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+      }
+
       .health-fill-back {
         position: absolute;
         top: 0;
@@ -506,7 +526,7 @@ export class UI {
       .trait-choice:hover {
         border-color: #fff;
         background: rgba(50, 50, 50, 0.95);
-        transform: translateY(-8px) scale(1.02);
+        transform: translateY(-4px) scale(1.01);
       }
 
       .card.trait-choice {
@@ -514,7 +534,7 @@ export class UI {
       }
 
       .card.trait-choice:hover {
-        transform: translateY(-8px) scale(1.02) !important;
+        transform: scale(1.05) !important;
       }
 
       .trait-card-choice {
@@ -523,7 +543,7 @@ export class UI {
       }
 
       .trait-card-choice:hover {
-        transform: translateY(-20px) scale(1.05);
+        transform: scale(1.05);
         box-shadow: 0 10px 30px rgba(255, 0, 51, 0.8);
         z-index: 10;
       }
@@ -556,7 +576,7 @@ export class UI {
         flex-wrap: wrap;
         justify-content: center;
         position: fixed;
-        bottom: 160px;
+        bottom: 200px;
         left: 50%;
         transform: translateX(-50%);
         max-width: 800px;
@@ -710,10 +730,11 @@ export class UI {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 4px;
-        padding: 8px;
+        gap: 1px;
+        padding: 8px 8px 4px 8px;
         background: rgba(30, 30, 30, 0.9);
         border: 2px solid #666;
+        min-height: 160px;
       }
 
       .soul-preview-mini {
@@ -724,11 +745,58 @@ export class UI {
       .soul-name {
         font-size: 11px;
         font-weight: bold;
+        margin-bottom: 2px;
       }
 
       .soul-stats {
         font-size: 10px;
         color: #aaa;
+        width: 100%;
+        padding: 0 4px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        height: 12px;
+        position: relative;
+      }
+
+      .soul-stats .stat-icon {
+        font-size: 10px;
+        line-height: 1;
+      }
+
+      .soul-stats .stat-values {
+        display: none;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        white-space: nowrap;
+        font-size: 9px;
+        color: #fff;
+        -webkit-text-stroke: 1px #000;
+        paint-order: stroke fill;
+        font-weight: bold;
+        z-index: 1;
+      }
+
+      .soul-stats .health-bar {
+        flex: 1;
+        height: 8px;
+        background: #333;
+        border: 1px solid #666;
+        border-radius: 2px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .soul-stats .health-bar-fill {
+        height: 100%;
+        background: linear-gradient(to bottom, #ff6666, #cc0000);
+        transition: width 0.3s ease;
+      }
+
+      .soul-card-mini:hover .soul-stats .stat-values {
+        display: block;
       }
 
       .has-mask {
@@ -748,23 +816,71 @@ export class UI {
       .mask-health {
         font-size: 10px;
         color: #ffd700;
+        min-height: 12px;
+        width: 100%;
+        padding: 0 4px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        height: 12px;
+        position: relative;
+      }
+
+      .mask-health .stat-icon {
+        font-size: 10px;
+        line-height: 1;
+      }
+
+      .mask-health .stat-values {
+        display: none;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        white-space: nowrap;
+        font-size: 9px;
+        color: #fff;
+        -webkit-text-stroke: 1px #000;
+        paint-order: stroke fill;
+        font-weight: bold;
+        z-index: 1;
+      }
+
+      .mask-health .health-bar {
+        flex: 1;
+        height: 8px;
+        background: #333;
+        border: 1px solid #999;
+        border-radius: 2px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .mask-health .health-bar-fill {
+        height: 100%;
+        background: linear-gradient(to bottom, #ffd700, #cc9900);
+        transition: width 0.3s ease;
+      }
+
+      .soul-card-mini:hover .mask-health .stat-values {
+        display: block;
       }
 
       .view-deck-btn {
         position: absolute;
-        bottom: 4px;
-        right: 4px;
+        top: 0;
+        right: 0;
         background: rgba(0, 0, 0, 0.8);
         border: 1px solid #666;
-        padding: 2px 6px;
+        padding: 1px 1px;
         font-size: 14px;
         cursor: pointer;
         border-radius: 3px;
+        z-index: 1;
       }
 
       .view-deck-btn:hover {
         border-color: #fff;
-        background: rgba(0, 0, 0, 1);
+        background: rgba(0, 0, 1);
       }
 
       .map-visual {
@@ -913,7 +1029,7 @@ export class UI {
 
       .energy-display-left {
         position: fixed;
-        bottom: 160px;
+        bottom: 200px;
         left: 20px;
         z-index: 50;
         background: rgba(10, 10, 10, 0.9);
@@ -959,12 +1075,12 @@ export class UI {
 
       .pile-viewer-btn.right-middle {
         right: 20px;
-        top: 160px;
+        bottom: 180px;
       }
 
       .end-turn-btn {
         position: fixed;
-        bottom: 160px;
+        bottom: 200px;
         right: 20px;
         z-index: 50;
         background: #1a1a1a;
@@ -1009,7 +1125,7 @@ export class UI {
       .trait-choice:hover {
         border-color: #fff;
         background: rgba(50, 50, 50, 0.95);
-        transform: translateY(-8px) scale(1.02);
+        transform: translateY(-4px) scale(1.01);
       }
 
       .card.trait-choice {
@@ -1017,7 +1133,7 @@ export class UI {
       }
 
       .card.trait-choice:hover {
-        transform: translateY(-8px) scale(1.02) !important;
+        transform: scale(1.05) !important;
       }
 
       .trait-card-choice {
@@ -1026,7 +1142,7 @@ export class UI {
       }
 
       .trait-card-choice:hover {
-        transform: translateY(-20px) scale(1.05);
+        transform: scale(1.05);
         box-shadow: 0 10px 30px rgba(255, 0, 51, 0.8);
         z-index: 10;
       }
@@ -1059,7 +1175,7 @@ export class UI {
         flex-wrap: wrap;
         justify-content: center;
         position: fixed;
-        bottom: 160px;
+        bottom: 200px;
         left: 50%;
         transform: translateX(-50%);
         max-width: 800px;
@@ -1406,7 +1522,7 @@ export class UI {
 
       #shrine-instruction {
         position: fixed;
-        bottom: 160px;
+        bottom: 200px;
         left: 50%;
         transform: translateX(-50%);
         z-index: 10;
@@ -1421,7 +1537,7 @@ export class UI {
 
       .shrine-skip-btn {
         position: fixed;
-        bottom: 160px;
+        bottom: 200px;
         right: 20px;
         z-index: 10;
         pointer-events: auto;
@@ -1454,7 +1570,7 @@ export class UI {
 
       #shop-instruction {
         position: fixed;
-        bottom: 160px;
+        bottom: 170px;
         left: 50%;
         transform: translateX(-50%);
         z-index: 10;
@@ -1465,7 +1581,7 @@ export class UI {
 
       .shop-leave-btn {
         position: fixed;
-        bottom: 160px;
+        bottom: 200px;
         right: 20px;
         z-index: 10;
         pointer-events: auto;
@@ -1508,7 +1624,7 @@ export class UI {
 
       .void-summon-btn {
         position: fixed;
-        bottom: 160px;
+        bottom: 200px;
         left: 50%;
         transform: translateX(-50%);
         z-index: 10;
@@ -1539,7 +1655,7 @@ export class UI {
 
       .void-leave-btn {
         position: fixed;
-        bottom: 160px;
+        bottom: 200px;
         right: 20px;
         z-index: 10;
         pointer-events: auto;
@@ -1610,19 +1726,33 @@ export class UI {
     soulsBar.className = 'souls-bar';
     soulsBar.innerHTML = `
       ${souls.map(m => {
+        // Calculate health percentages for bars
+        const healthPercent = (m.blood / m.maxBlood) * 100;
+        
         // Display actual mask health if equipped
         let maskHealth = '';
         if (m.mask && m.maskBlood !== undefined && m.maskMaxBlood !== undefined) {
-          maskHealth = `<div class="mask-health">🎭 ${m.maskBlood}/${m.maskMaxBlood}</div>`;
+          const maskHealthPercent = (m.maskBlood / m.maskMaxBlood) * 100;
+          maskHealth = `<div class="mask-health">
+            <span class="stat-icon">🎭</span>
+            <span class="stat-values">${m.maskBlood}/${m.maskMaxBlood}</span>
+            <div class="health-bar"><div class="health-bar-fill" style="width: ${maskHealthPercent}%"></div></div>
+          </div>`;
+        } else {
+          // Reserve space for mask health even if no mask
+          maskHealth = `<div class="mask-health"></div>`;
         }
         
         return `
           <div class="soul-card-mini" data-soul-id="${m.id}">
             <canvas class="soul-preview-mini" id="soul-preview-mini-${m.id}" width="80" height="80"></canvas>
             <div class="soul-name">${m.name}</div>
-            <div class="soul-stats">❤️${m.blood}/${m.maxBlood}</div>
+            <div class="soul-stats">
+              <span class="stat-icon">❤️</span>
+              <span class="stat-values">${m.blood}/${m.maxBlood}</span>
+              <div class="health-bar"><div class="health-bar-fill" style="width: ${healthPercent}%"></div></div>
+            </div>
             ${maskHealth}
-            ${m.mask ? '<div class="has-mask">🎭</div>' : ''}
             ${m.tired ? '<div class="is-tired">💤</div>' : ''}
             <button class="view-deck-btn" onclick="window.ui.viewSoulDeck(${m.id}); event.stopPropagation();">🃏</button>
           </div>
@@ -3759,20 +3889,157 @@ export class UI {
   }
 
   equipTempMaskTo(soulId) {
-    sfx.buttonClick();
+    const soul = this.game.state.souls.find(m => m.id === soulId);
+    const tempMask = this.game.tempMask;
+    if (!soul || !tempMask) return;
+    
+    // Get binding quote based on mask type
+    const soulType = this.game.config.soulConfig.types.find(t => t.id === soul.type);
+    const maskType = tempMask.type || 'universal';
+    const bindingQuote = soulType?.mask_binding_quotes?.[maskType] || "Agh! It binds to me!";
+    
+    // Play twinkle sound and show binding animation
+    sfx.shrineTwinkle();
+    
     const result = this.game.equipTempMask(soulId);
     if (result.success) {
       console.log('Mask equipped!');
-      this.disposeMaskShopScene();
-      this.renderMaskShop();
-      // Re-render the soul preview in the bottom bar
-      const soul = this.game.state.souls.find(m => m.id === soulId);
-      if (soul) {
-        setTimeout(() => this.renderSoulPreview(soul, true), 50);
-      }
+      
+      // Immediately update the soul card in the souls bar to show mask health
+      this.updateSoulCardInBar(soul);
+      
+      // Immediately re-render the soul 3D preview to show the mask
+      setTimeout(() => this.renderSoulPreview(soul, true), 50);
+      
+      // Show mask binding reaction (shake + quote)
+      this.showMaskBindingReaction(soulId, tempMask.name, bindingQuote);
+      
+      // Wait for animation to complete before re-rendering shop
+      setTimeout(() => {
+        this.disposeMaskShopScene();
+        this.renderMaskShop();
+      }, 2000);
     } else {
       alert(result.error);
     }
+  }
+
+  updateSoulCardInBar(soul) {
+    // Update the soul card HTML to include mask health
+    const soulCard = document.querySelector(`.soul-card-mini[data-soul-id="${soul.id}"]`);
+    if (!soulCard) return;
+    
+    // Check if mask health display already exists
+    let maskHealthDiv = soulCard.querySelector('.mask-health');
+    
+    if (soul.mask && soul.maskBlood !== undefined && soul.maskMaxBlood !== undefined) {
+      const maskHealthPercent = (soul.maskBlood / soul.maskMaxBlood) * 100;
+      
+      // Create or update mask health display
+      if (!maskHealthDiv) {
+        maskHealthDiv = document.createElement('div');
+        maskHealthDiv.className = 'mask-health';
+        // Insert after soul-stats
+        const statsDiv = soulCard.querySelector('.soul-stats');
+        if (statsDiv) {
+          statsDiv.after(maskHealthDiv);
+        }
+      }
+      maskHealthDiv.innerHTML = `
+        <span class="stat-icon">🎭</span>
+        <span class="stat-values">${soul.maskBlood}/${soul.maskMaxBlood}</span>
+        <div class="health-bar"><div class="health-bar-fill" style="width: ${maskHealthPercent}%"></div></div>
+      `;
+    } else if (maskHealthDiv) {
+      // Clear mask health display if no mask, but keep the div for spacing
+      maskHealthDiv.innerHTML = '';
+    }
+  }
+
+  showMaskBindingReaction(soulId, maskName, quote) {
+    // Find the soul card in the souls bar
+    const soulCard = document.querySelector(`.soul-card-mini[data-soul-id="${soulId}"]`);
+    if (!soulCard) return;
+    
+    // Add shake animation
+    soulCard.style.animation = 'soul-card-shake 0.5s ease-in-out';
+    setTimeout(() => {
+      soulCard.style.animation = '';
+    }, 500);
+    
+    // Show floating mask name
+    const maskText = document.createElement('div');
+    maskText.style.cssText = `
+      position: fixed;
+      left: 50%;
+      top: 40%;
+      transform: translate(-50%, -50%);
+      z-index: 200;
+      background: rgba(10, 10, 10, 0.95);
+      border: 2px solid #ffd700;
+      padding: 15px 25px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #ffd700;
+      text-align: center;
+      pointer-events: none;
+      opacity: 0;
+      animation: fade-in-out 2s ease-in-out;
+    `;
+    maskText.textContent = `🎭 ${maskName} Bound!`;
+    document.body.appendChild(maskText);
+    
+    setTimeout(() => maskText.remove(), 2000);
+    
+    // Show soul's binding quote with typewriter effect
+    setTimeout(() => {
+      const quoteDiv = document.createElement('div');
+      quoteDiv.style.cssText = `
+        position: fixed;
+        left: 50%;
+        bottom: 200px;
+        transform: translateX(-50%);
+        z-index: 200;
+        background: #000000;
+        padding: 15px 20px;
+        border-radius: 15px;
+        max-width: 300px;
+        color: #fff;
+        font-size: 14px;
+        font-style: italic;
+        text-align: center;
+        line-height: 1.4;
+        pointer-events: none;
+      `;
+      document.body.appendChild(quoteDiv);
+      
+      // Typewriter effect
+      let charIndex = 0;
+      const typeSpeed = 50;
+      
+      const typeNextChar = () => {
+        if (charIndex < quote.length) {
+          quoteDiv.textContent += quote[charIndex];
+          
+          if (quote[charIndex] !== ' ') {
+            const pitch = 200 + Math.random() * 200;
+            sfx.playTone(pitch, 0.05, 0.15, 'square');
+          }
+          
+          charIndex++;
+          setTimeout(typeNextChar, typeSpeed);
+        } else {
+          setTimeout(() => {
+            quoteDiv.style.transition = 'opacity 0.5s';
+            quoteDiv.style.opacity = '0';
+            setTimeout(() => quoteDiv.remove(), 500);
+          }, 800);
+        }
+      };
+      
+      typeNextChar();
+    }, 300);
   }
 
   applyShrineEffect(soulId, effect, value) {
@@ -3788,6 +4055,7 @@ export class UI {
     if (!soul) return;
 
     let effectText = '';
+    let affectionQuote = null;
     
     switch(effect) {
       case 'remove_tired':
@@ -3795,6 +4063,7 @@ export class UI {
           const removedCount = soul.tiredCount;
           soul.tiredCount = 0;
           effectText = `${removedCount} Tired Card${removedCount > 1 ? 's' : ''} Removed! 💤`;
+          affectionQuote = soul.changeAffection(5); // +5 for rest
           console.log(`Removed ${removedCount} tired cards`);
         } else {
           effectText = 'Already Rested! 😊';
@@ -3806,6 +4075,7 @@ export class UI {
           const traitData = this.game.config.traits[removedTrait];
           soul.negativeTraits.pop();
           effectText = `${traitData ? traitData.name : 'Curse'} Removed!`;
+          affectionQuote = soul.changeAffection(8); // +8 for removing curse
           console.log('Negative trait removed');
         }
         break;
@@ -3815,6 +4085,7 @@ export class UI {
           const traitData = this.game.config.traits[traits[0].id];
           soul.addPositiveTraitToMask(traits[0].id);
           effectText = `${traitData ? traitData.name : 'New Trait'}!`;
+          affectionQuote = soul.changeAffection(6); // +6 for positive trait
           console.log('Positive trait added');
         }
         break;
@@ -3832,6 +4103,7 @@ export class UI {
         const healAmount = soul.maxBlood - soul.blood;
         soul.blood = soul.maxBlood;
         effectText = `+${healAmount} ❤️ Fully Healed!`;
+        affectionQuote = soul.changeAffection(7); // +7 for full heal
         console.log('Soul fully healed');
         break;
       case 'increase_max_hp':
@@ -3843,7 +4115,9 @@ export class UI {
     }
 
     // Show floating effect text and soul quote
-    this.showShrineReaction(soulId, effectText, soul.getBlessingQuote());
+    // If affection quote exists, show that; otherwise show blessing quote
+    const quoteToShow = affectionQuote || soul.getBlessingQuote();
+    this.showShrineReaction(soulId, effectText, quoteToShow);
   }
   
   showShrineReaction(soulId, effectText, quote) {
@@ -3977,6 +4251,9 @@ export class UI {
   startBattleWith(soulId) {
     const result = this.game.startBattle(soulId);
     if (result.success) {
+      // Reset defeat sequence flag for this battle
+      this.defeatSequenceShown = false;
+      
       // Add soul to existing battle scene and animate in
       this.addSoulToBattleScene(result.combatState);
       
@@ -4178,7 +4455,23 @@ export class UI {
     }
 
     if (state.result) {
-      setTimeout(() => this.handleBattleEnd(), 1000);
+      // Check if there are more souls alive
+      const aliveSouls = this.game.state.souls.filter(s => s.blood > 0);
+      
+      // If this is a defeat and we haven't shown the defeat sequence yet
+      if (state.result === 'defeat' && !this.defeatSequenceShown) {
+        this.defeatSequenceShown = true;
+        
+        if (aliveSouls.length > 0) {
+          // More souls alive - show defeat sequence then let them choose another soul
+          setTimeout(() => this.showDefeatSequenceAndContinue(), 500);
+        } else {
+          // No souls left - show defeat sequence then game over
+          setTimeout(() => this.showDefeatSequence(), 500);
+        }
+      } else if (state.result === 'victory') {
+        setTimeout(() => this.handleBattleEnd(), 1000);
+      }
     }
   }
 
@@ -4942,6 +5235,12 @@ export class UI {
     if (result.success) {
       sfx.cardPlay();
       
+      // Decrease affection if playing a scar card
+      if (result.scarCard) {
+        const soul = this.game.combat.soul;
+        soul.changeAffection(-3); // -3 for playing scar card (mask breaking consequence)
+      }
+      
       // Trigger attack animation if card was an attack
       if (result.animEvent && result.animEvent.type === 'soul_attack') {
         this.startAttackAnimation('soul', result.animEvent);
@@ -5515,23 +5814,335 @@ export class UI {
   handleBattleEnd() {
     const result = this.game.resolveBattle();
     if (result.success) {
-      // Play victory or defeat stinger
+      // Play victory stinger (defeat stinger played in defeat sequence)
       if (result.result === 'victory') {
         sfx.victory();
-      } else {
-        sfx.defeat();
       }
       
       // Dispose battle scene
       this.disposeBattleScene();
       
-      // Show souls bar again when battle ends
+      // Show souls bar again when battle ends (but hide it if it's game over)
+      const aliveSouls = this.game.state.souls.filter(s => s.blood > 0);
+      const isGameOver = result.result === 'defeat' && aliveSouls.length === 0;
+      
       const soulsBar = document.querySelector('.souls-bar');
-      if (soulsBar) {
+      if (soulsBar && !isGameOver) {
         soulsBar.style.display = 'flex';
       }
+      
       this.renderTraitChoice(result);
     }
+  }
+
+  showDefeatSequence() {
+    const soul = this.game.combat.soul;
+    const quote = soul.getDefeatQuote();
+    
+    // Play defeat stinger
+    sfx.defeat();
+    
+    if (!this.battleScene) return;
+    
+    const { camera, soulMesh } = this.battleScene;
+    if (!camera || !soulMesh) {
+      // No 3D scene, skip to end
+      setTimeout(() => this.handleBattleEnd(), 1500);
+      return;
+    }
+    
+    // Zoom camera in on soul dramatically
+    const startPos = camera.position.clone();
+    const targetPos = new THREE.Vector3(
+      soulMesh.position.x + 1.5,
+      soulMesh.position.y + 1,
+      soulMesh.position.z + 1.5
+    );
+    
+    const startTime = Date.now();
+    const zoomDuration = 1000;
+    
+    const animateZoom = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / zoomDuration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // Ease out cubic
+      
+      camera.position.lerpVectors(startPos, targetPos, eased);
+      camera.lookAt(soulMesh.position.x, soulMesh.position.y + 1, soulMesh.position.z);
+      
+      if (progress < 1) {
+        requestAnimationFrame(animateZoom);
+      } else {
+        // Zoom complete, show quote
+        this.showDefeatQuote(soul.id, quote, false); // false = show game over after
+      }
+    };
+    
+    animateZoom();
+  }
+
+  showDefeatSequenceAndContinue() {
+    const soul = this.game.combat.soul;
+    const quote = soul.getDefeatQuote();
+    
+    // Play defeat stinger
+    sfx.defeat();
+    
+    // Show souls bar immediately so we can show the quote above the defeated soul
+    const soulsBar = document.querySelector('.souls-bar');
+    if (soulsBar) {
+      soulsBar.style.display = 'flex';
+    }
+    
+    if (!this.battleScene) return;
+    
+    const { camera, soulMesh } = this.battleScene;
+    if (!camera || !soulMesh) {
+      // No 3D scene, skip to continue
+      setTimeout(() => this.showDefeatQuote(soul.id, quote, true), 500);
+      return;
+    }
+    
+    // Zoom camera in on soul dramatically
+    const startPos = camera.position.clone();
+    const targetPos = new THREE.Vector3(
+      soulMesh.position.x + 1.5,
+      soulMesh.position.y + 1,
+      soulMesh.position.z + 1.5
+    );
+    
+    const startTime = Date.now();
+    const zoomDuration = 1000;
+    
+    const animateZoom = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / zoomDuration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // Ease out cubic
+      
+      camera.position.lerpVectors(startPos, targetPos, eased);
+      camera.lookAt(soulMesh.position.x, soulMesh.position.y + 1, soulMesh.position.z);
+      
+      if (progress < 1) {
+        requestAnimationFrame(animateZoom);
+      } else {
+        // Zoom complete, show quote
+        this.showDefeatQuote(soul.id, quote, true); // true = show soul choice after
+      }
+    };
+    
+    animateZoom();
+  }
+
+  showSoulChoiceForContinue() {
+    // Soul bar is already visible from defeat sequence
+    
+    // Add a prompt message
+    const battleScreen = document.getElementById('battle-screen');
+    const existingPrompt = document.getElementById('soul-choice-prompt');
+    if (existingPrompt) existingPrompt.remove();
+    
+    const prompt = document.createElement('div');
+    prompt.id = 'soul-choice-prompt';
+    prompt.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 20;
+      background: rgba(0, 0, 0, 0.95);
+      padding: 30px 50px;
+      border-radius: 15px;
+      border: 3px solid #f00;
+      color: #fff;
+      font-size: 24px;
+      font-weight: bold;
+      text-align: center;
+      box-shadow: 0 10px 40px rgba(255, 0, 0, 0.5);
+    `;
+    prompt.textContent = '💀 Choose another soul to continue the battle';
+    battleScreen.appendChild(prompt);
+    
+    // Make alive souls clickable
+    setTimeout(() => {
+      const aliveSouls = this.game.getSouls(); // Gets only alive souls
+      const allSoulCards = Array.from(document.querySelectorAll('.soul-card-mini'));
+      
+      allSoulCards.forEach(card => {
+        const soulId = card.getAttribute('data-soul-id');
+        const soul = aliveSouls.find(s => s.id === soulId);
+        
+        if (soul) {
+          // This soul is alive - make it clickable
+          card.style.cursor = 'pointer';
+          card.style.border = '2px solid #0f0';
+          card.style.transform = 'scale(1.05)';
+          card.style.boxShadow = '0 0 20px rgba(0, 255, 0, 0.5)';
+          card.onclick = () => {
+            prompt.remove();
+            this.continueBattleWith(soul.id);
+          };
+        } else {
+          // This soul is dead - grey it out
+          card.style.opacity = '0.4';
+          card.style.filter = 'grayscale(1)';
+          card.style.cursor = 'not-allowed';
+        }
+      });
+    }, 100);
+  }
+
+  continueBattleWith(soulId) {
+    // Reset the combat with the new soul against the same enemy
+    const enemy = this.game.combat.enemy;
+    
+    // End the current combat (clears the old soul's data)
+    this.game.endCombat();
+    
+    // Start a new battle with the new soul against the same enemy
+    const result = this.game.startBattleWithEnemy(soulId, enemy);
+    if (result.success) {
+      // Reset defeat sequence flag for this new attempt
+      this.defeatSequenceShown = false;
+      
+      // Remove the defeated soul from the scene
+      if (this.battleScene && this.battleScene.soulMesh) {
+        this.battleScene.scene.remove(this.battleScene.soulMesh);
+        this.battleScene.soulMesh = null;
+      }
+      if (this.battleScene && this.battleScene.maskMesh) {
+        this.battleScene.scene.remove(this.battleScene.maskMesh);
+        this.battleScene.maskMesh = null;
+      }
+      
+      // Reset camera position
+      if (this.battleScene && this.battleScene.camera) {
+        this.battleScene.camera.position.set(0, 2, 5);
+        this.battleScene.camera.lookAt(0, 1, 0);
+      }
+      
+      // Add the new soul to the scene
+      this.addSoulToBattleScene(result.combatState);
+      
+      // Hide souls bar again
+      const soulsBar = document.querySelector('.souls-bar');
+      if (soulsBar) {
+        soulsBar.style.display = 'none';
+      }
+      
+      // Reset soul card styling
+      document.querySelectorAll('.soul-card-mini').forEach(card => {
+        card.style.cursor = '';
+        card.style.border = '';
+        card.style.transform = '';
+        card.style.boxShadow = '';
+        card.onclick = null;
+      });
+    }
+  }
+
+  showDefeatQuote(soulId, quote, continueAfter) {
+    if (!quote) {
+      // No quote, proceed to next step
+      setTimeout(() => {
+        if (continueAfter) {
+          this.showSoulChoiceForContinue();
+        } else {
+          this.handleBattleEnd();
+        }
+      }, 500);
+      return;
+    }
+    
+    // Find the soul card in the souls bar
+    const soulCard = document.querySelector(`.soul-card-mini[data-soul-id="${soulId}"]`);
+    if (!soulCard) {
+      setTimeout(() => {
+        if (continueAfter) {
+          this.showSoulChoiceForContinue();
+        } else {
+          this.handleBattleEnd();
+        }
+      }, 500);
+      return;
+    }
+    
+    const rect = soulCard.getBoundingClientRect();
+    
+    // Show soul quote in speech bubble
+    const speechBubble = document.createElement('div');
+    speechBubble.style.cssText = `
+      position: fixed;
+      left: ${rect.left + rect.width / 2}px;
+      top: ${rect.top - 120}px;
+      transform: translateX(-50%);
+      z-index: 21;
+      background: #000000;
+      padding: 10px 15px;
+      border-radius: 10px;
+      max-width: 250px;
+      pointer-events: none;
+    `;
+    
+    // Add pointer triangle
+    const pointer = document.createElement('div');
+    pointer.style.cssText = `
+      position: absolute;
+      left: 50%;
+      bottom: -10px;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-top: 10px solid #000000;
+    `;
+    speechBubble.appendChild(pointer);
+    
+    const textElement = document.createElement('p');
+    textElement.style.cssText = `
+      margin: 0;
+      color: #fff;
+      font-size: 12px;
+      font-style: italic;
+      line-height: 1.3;
+      text-align: center;
+    `;
+    speechBubble.appendChild(textElement);
+    document.body.appendChild(speechBubble);
+    
+    // Typewriter effect
+    let charIndex = 0;
+    const typeSpeed = 40;
+    
+    const typeNextChar = () => {
+      if (charIndex < quote.length) {
+        textElement.textContent += quote[charIndex];
+        
+        if (quote[charIndex] !== ' ') {
+          const pitch = 300 + Math.random() * 150;
+          sfx.playTone(pitch, 0.04, 0.12, 'sine');
+        }
+        
+        charIndex++;
+        setTimeout(typeNextChar, typeSpeed);
+      } else {
+        // Wait then remove and proceed to defeat screen or soul choice
+        setTimeout(() => {
+          speechBubble.style.transition = 'opacity 0.3s';
+          speechBubble.style.opacity = '0';
+          setTimeout(() => {
+            speechBubble.remove();
+            if (continueAfter) {
+              this.showSoulChoiceForContinue();
+            } else {
+              this.handleBattleEnd();
+            }
+          }, 300);
+        }, 1500);
+      }
+    };
+    
+    typeNextChar();
   }
 
   renderTraitChoice(battleResult) {
@@ -5539,16 +6150,86 @@ export class UI {
     const isPositive = battleResult.result === 'victory';
     const soul = this.game.combat.soul;
     const hasMask = soul && soul.mask;
+    const maskBroken = this.game.combat.maskBroken;
+    
+    // Handle defeat
+    if (!isPositive) {
+      // Check if this is the last soul
+      const aliveSouls = this.game.state.souls.filter(s => s.blood > 0);
+      const isLastSoul = aliveSouls.length === 0;
+      
+      if (isLastSoul) {
+        // Game Over screen
+        traitScreen.innerHTML = `
+          <div class="panel" style="display: flex; flex-direction: column; align-items: center;">
+            <h2>💀 GAME OVER</h2>
+            <p>${soul.name} was your last soul...</p>
+            <p style="margin-top: 20px; color: #999;">All souls have been defeated.</p>
+            <button class="node-button" onclick="window.ui.restartRun()" style="margin-top: 30px;">
+              Try Again?
+            </button>
+          </div>
+        `;
+      } else {
+        // Regular defeat - just return to map
+        traitScreen.innerHTML = `
+          <div class="panel" style="display: flex; flex-direction: column; align-items: center;">
+            <h2>💀 DEFEAT</h2>
+            <p>${soul.name} was defeated...</p>
+            <button class="node-button" onclick="window.ui.proceedFromDefeat()" style="margin-top: 30px;">
+              Proceed
+            </button>
+          </div>
+        `;
+      }
+      
+      this.showScreen('trait-choice');
+      return;
+    }
+    
+    // If victory and no mask (or mask was broken), show soul-specific cards instead of traits
+    if (isPositive && (!hasMask || maskBroken)) {
+      const soulType = this.game.config.soulConfig.types.find(t => t.id === soul.type);
+      const masklessCards = soulType?.maskless_victory_cards || ['slash', 'defend', 'heavy_strike'];
+      
+      traitScreen.innerHTML = `
+        <div class="panel">
+          <h2>🎉 VICTORY!</h2>
+          <p>Choose a card to add to ${soul.name}'s deck:</p>
+        </div>
+
+        <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 20px;">
+          ${masklessCards.map(cardId => {
+            const card = this.game.config.getCard(cardId);
+            if (!card) return '';
+            
+            return `
+              <div class="card ${card.type} trait-card-choice" onclick="window.ui.chooseMasklessCard('${cardId}')">
+                <div class="card-cost-circle">${card.cost}</div>
+                <div class="card-source-icon">👿</div>
+                <div class="card-header">
+                  <div class="card-name">${card.name}</div>
+                </div>
+                <div class="card-illustration">
+                  ${card.type === 'attack' ? '⚔️' : card.type === 'defend' ? '🛡️' : '✨'}
+                </div>
+                <div class="card-footer">
+                  <div class="card-desc">${card.description || ''}</div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+      
+      this.showScreen('trait-choice');
+      return;
+    }
     
     traitScreen.innerHTML = `
       <div class="panel">
         <h2>${isPositive ? '🎉 VICTORY!' : '💀 DEFEAT'}</h2>
         <p>${isPositive ? 'Choose a trait to add to your mask:' : 'Your mask broke! Choose a curse for your soul:'}</p>
-        ${isPositive && !hasMask ? `
-          <div style="background: rgba(255, 0, 0, 0.2); border: 2px solid #ff0033; padding: 10px; margin-top: 10px;">
-            ⚠️ <strong>WARNING:</strong> This soul has no mask equipped. The trait will be forfeited!
-          </div>
-        ` : ''}
       </div>
 
       <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 20px;">
@@ -5581,6 +6262,22 @@ export class UI {
     this.showScreen('trait-choice');
   }
 
+  proceedFromDefeat() {
+    sfx.buttonClick();
+    this.game.state.completeCurrentNode();
+    this.defeatSequenceShown = false; // Reset flag for next battle
+    this.selectedSoul = null;
+    this.renderMap();
+  }
+
+  restartRun() {
+    sfx.buttonClick();
+    this.game.reset();
+    this.defeatSequenceShown = false; // Reset flag
+    this.selectedSoul = null;
+    this.renderMap();
+  }
+
   chooseTrait(traitId, isPositive) {
     if (isPositive) {
       sfx.positive();
@@ -5600,6 +6297,139 @@ export class UI {
 
     this.selectedSoul = null;
     this.renderMap();
+  }
+
+  chooseMasklessCard(cardId) {
+    const soul = this.game.combat.soul;
+    
+    // Play positive sound
+    sfx.positive();
+    
+    // Add the card ID to the soul's base cards (permanent deck)
+    soul.baseCards.push(cardId);
+    
+    // Increase affection for choosing soul card
+    const affectionQuote = soul.changeAffection(6); // +6 for choosing soul strength
+    
+    // Hide the victory screen cards
+    const traitScreen = document.getElementById('trait-choice-screen');
+    if (traitScreen) {
+      traitScreen.classList.add('hidden');
+    }
+    
+    // Display a quote - either affection quote or maskless victory quote
+    this.showMasklessVictoryQuote(soul.id, affectionQuote);
+    
+    // Mark battle node as complete
+    this.game.state.completeCurrentNode();
+    
+    const gameStatus = this.game.checkGameOver();
+    if (gameStatus.gameOver) {
+      alert(gameStatus.message);
+      this.game.reset();
+    }
+
+    this.selectedSoul = null;
+    
+    // Delay rendering map to show the quote
+    setTimeout(() => {
+      this.renderMap();
+    }, 2500);
+  }
+
+  showMasklessVictoryQuote(soulId, affectionQuote) {
+    const soul = this.game.state.souls.find(m => m.id === soulId);
+    if (!soul) return;
+    
+    const soulType = this.game.config.soulConfig.types.find(t => t.id === soul.type);
+    
+    // Use affection quote if available, otherwise use maskless victory quote
+    let quote;
+    if (affectionQuote) {
+      quote = affectionQuote;
+    } else {
+      const quotes = soulType?.maskless_victory_quotes || ["I'm stronger without the mask!"];
+      quote = quotes[Math.floor(Math.random() * quotes.length)];
+    }
+    
+    // Find the soul card in the souls bar
+    const soulCard = document.querySelector(`.soul-card-mini[data-soul-id="${soulId}"]`);
+    if (!soulCard) return;
+    
+    const rect = soulCard.getBoundingClientRect();
+    
+    // Show soul quote in speech bubble
+    if (quote) {
+      const speechBubble = document.createElement('div');
+      speechBubble.style.cssText = `
+        position: fixed;
+        left: ${rect.left + rect.width / 2}px;
+        top: ${rect.top - 120}px;
+        transform: translateX(-50%);
+        z-index: 21;
+        background: #000000;
+        padding: 10px 15px;
+        border-radius: 10px;
+        max-width: 250px;
+        pointer-events: none;
+      `;
+      
+      // Add pointer triangle pointing down toward soul
+      const pointer = document.createElement('div');
+      pointer.style.cssText = `
+        position: absolute;
+        left: 50%;
+        bottom: -10px;
+        transform: translateX(-50%);
+        width: 0;
+        height: 0;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-top: 10px solid #000000;
+      `;
+      speechBubble.appendChild(pointer);
+      
+      const textElement = document.createElement('p');
+      textElement.style.cssText = `
+        margin: 0;
+        color: #fff;
+        font-size: 12px;
+        font-style: italic;
+        line-height: 1.3;
+        text-align: center;
+      `;
+      speechBubble.appendChild(textElement);
+      document.body.appendChild(speechBubble);
+      
+      // Typewriter effect
+      let charIndex = 0;
+      const typeSpeed = 40;
+      
+      const typeNextChar = () => {
+        if (charIndex < quote.length) {
+          textElement.textContent += quote[charIndex];
+          
+          if (quote[charIndex] !== ' ') {
+            const pitch = 300 + Math.random() * 150;
+            sfx.playTone(pitch, 0.04, 0.12, 'sine');
+          }
+          
+          charIndex++;
+          setTimeout(typeNextChar, typeSpeed);
+        } else {
+          // Wait then remove
+          setTimeout(() => {
+            speechBubble.style.transition = 'opacity 0.3s';
+            speechBubble.style.opacity = '0';
+            setTimeout(() => {
+              speechBubble.remove();
+            }, 300);
+          }, 1000);
+        }
+      };
+      
+      typeNextChar();
+    }
   }
 
   showScreen(screenName) {

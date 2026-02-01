@@ -22,6 +22,9 @@ export class Soul {
     // Store mask break quotes
     this.maskBreakQuotes = type.mask_break_quotes || [];
     
+    // Store defeat quotes
+    this.defeatQuotes = type.defeat_quotes || [];
+    
     // Cards & traits
     this.baseCards = [...type.base_cards];
     this.starterTrait = type.starter_trait;
@@ -34,6 +37,13 @@ export class Soul {
     
     // State
     this.tiredCount = 0; // Number of tired cards in deck
+    
+    // Affection system (-100 to +100)
+    this.affection = 0;
+    this.lastAffectionThreshold = 0; // Track last threshold crossed to only trigger once
+    
+    // Store affection quotes
+    this.affectionQuotes = type.affection_quotes || {};
   }
   
   getBlessingQuote() {
@@ -46,6 +56,13 @@ export class Soul {
   getMaskBreakQuote() {
     if (this.maskBreakQuotes.length > 0) {
       return this.maskBreakQuotes[Math.floor(Math.random() * this.maskBreakQuotes.length)];
+    }
+    return '';
+  }
+
+  getDefeatQuote() {
+    if (this.defeatQuotes.length > 0) {
+      return this.defeatQuotes[Math.floor(Math.random() * this.defeatQuotes.length)];
     }
     return '';
   }
@@ -111,6 +128,19 @@ export class Soul {
   equipMask(mask) {
     this.mask = { ...mask };
     this.maskBattlesRemaining = mask.bind_duration;
+    
+    // Initialize mask health based on rarity
+    const rarity = mask.rarity;
+    let maskMaxBlood = 0;
+    if (rarity === 'common') {
+      maskMaxBlood = Math.floor(Math.random() * 6) + 10; // 10-15
+    } else if (rarity === 'rare') {
+      maskMaxBlood = Math.floor(Math.random() * 11) + 15; // 15-25
+    } else if (rarity === 'legendary') {
+      maskMaxBlood = Math.floor(Math.random() * 16) + 25; // 25-40
+    }
+    this.maskBlood = maskMaxBlood;
+    this.maskMaxBlood = maskMaxBlood;
   }
 
   removeMask() {
@@ -181,8 +211,40 @@ export class Soul {
     }
   }
 
+  removeAllTiredness() {
+    const count = this.tiredCount;
+    this.tiredCount = 0;
+    return count;
+  }
+
   get tired() {
     return this.tiredCount > 0;
+  }
+
+  // Affection system
+  changeAffection(amount) {
+    const oldAffection = this.affection;
+    this.affection = Math.max(-100, Math.min(100, this.affection + amount));
+    
+    // Check if we crossed a threshold (every 20 points)
+    const oldThreshold = Math.floor(oldAffection / 20);
+    const newThreshold = Math.floor(this.affection / 20);
+    
+    if (newThreshold !== oldThreshold && newThreshold !== this.lastAffectionThreshold) {
+      this.lastAffectionThreshold = newThreshold;
+      return this.getAffectionQuote(newThreshold);
+    }
+    
+    return null;
+  }
+
+  getAffectionQuote(threshold) {
+    // Threshold ranges: -5 to +5 (every 20 points from -100 to +100)
+    const quotes = this.affectionQuotes[threshold] || [];
+    if (quotes.length > 0) {
+      return quotes[Math.floor(Math.random() * quotes.length)];
+    }
+    return null;
   }
 
   takeDamage(amount) {

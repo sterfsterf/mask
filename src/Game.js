@@ -159,6 +159,29 @@ export class Game {
     return { success: true, combatState: initialState };
   }
 
+  startBattleWithEnemy(soulId, enemy) {
+    const soul = this.state.souls.find(m => m.id === soulId);
+    if (!soul) {
+      return { success: false, error: 'Soul not found' };
+    }
+
+    if (!enemy) {
+      return { success: false, error: 'No enemy provided' };
+    }
+
+    // Create deep copy of enemy for this battle
+    const enemyCopy = { ...enemy };
+    
+    this.combat = new Combat(soul, enemyCopy, this.config);
+    const initialState = this.combat.startCombat();
+
+    return { success: true, combatState: initialState };
+  }
+
+  endCombat() {
+    this.combat = null;
+  }
+
   // Combat actions
   playCard(handIndex) {
     if (!this.combat) {

@@ -202,7 +202,7 @@ export class DebugMenu {
       #debug-menu {
         position: fixed;
         top: 10px;
-        right: 10px;
+        left: 10px;
         z-index: 9999;
         font-family: 'Courier New', monospace;
       }
@@ -228,7 +228,7 @@ export class DebugMenu {
       .debug-panel {
         position: absolute;
         top: 50px;
-        right: 0;
+        left: 0;
         background: rgba(0, 0, 0, 0.95);
         border: 2px solid #00ff00;
         min-width: 250px;

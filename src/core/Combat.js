@@ -12,23 +12,30 @@ export class Combat {
     this.soulBlood = soul.blood;
     this.soulBlock = 0;
     
-    // Mask health - based on rarity
+    // Mask health - use existing if available, otherwise initialize based on rarity
     let maskMaxBlood = 0;
     if (soul.mask) {
-      const rarity = soul.mask.rarity;
-      if (rarity === 'common') {
-        maskMaxBlood = Math.floor(Math.random() * 6) + 10; // 10-15
-      } else if (rarity === 'rare') {
-        maskMaxBlood = Math.floor(Math.random() * 11) + 15; // 15-25
-      } else if (rarity === 'legendary') {
-        maskMaxBlood = Math.floor(Math.random() * 16) + 25; // 25-40
+      // Check if mask health is already set (from equipping at shop)
+      if (soul.maskMaxBlood !== undefined && soul.maskBlood !== undefined) {
+        maskMaxBlood = soul.maskMaxBlood;
+        this.maskBlood = soul.maskBlood;
+      } else {
+        // Initialize new mask health based on rarity
+        const rarity = soul.mask.rarity;
+        if (rarity === 'common') {
+          maskMaxBlood = Math.floor(Math.random() * 6) + 10; // 10-15
+        } else if (rarity === 'rare') {
+          maskMaxBlood = Math.floor(Math.random() * 11) + 15; // 15-25
+        } else if (rarity === 'legendary') {
+          maskMaxBlood = Math.floor(Math.random() * 16) + 25; // 25-40
+        }
+        
+        // Store mask health on the soul for UI display
+        soul.maskBlood = maskMaxBlood;
+        soul.maskMaxBlood = maskMaxBlood;
+        this.maskBlood = maskMaxBlood;
       }
-      
-      // Store mask health on the soul for UI display
-      soul.maskBlood = maskMaxBlood;
-      soul.maskMaxBlood = maskMaxBlood;
     }
-    this.maskBlood = maskMaxBlood;
     this.maskMaxBlood = maskMaxBlood;
     this.maskBroken = false;
     
@@ -78,7 +85,13 @@ export class Combat {
       }
       
       if (this.deck.length > 0) {
-        this.hand.push(this.deck.pop());
+        const card = this.deck.pop();
+        this.hand.push(card);
+        
+        // Decrease affection when drawing a tired card
+        if (card.id === 'tired') {
+          this.soul.changeAffection(-2); // -2 for each tired card drawn
+        }
       }
     }
   }
@@ -234,9 +247,9 @@ export class Combat {
       this.energy = this.maxEnergy;
       this.drawCards(5);
       
-      // Block decays each turn
+      // Soul block decays at start of player's turn (was used to block enemy attack)
       this.soulBlock = 0;
-      this.enemyBlock = 0;
+      // Enemy block stays from their defend action last turn
       
       // Generate new enemy intent for next turn
       this.generateEnemyIntent();
@@ -335,6 +348,9 @@ export class Combat {
     if (!this.enemyIntent) {
       this.generateEnemyIntent();
     }
+
+    // Enemy block decays at start of their turn (was used to block player attacks)
+    this.enemyBlock = 0;
 
     let animEvent = null;
 
