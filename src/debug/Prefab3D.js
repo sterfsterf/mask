@@ -1147,6 +1147,12 @@ export class MaskPrefab extends Prefab3D {
       // Load texture with fallback
       const textureLoader = new THREE.TextureLoader();
       
+      // Resolve texture path with base URL
+      const base = import.meta.env.BASE_URL || './';
+      const texturePath = this.config.texture.startsWith('./') 
+        ? this.config.texture.replace('./', base)
+        : this.config.texture;
+      
       // Pure white material for maximum brightness - unlit
       maskMat = new THREE.MeshBasicMaterial({ 
         color: 0xffffff, // Pure white base
@@ -1156,9 +1162,9 @@ export class MaskPrefab extends Prefab3D {
       });
       
       const texture = textureLoader.load(
-        this.config.texture,
+        texturePath,
         (tex) => {
-          console.log('Texture loaded successfully:', this.config.texture);
+          console.log('Texture loaded successfully:', texturePath);
           console.log('Texture size:', tex.image.width, 'x', tex.image.height);
           
           // Configure texture
@@ -1174,7 +1180,7 @@ export class MaskPrefab extends Prefab3D {
         },
         undefined,
         (err) => {
-          console.warn('Could not load texture, using fallback:', this.config.texture, err);
+          console.warn('Could not load texture, using fallback:', texturePath, err);
           // Load fallback texture
           const base = import.meta.env.BASE_URL || './';
           const fallbackTexture = textureLoader.load(
