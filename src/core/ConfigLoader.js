@@ -16,6 +16,15 @@ export class ConfigLoader {
       fetch('./config/shrines.json').then(r => r.json())
     ]);
 
+    // Store raw configs for access
+    this.config = {
+      cards,
+      soulTypes,
+      masks,
+      enemies,
+      shrines
+    };
+
     this.cards = this.indexById(cards.cards);
     this.soulTypes = this.indexById(soulTypes.types);
     this.soulConfig = soulTypes;

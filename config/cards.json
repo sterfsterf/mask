@@ -5,8 +5,9 @@
       "name": "Slash",
       "cost": 1,
       "type": "attack",
-      "damage": 6,
-      "description": "Deal 6 damage"
+      "damage": 5,
+      "rarity": "common",
+      "description": "Deal 5 damage"
     },
     {
       "id": "defend",
@@ -14,6 +15,7 @@
       "cost": 1,
       "type": "defend",
       "block": 5,
+      "rarity": "common",
       "description": "Gain 5 block"
     },
     {
@@ -22,6 +24,7 @@
       "cost": 2,
       "type": "attack",
       "damage": 12,
+      "rarity": "common",
       "description": "Deal 12 damage"
     },
     {
@@ -30,7 +33,8 @@
       "cost": 0,
       "type": "status",
       "unplayable": true,
-      "description": "Unplayable. Clogs your hand."
+      "rarity": "curse",
+      "description": "Unplayable"
     },
     {
       "id": "rage_strike",
@@ -39,7 +43,8 @@
       "cost": 1,
       "damage": 9,
       "self_damage": 2,
-      "description": "Deal 9 damage. Take 2 damage."
+      "rarity": "common",
+      "description": "Deal 9 damage Take 2 damage"
     },
     {
       "id": "iron_defense",
@@ -47,6 +52,7 @@
       "type": "defend",
       "cost": 2,
       "block": 12,
+      "rarity": "common",
       "description": "Gain 12 block"
     },
     {
@@ -55,6 +61,7 @@
       "type": "attack",
       "cost": 2,
       "damage": 14,
+      "rarity": "rare",
       "description": "Deal 14 damage"
     },
     {
@@ -63,6 +70,7 @@
       "type": "attack",
       "cost": 1,
       "damage": 8,
+      "rarity": "common",
       "description": "Deal 8 damage"
     },
     {
@@ -70,7 +78,8 @@
       "name": "Quick Strike",
       "type": "attack",
       "cost": 0,
-      "damage": 4,
+      "damage": 3,
+      "rarity": "common",
       "description": "Deal 4 damage"
     },
     {
@@ -79,6 +88,7 @@
       "type": "defend",
       "cost": 1,
       "block": 8,
+      "rarity": "common",
       "description": "Gain 8 block"
     },
     {
@@ -87,6 +97,7 @@
       "type": "attack",
       "cost": 1,
       "damage": 10,
+      "rarity": "rare",
       "description": "Deal 10 damage"
     },
     {
@@ -95,16 +106,19 @@
       "type": "attack",
       "cost": 2,
       "damage": 16,
-      "self_damage": 3,
-      "description": "Deal 16 damage. Take 3 damage."
+      "self_damage": 4,
+      "rarity": "rare",
+      "description": "Deal 16 damage Take 4 damage"
     },
     {
       "id": "plague_touch",
       "name": "Plague Touch",
       "type": "attack",
       "cost": 1,
-      "damage": 7,
-      "description": "Deal 7 damage"
+      "damage": 5,
+      "poison": 1,
+      "rarity": "common",
+      "description": "Deal 5 damage Apply 1 poison"
     },
     {
       "id": "rage_strike_trait",
@@ -112,7 +126,8 @@
       "cost": 1,
       "type": "attack",
       "damage": 9,
-      "description": "Deal 9 damage. Aggressive."
+      "rarity": "common",
+      "description": "Deal 9 damage"
     },
     {
       "id": "fortify_block",
@@ -120,7 +135,8 @@
       "cost": 1,
       "type": "defend",
       "block": 8,
-      "description": "Gain 8 block. Solid defense."
+      "rarity": "common",
+      "description": "Gain 8 block"
     },
     {
       "id": "swift_strike",
@@ -128,7 +144,8 @@
       "cost": 1,
       "type": "attack",
       "damage": 4,
-      "description": "Deal 4 damage. Quick."
+      "rarity": "common",
+      "description": "Deal 4 damage"
     },
     {
       "id": "cracked_weakness",
@@ -136,7 +153,8 @@
       "cost": 0,
       "type": "status",
       "unplayable": true,
-      "description": "Unplayable. Fragile state."
+      "rarity": "curse",
+      "description": "Unplayable"
     },
     {
       "id": "fearful_hesitation",
@@ -144,7 +162,8 @@
       "cost": 2,
       "type": "attack",
       "damage": 3,
-      "description": "Deal 3 damage. Costs too much."
+      "rarity": "curse",
+      "description": "Deal 3 damage"
     },
     {
       "id": "curse_drain",
@@ -152,7 +171,154 @@
       "cost": 0,
       "type": "status",
       "unplayable": true,
-      "description": "Unplayable. Life drains away."
+      "rarity": "curse",
+      "description": "Unplayable"
+    },
+    {
+      "id": "venom_strike",
+      "name": "Venom Strike",
+      "cost": 1,
+      "type": "attack",
+      "damage": 4,
+      "poison": 2,
+      "rarity": "rare",
+      "description": "Deal 4 damage Apply 2 poison"
+    },
+    {
+      "id": "toxic_cloud",
+      "name": "Toxic Cloud",
+      "cost": 2,
+      "type": "skill",
+      "poison": 5,
+      "void_after_use": true,
+      "rarity": "legendary",
+      "description": "Apply 5 poison Void"
+    },
+    {
+      "id": "adrenaline",
+      "name": "Adrenaline",
+      "cost": 0,
+      "type": "skill",
+      "energy_next": 2,
+      "rarity": "rare",
+      "description": "Gain 2 energy next turn"
+    },
+    {
+      "id": "exhaustion",
+      "name": "Exhaustion",
+      "cost": 1,
+      "type": "skill",
+      "energy_next": -1,
+      "rarity": "curse",
+      "description": "Lose 1 energy next turn"
+    },
+    {
+      "id": "empower_mask",
+      "name": "Empower Mask",
+      "cost": 1,
+      "type": "skill",
+      "buff_mask": 2,
+      "rarity": "rare",
+      "description": "Mask cards gain +2 this combat"
+    },
+    {
+      "id": "empower_soul",
+      "name": "Empower Soul",
+      "cost": 1,
+      "type": "skill",
+      "buff_soul": 2,
+      "rarity": "rare",
+      "description": "Soul cards gain +2 this combat"
+    },
+    {
+      "id": "embrace_scars",
+      "name": "Embrace Scars",
+      "cost": 2,
+      "type": "skill",
+      "buff_scar": 3,
+      "void_after_use": true,
+      "rarity": "legendary",
+      "description": "Scar cards gain +3 this combat Void"
+    },
+    {
+      "id": "stunning_blow",
+      "name": "Stunning Blow",
+      "cost": 2,
+      "type": "attack",
+      "damage": 8,
+      "stun": true,
+      "rarity": "rare",
+      "description": "Deal 8 damage Stun enemy"
+    },
+    {
+      "id": "concussive_strike",
+      "name": "Concussive Strike",
+      "cost": 1,
+      "type": "attack",
+      "damage": 3,
+      "stun": true,
+      "void_after_use": true,
+      "rarity": "legendary",
+      "description": "Deal 3 damage Stun enemy Void"
+    },
+    {
+      "id": "mend_mask",
+      "name": "Mend Mask",
+      "cost": 2,
+      "type": "skill",
+      "heal_mask": 8,
+      "rarity": "common",
+      "description": "Heal mask 8 HP"
+    },
+    {
+      "id": "soul_restoration",
+      "name": "Soul Restoration",
+      "cost": 3,
+      "type": "skill",
+      "heal_soul": 12,
+      "void_after_use": true,
+      "rarity": "legendary",
+      "description": "Heal soul 12 HP Void"
+    },
+    {
+      "id": "desperate_strike",
+      "name": "Desperate Strike",
+      "cost": 0,
+      "type": "attack",
+      "damage": 18,
+      "self_damage": 6,
+      "void_after_use": true,
+      "rarity": "legendary",
+      "description": "Deal 18 damage Take 6 damage Void"
+    },
+    {
+      "id": "poisoned_defense",
+      "name": "Poisoned Defense",
+      "cost": 1,
+      "type": "defend",
+      "block": 6,
+      "poison": 1,
+      "rarity": "rare",
+      "description": "Gain 6 block Apply 1 poison"
+    },
+    {
+      "id": "corrupted_power",
+      "name": "Corrupted Power",
+      "cost": 2,
+      "type": "skill",
+      "buff_soul": 3,
+      "poison": 2,
+      "rarity": "legendary",
+      "description": "Soul cards gain +3 Apply 2 poison to self"
+    },
+    {
+      "id": "mask_sacrifice",
+      "name": "Mask Sacrifice",
+      "cost": 1,
+      "type": "skill",
+      "heal_soul": 6,
+      "rarity": "rare",
+      "description": "Convert 6 mask HP to soul HP"
     }
   ]
 }

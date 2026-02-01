@@ -1,4 +1,6 @@
 // Combat system - handles card battles
+import { EffectManager } from './EffectManager.js';
+
 export class Combat {
   constructor(soul, enemy, config) {
     this.config = config;
@@ -41,6 +43,10 @@ export class Combat {
     
     this.enemyBlood = enemy.blood;
     this.enemyBlock = 0;
+    
+    // Effect managers
+    this.playerEffects = new EffectManager();
+    this.enemyEffects = new EffectManager();
     
     // Deck & hand
     this.deck = this.shuffleDeck(soul.buildDeck(config));
@@ -119,6 +125,9 @@ export class Combat {
     this.energy -= card.cost;
     const playedCard = this.hand.splice(handIndex, 1)[0];
     
+    // Execute card effect and get animation event + void status
+    const { animEvent, voidCard } = this.executeCardEffect(playedCard, true);
+    
     // Check if this is a mask card played after mask is broken
     if (this.maskBroken && playedCard.source === 'mask') {
       // Banish mask card to void
@@ -128,19 +137,21 @@ export class Combat {
       const scarCard = this.generateScarCard(playedCard);
       this.discardPile.push(scarCard);
       
-      // Execute the card effect still
-      const animEvent = this.executeCardEffect(playedCard, true);
-      
       // Check for death
       this.checkCombatEnd();
       
       return { success: true, card: playedCard, scarCard, state: this.getState(), animEvent };
-    } else {
-      // Normal card play
-      this.discardPile.push(playedCard);
+    } else if (voidCard) {
+      // Card is banished to void after use
+      this.voidPile.push(playedCard);
       
-      // Execute card effect and get animation event
-      const animEvent = this.executeCardEffect(playedCard, true);
+      // Check for death
+      this.checkCombatEnd();
+      
+      return { success: true, card: playedCard, voided: true, state: this.getState(), animEvent };
+    } else {
+      // Normal card play - goes to discard
+      this.discardPile.push(playedCard);
       
       // Check for death
       this.checkCombatEnd();
@@ -150,78 +161,79 @@ export class Combat {
   }
 
   executeCardEffect(card, isPlayer) {
-    let animEvent = null;
+    // Build context for effect manager
+    const context = {
+      isPlayer,
+      soulBlood: this.soulBlood,
+      soulMaxBlood: this.soul.maxBlood,
+      soulBlock: this.soulBlock,
+      maskBlood: this.maskBlood,
+      maskMaxBlood: this.maskMaxBlood,
+      maskBroken: this.maskBroken,
+      enemyBlood: this.enemyBlood,
+      enemyBlock: this.enemyBlock,
+      energy: this.energy,
+      playerStatusEffects: this.playerEffects.statusEffects,
+      enemyStatusEffects: this.enemyEffects.statusEffects
+    };
 
+    // Apply effects
+    const effectManager = isPlayer ? this.playerEffects : this.enemyEffects;
+    const results = effectManager.applyCardEffects(card, context);
+
+    console.log(`💥 Card effect: ${card.name} | Enemy HP: ${context.enemyBlood} | Soul HP: ${context.soulBlood}`);
+
+    // Update combat state from context
+    this.soulBlood = context.soulBlood;
+    this.soulBlock = context.soulBlock;
+    this.maskBlood = context.maskBlood;
+    this.maskBroken = context.maskBroken;
+    this.enemyBlood = context.enemyBlood;
+    this.enemyBlock = context.enemyBlock;
+    this.energy = context.energy;
+
+    // Update soul's mask health if changed
+    if (this.soul.mask) {
+      this.soul.maskBlood = this.maskBlood;
+    }
+
+    // Build animation event
+    let animEvent = null;
     if (card.type === 'attack') {
       if (isPlayer) {
-        const prevHealth = this.enemyBlood;
-        const damage = Math.max(0, card.damage - this.enemyBlock);
-        this.enemyBlock = Math.max(0, this.enemyBlock - card.damage);
-        this.enemyBlood -= damage;
-        
-        animEvent = { type: 'soul_attack', damage, prevHealth, newHealth: this.enemyBlood };
-        
-        // Self-damage if card has it
-        if (card.self_damage) {
-          this.soulBlood -= card.self_damage;
-        }
+        animEvent = { 
+          type: 'soul_attack', 
+          damage: results.damage,
+          selfDamage: results.soulDamage,
+          effects: results.statusApplied
+        };
       } else {
-        // Enemy attacking soul - route damage to mask first
-        const prevHealth = this.soulBlood;
-        const prevMaskHealth = this.maskBlood;
-        let damage = Math.max(0, card.damage - this.soulBlock);
-        this.soulBlock = Math.max(0, this.soulBlock - card.damage);
-        
-        // Route damage to mask first if it exists
-        if (this.maskBlood > 0) {
-          const maskDamage = Math.min(damage, this.maskBlood);
-          this.maskBlood -= maskDamage;
-          damage -= maskDamage;
-          
-          // Update soul's mask health
-          if (this.soul.mask) {
-            this.soul.maskBlood = this.maskBlood;
-          }
-          
-          // Check if mask broke
-          if (this.maskBlood <= 0) {
-            this.maskBlood = 0;
-            this.maskBroken = true;
-            if (this.soul.mask) {
-              this.soul.maskBlood = 0;
-            }
-          }
-        }
-        
-        // Remaining damage goes to soul
-        this.soulBlood -= damage;
-        
         animEvent = { 
           type: 'enemy_attack', 
-          damage, 
-          maskDamage: prevMaskHealth - this.maskBlood,
-          prevHealth, 
-          newHealth: this.soulBlood,
-          prevMaskHealth,
-          newMaskHealth: this.maskBlood,
-          maskBroken: this.maskBroken && prevMaskHealth > 0
+          damage: results.damage,
+          maskDamage: results.maskDamage,
+          maskBroken: this.maskBroken,
+          effects: results.statusApplied
         };
       }
     } else if (card.type === 'defend') {
-      if (isPlayer) {
-        // Pay health cost if this is a scar card
-        if (card.health_cost) {
-          this.soulBlood -= card.health_cost;
-        }
-        this.soulBlock += card.block;
-        animEvent = { type: 'soul_defend', blockGained: card.block, healthCost: card.health_cost || 0 };
-      } else {
-        this.enemyBlock += card.block;
-      }
+      animEvent = { 
+        type: isPlayer ? 'soul_defend' : 'enemy_defend',
+        blockGained: results.block,
+        healthCost: results.soulDamage,
+        effects: results.statusApplied
+      };
+    } else if (card.type === 'skill') {
+      animEvent = {
+        type: isPlayer ? 'soul_skill' : 'enemy_skill',
+        maskHeal: results.maskHeal,
+        soulHeal: results.soulHeal,
+        energyMod: results.energyMod,
+        effects: results.statusApplied
+      };
     }
-    // 'status' cards do nothing
-    
-    return animEvent;
+
+    return { animEvent, voidCard: results.voidCard };
   }
 
   endTurn() {
@@ -245,6 +257,23 @@ export class Combat {
       this.turn++;
       this.playerTurn = true;
       this.energy = this.maxEnergy;
+      
+      // Process turn start effects
+      const turnStartContext = {
+        soulBlood: this.soulBlood,
+        soulMaxBlood: this.soul.maxBlood,
+        energy: this.energy
+      };
+      const playerTurnEffects = this.playerEffects.processTurnStart(turnStartContext);
+      this.soulBlood = turnStartContext.soulBlood;
+      this.energy = turnStartContext.energy;
+      
+      // Check if player died from poison before drawing cards
+      this.checkCombatEnd();
+      if (this.result) {
+        return { success: true, state: this.getState(), enemyAnimEvent, playerDiedPoison: true };
+      }
+      
       this.drawCards(5);
       
       // Soul block decays at start of player's turn (was used to block enemy attack)
@@ -349,6 +378,23 @@ export class Combat {
       this.generateEnemyIntent();
     }
 
+    // Process enemy turn start effects (poison, stun)
+    const enemyTurnContext = {
+      enemyBlood: this.enemyBlood
+    };
+    const enemyTurnEffects = this.playerEffects.processEnemyTurnStart(enemyTurnContext, this.enemyEffects.statusEffects);
+    this.enemyBlood = enemyTurnContext.enemyBlood;
+    
+    // Check if enemy died from poison before doing anything else
+    if (this.enemyBlood <= 0) {
+      return { type: 'enemy_died_poison', poisonDamage: enemyTurnEffects.poisonDamage };
+    }
+    
+    // If stunned, skip turn
+    if (enemyTurnEffects.stunned) {
+      return { type: 'enemy_stunned', poisonDamage: enemyTurnEffects.poisonDamage };
+    }
+
     // Enemy block decays at start of their turn (was used to block player attacks)
     this.enemyBlock = 0;
 
@@ -357,13 +403,14 @@ export class Combat {
     // Execute the intent
     switch (this.enemyIntent.type) {
       case 'attack':
-        animEvent = this.executeCardEffect({
+        const attackResult = this.executeCardEffect({
           id: 'enemy_attack',
           name: 'Attack',
           cost: 0,
           type: 'attack',
           damage: this.enemyIntent.value
         }, false);
+        animEvent = attackResult.animEvent;
         break;
         
       case 'defend':
@@ -371,13 +418,14 @@ export class Combat {
         break;
         
       case 'big_attack':
-        animEvent = this.executeCardEffect({
+        const bigAttackResult = this.executeCardEffect({
           id: 'enemy_big_attack',
           name: 'Heavy Strike',
           cost: 0,
           type: 'attack',
           damage: this.enemyIntent.value
         }, false);
+        animEvent = bigAttackResult.animEvent;
         break;
         
       case 'heal':
@@ -389,10 +437,14 @@ export class Combat {
   }
 
   checkCombatEnd() {
+    console.log('🔍 Death check - Enemy HP:', this.enemyBlood, 'Soul HP:', this.soulBlood);
+    
     if (this.enemyBlood <= 0) {
+      console.log('✅ Enemy defeated!');
       this.result = 'victory';
       this.soul.blood = this.soulBlood;
     } else if (this.soulBlood <= 0) {
+      console.log('💀 Soul defeated!');
       this.result = 'defeat';
       this.soul.blood = 0;
     }
@@ -411,7 +463,8 @@ export class Combat {
         stats: this.soulStats,
         maskBlood: this.maskBlood,
         maskMaxBlood: this.maskMaxBlood,
-        maskBroken: this.maskBroken
+        maskBroken: this.maskBroken,
+        statusEffects: this.playerEffects.getStatusEffects()
       },
       enemy: {
         id: this.enemy.id,
@@ -419,7 +472,8 @@ export class Combat {
         maxBlood: this.enemy.blood,
         block: this.enemyBlock,
         name: this.enemy.name,
-        intent: this.enemyIntent
+        intent: this.enemyIntent,
+        statusEffects: this.enemyEffects.getStatusEffects()
       },
       hand: this.hand.map(card => ({
         ...card,

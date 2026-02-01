@@ -244,13 +244,57 @@ export class Game {
   }
 
   getRandomPositiveCards(count) {
-    const positive = ['rage_strike_trait', 'fortify_block', 'swift_strike', 'iron_defense', 'void_strike'];
-    return this.sampleArray(positive, count);
+    // Get all rewardable positive cards (not curses/status)
+    console.log('Config structure:', this.config);
+    console.log('Config.config:', this.config.config);
+    
+    if (!this.config || !this.config.config || !this.config.config.cards) {
+      console.error('Config not properly loaded!');
+      // Fallback to old hardcoded list
+      const positive = ['rage_strike_trait', 'fortify_block', 'swift_strike', 'iron_defense', 'void_strike'];
+      return this.sampleArray(positive, count);
+    }
+    
+    const allCards = this.config.config.cards.cards;
+    console.log('All cards loaded:', allCards?.length);
+    
+    const common = allCards.filter(c => c.rarity === 'common' && c.type !== 'status');
+    const rare = allCards.filter(c => c.rarity === 'rare');
+    const legendary = allCards.filter(c => c.rarity === 'legendary');
+    
+    console.log('Card pools - Common:', common.length, 'Rare:', rare.length, 'Legendary:', legendary.length);
+    
+    const rewards = [];
+    
+    for (let i = 0; i < count; i++) {
+      const roll = Math.random() * 100;
+      let card;
+      
+      if (roll < 70) {
+        // 70% common
+        card = common[Math.floor(Math.random() * common.length)];
+      } else if (roll < 95) {
+        // 25% rare
+        card = rare[Math.floor(Math.random() * rare.length)];
+      } else {
+        // 5% legendary
+        card = legendary[Math.floor(Math.random() * legendary.length)];
+      }
+      
+      if (card) {
+        console.log('Selected reward card:', card.name, card.rarity);
+        rewards.push(card.id);
+      }
+    }
+    
+    console.log('Final rewards:', rewards);
+    return rewards;
   }
 
   getRandomNegativeCards(count) {
-    const negative = ['cracked_weakness', 'fearful_hesitation', 'curse_drain'];
-    return this.sampleArray(negative, count);
+    const allCards = this.config.config.cards.cards;
+    const curses = allCards.filter(c => c.rarity === 'curse');
+    return this.sampleArray(curses.map(c => c.id), count);
   }
 
   sampleArray(arr, count) {

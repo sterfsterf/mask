@@ -2734,9 +2734,13 @@ export class UI {
       ` : ''}
 
       <div class="mask-shop-grid">
-        ${allMasks.map(mask => `
+        ${allMasks.map(mask => {
+          // Fix texture path for HTML img src - remove ./ prefix if present
+          const texturePath = mask.texture ? mask.texture.replace('./', '') : 'masks/fallback_mask.png';
+          
+          return `
           <div class="mask-shop-card ${mask.rarity} ${mask.sold ? 'sold-out' : ''}">
-            <img src="${mask.texture || 'masks/fallback_mask.png'}" alt="${mask.name}" class="mask-image">
+            <img src="${texturePath}" alt="${mask.name}" class="mask-image">
             <div class="mask-card-info">
               <strong>${mask.name}</strong>
               <div class="mask-traits">${mask.cards ? mask.cards.join(', ') : ''}</div>
@@ -2749,7 +2753,8 @@ export class UI {
               `}
             </div>
           </div>
-        `).join('')}
+        `;
+        }).join('')}
       </div>
 
       <button class="shop-leave-btn" onclick="window.ui.backToMap()">Leave</button>
@@ -6249,11 +6254,25 @@ export class UI {
           if (!card) return '';
           
           const sourceIcon = isPositive ? '👺' : '👿';
+          const rarityColor = {
+            'common': '#888',
+            'rare': '#4a9eff',
+            'legendary': '#ff9d00',
+            'curse': '#8b00ff'
+          }[card.rarity] || '#888';
+          
+          const rarityLabel = {
+            'common': 'Common',
+            'rare': 'Rare',
+            'legendary': 'Legendary',
+            'curse': 'Curse'
+          }[card.rarity] || '';
           
           return `
             <div class="card ${card.type} trait-card-choice" onclick="window.ui.chooseCard('${cardId}', ${isPositive})">
               <div class="card-cost-circle">${card.cost}</div>
               <div class="card-source-icon">${sourceIcon}</div>
+              <div class="card-rarity" style="color: ${rarityColor}; font-size: 10px; font-weight: bold; text-transform: uppercase; margin-top: 4px;">${rarityLabel}</div>
               <div class="card-header">
                 <div class="card-name">${card.name}</div>
               </div>
