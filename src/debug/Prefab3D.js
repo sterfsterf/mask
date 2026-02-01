@@ -1174,16 +1174,46 @@ export class MaskPrefab extends Prefab3D {
         },
         undefined,
         (err) => {
-          console.warn('Could not load texture, using white fallback:', this.config.texture);
-          // Material already set to white
+          console.warn('Could not load texture, using fallback:', this.config.texture, err);
+          // Load fallback texture
+          const fallbackTexture = textureLoader.load(
+            '/masks/fallback_mask.png',
+            (tex) => {
+              tex.minFilter = THREE.LinearFilter;
+              tex.magFilter = THREE.NearestFilter;
+              maskMat.map = tex;
+              maskMat.needsUpdate = true;
+            },
+            undefined,
+            (fallbackErr) => {
+              console.error('Fallback texture also failed to load:', fallbackErr);
+            }
+          );
         }
       );
     } else {
-      // Fallback to white plane - unlit
+      // Fallback - load the fallback texture
+      const textureLoader = new THREE.TextureLoader();
       maskMat = new THREE.MeshBasicMaterial({ 
-        color: 0xffffff, // White base for all masks
-        side: THREE.DoubleSide
+        color: 0xffffff,
+        side: THREE.DoubleSide,
+        transparent: true,
+        alphaTest: 0.5
       });
+      
+      const fallbackTexture = textureLoader.load(
+        '/masks/fallback_mask.png',
+        (tex) => {
+          tex.minFilter = THREE.LinearFilter;
+          tex.magFilter = THREE.NearestFilter;
+          maskMat.map = tex;
+          maskMat.needsUpdate = true;
+        },
+        undefined,
+        (err) => {
+          console.error('Fallback texture failed to load:', err);
+        }
+      );
     }
     
     const mask = new THREE.Mesh(maskGeom, maskMat);

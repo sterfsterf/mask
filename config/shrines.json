@@ -1,10 +1,10 @@
 {
   "shrine_types": [
     {
-      "id": "cleansing_shrine",
-      "name": "Cleansing Shrine",
-      "description": "Remove a negative trait from a soul",
-      "effect": "remove_negative_trait"
+      "id": "rest_shrine",
+      "name": "Rest Shrine",
+      "description": "Remove all tired cards from a soul",
+      "effect": "remove_tired"
     },
     {
       "id": "blessing_shrine",

@@ -143,6 +143,13 @@ export class Game {
       return { success: false, error: 'No enemy at current node' };
     }
 
+    // Reduce tiredness for souls that weren't selected (remove one tired card)
+    this.state.souls.forEach(s => {
+      if (s.id !== soulId && s.tired) {
+        s.reduceTiredness();
+      }
+    });
+
     // Create deep copy of enemy for this battle
     const enemyCopy = { ...enemy };
     

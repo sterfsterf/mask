@@ -19,9 +19,13 @@ export class Soul {
     // Store blessing quotes for later
     this.blessingQuotes = type.blessing_quotes || [];
     
+    // Store mask break quotes
+    this.maskBreakQuotes = type.mask_break_quotes || [];
+    
     // Cards & traits
     this.baseCards = [...type.base_cards];
     this.starterTrait = type.starter_trait;
+    this.specialCard = type.special_card;
     this.negativeTraits = [];
     
     // Mask
@@ -29,12 +33,19 @@ export class Soul {
     this.maskBattlesRemaining = 0;
     
     // State
-    this.tired = false;
+    this.tiredCount = 0; // Number of tired cards in deck
   }
   
   getBlessingQuote() {
     if (this.blessingQuotes.length > 0) {
       return this.blessingQuotes[Math.floor(Math.random() * this.blessingQuotes.length)];
+    }
+    return '';
+  }
+
+  getMaskBreakQuote() {
+    if (this.maskBreakQuotes.length > 0) {
+      return this.maskBreakQuotes[Math.floor(Math.random() * this.maskBreakQuotes.length)];
     }
     return '';
   }
@@ -56,43 +67,42 @@ export class Soul {
   buildDeck(config) {
     const deck = [];
     
-    // Base cards
+    // Base cards (soul source)
     this.baseCards.forEach(cardId => {
       const card = config.getCard(cardId);
-      if (card) deck.push({ ...card });
+      if (card) deck.push({ ...card, source: 'soul' });
     });
 
-    // Starter trait card
-    const starterTrait = config.getTrait(this.starterTrait);
-    if (starterTrait) {
-      const traitCard = config.getCard(starterTrait.card);
-      if (traitCard) deck.push({ ...traitCard });
+    // Special card (soul source)
+    if (this.specialCard) {
+      const specialCard = config.getCard(this.specialCard);
+      if (specialCard) deck.push({ ...specialCard, source: 'soul' });
     }
 
-    // Mask trait cards
+    // Mask trait cards (mask source)
     if (this.mask) {
       this.mask.traits.forEach(traitId => {
         const trait = config.getTrait(traitId);
         if (trait) {
           const traitCard = config.getCard(trait.card);
-          if (traitCard) deck.push({ ...traitCard });
+          if (traitCard) deck.push({ ...traitCard, source: 'mask' });
         }
       });
     }
 
-    // Negative trait cards
+    // Negative trait cards (soul source)
     this.negativeTraits.forEach(traitId => {
       const trait = config.getTrait(traitId);
       if (trait) {
         const traitCard = config.getCard(trait.card);
-        if (traitCard) deck.push({ ...traitCard });
+        if (traitCard) deck.push({ ...traitCard, source: 'soul' });
       }
     });
 
-    // Tired card if flagged
-    if (this.tired) {
+    // Tired cards if any (soul source)
+    for (let i = 0; i < this.tiredCount; i++) {
       const tiredCard = config.getCard('tired');
-      if (tiredCard) deck.push({ ...tiredCard });
+      if (tiredCard) deck.push({ ...tiredCard, source: 'soul' });
     }
 
     return deck;
@@ -158,7 +168,21 @@ export class Soul {
   }
 
   setTired(isTired) {
-    this.tired = isTired;
+    if (isTired) {
+      this.tiredCount++;
+    } else {
+      this.tiredCount = 0;
+    }
+  }
+
+  reduceTiredness() {
+    if (this.tiredCount > 0) {
+      this.tiredCount--;
+    }
+  }
+
+  get tired() {
+    return this.tiredCount > 0;
   }
 
   takeDamage(amount) {

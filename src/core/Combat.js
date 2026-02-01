@@ -12,6 +12,26 @@ export class Combat {
     this.soulBlood = soul.blood;
     this.soulBlock = 0;
     
+    // Mask health - based on rarity
+    let maskMaxBlood = 0;
+    if (soul.mask) {
+      const rarity = soul.mask.rarity;
+      if (rarity === 'common') {
+        maskMaxBlood = Math.floor(Math.random() * 6) + 10; // 10-15
+      } else if (rarity === 'rare') {
+        maskMaxBlood = Math.floor(Math.random() * 11) + 15; // 15-25
+      } else if (rarity === 'legendary') {
+        maskMaxBlood = Math.floor(Math.random() * 16) + 25; // 25-40
+      }
+      
+      // Store mask health on the soul for UI display
+      soul.maskBlood = maskMaxBlood;
+      soul.maskMaxBlood = maskMaxBlood;
+    }
+    this.maskBlood = maskMaxBlood;
+    this.maskMaxBlood = maskMaxBlood;
+    this.maskBroken = false;
+    
     this.enemyBlood = enemy.blood;
     this.enemyBlock = 0;
     
@@ -19,6 +39,7 @@ export class Combat {
     this.deck = this.shuffleDeck(soul.buildDeck(config));
     this.hand = [];
     this.discardPile = [];
+    this.voidPile = []; // Banished cards
     
     // Turn state
     this.energy = 3;
@@ -84,15 +105,35 @@ export class Combat {
     // Play the card
     this.energy -= card.cost;
     const playedCard = this.hand.splice(handIndex, 1)[0];
-    this.discardPile.push(playedCard);
-
-    // Execute card effect and get animation event
-    const animEvent = this.executeCardEffect(playedCard, true);
-
-    // Check for death
-    this.checkCombatEnd();
-
-    return { success: true, card: playedCard, state: this.getState(), animEvent };
+    
+    // Check if this is a mask card played after mask is broken
+    if (this.maskBroken && playedCard.source === 'mask') {
+      // Banish mask card to void
+      this.voidPile.push(playedCard);
+      
+      // Generate and add scar card to discard
+      const scarCard = this.generateScarCard(playedCard);
+      this.discardPile.push(scarCard);
+      
+      // Execute the card effect still
+      const animEvent = this.executeCardEffect(playedCard, true);
+      
+      // Check for death
+      this.checkCombatEnd();
+      
+      return { success: true, card: playedCard, scarCard, state: this.getState(), animEvent };
+    } else {
+      // Normal card play
+      this.discardPile.push(playedCard);
+      
+      // Execute card effect and get animation event
+      const animEvent = this.executeCardEffect(playedCard, true);
+      
+      // Check for death
+      this.checkCombatEnd();
+      
+      return { success: true, card: playedCard, state: this.getState(), animEvent };
+    }
   }
 
   executeCardEffect(card, isPlayer) {
@@ -112,17 +153,55 @@ export class Combat {
           this.soulBlood -= card.self_damage;
         }
       } else {
+        // Enemy attacking soul - route damage to mask first
         const prevHealth = this.soulBlood;
-        const damage = Math.max(0, card.damage - this.soulBlock);
+        const prevMaskHealth = this.maskBlood;
+        let damage = Math.max(0, card.damage - this.soulBlock);
         this.soulBlock = Math.max(0, this.soulBlock - card.damage);
+        
+        // Route damage to mask first if it exists
+        if (this.maskBlood > 0) {
+          const maskDamage = Math.min(damage, this.maskBlood);
+          this.maskBlood -= maskDamage;
+          damage -= maskDamage;
+          
+          // Update soul's mask health
+          if (this.soul.mask) {
+            this.soul.maskBlood = this.maskBlood;
+          }
+          
+          // Check if mask broke
+          if (this.maskBlood <= 0) {
+            this.maskBlood = 0;
+            this.maskBroken = true;
+            if (this.soul.mask) {
+              this.soul.maskBlood = 0;
+            }
+          }
+        }
+        
+        // Remaining damage goes to soul
         this.soulBlood -= damage;
         
-        animEvent = { type: 'enemy_attack', damage, prevHealth, newHealth: this.soulBlood };
+        animEvent = { 
+          type: 'enemy_attack', 
+          damage, 
+          maskDamage: prevMaskHealth - this.maskBlood,
+          prevHealth, 
+          newHealth: this.soulBlood,
+          prevMaskHealth,
+          newMaskHealth: this.maskBlood,
+          maskBroken: this.maskBroken && prevMaskHealth > 0
+        };
       }
     } else if (card.type === 'defend') {
       if (isPlayer) {
+        // Pay health cost if this is a scar card
+        if (card.health_cost) {
+          this.soulBlood -= card.health_cost;
+        }
         this.soulBlock += card.block;
-        animEvent = { type: 'soul_defend', blockGained: card.block };
+        animEvent = { type: 'soul_defend', blockGained: card.block, healthCost: card.health_cost || 0 };
       } else {
         this.enemyBlock += card.block;
       }
@@ -209,6 +288,49 @@ export class Combat {
     }
   }
 
+  generateScarCard(maskCard) {
+    // Generate a negative scar card based on the mask card type
+    const scarId = `scar_${maskCard.id}_${Date.now()}`;
+    
+    if (maskCard.type === 'attack') {
+      // Attack scar: deals damage but also hurts the user
+      return {
+        id: scarId,
+        name: `Scar: ${maskCard.name}`,
+        description: `${maskCard.description} Takes ${Math.ceil(maskCard.damage / 2)} self-damage.`,
+        type: 'attack',
+        cost: maskCard.cost,
+        damage: maskCard.damage,
+        self_damage: Math.ceil(maskCard.damage / 2),
+        source: 'scar'
+      };
+    } else if (maskCard.type === 'defend') {
+      // Defense scar: grants block but costs health
+      const healthCost = Math.ceil(maskCard.block / 2);
+      return {
+        id: scarId,
+        name: `Scar: ${maskCard.name}`,
+        description: `${maskCard.description} Costs ${healthCost} HP to play.`,
+        type: 'defend',
+        cost: maskCard.cost,
+        block: maskCard.block,
+        health_cost: healthCost,
+        source: 'scar'
+      };
+    } else {
+      // Status scar: becomes a dead card (unplayable)
+      return {
+        id: scarId,
+        name: `Scar: ${maskCard.name}`,
+        description: 'A broken fragment. Cannot be played.',
+        type: 'status',
+        cost: maskCard.cost,
+        unplayable: true,
+        source: 'scar'
+      };
+    }
+  }
+
   enemyTurn() {
     if (!this.enemyIntent) {
       this.generateEnemyIntent();
@@ -270,7 +392,10 @@ export class Combat {
         blood: this.soulBlood,
         maxBlood: this.soul.maxBlood,
         block: this.soulBlock,
-        stats: this.soulStats
+        stats: this.soulStats,
+        maskBlood: this.maskBlood,
+        maskMaxBlood: this.maskMaxBlood,
+        maskBroken: this.maskBroken
       },
       enemy: {
         id: this.enemy.id,
@@ -280,13 +405,18 @@ export class Combat {
         name: this.enemy.name,
         intent: this.enemyIntent
       },
-      hand: [...this.hand],
+      hand: this.hand.map(card => ({
+        ...card,
+        unplayable: card.unplayable || card.cost > this.energy
+      })),
       deck: [...this.deck],
       discard: [...this.discardPile],
+      voidPile: [...this.voidPile],
       energy: this.energy,
       maxEnergy: this.maxEnergy,
       deckCount: this.deck.length,
       discardCount: this.discardPile.length,
+      voidCount: this.voidPile.length,
       turn: this.turn,
       playerTurn: this.playerTurn,
       result: this.result

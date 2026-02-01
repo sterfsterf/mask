@@ -4,6 +4,7 @@ import { PrefabManager } from './debug/Prefab3D.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 import { POST_PROCESSING_CONFIG, PixelShader, HalftoneShader } from './core/PixelationShader.js';
 import { sfx } from './core/SoundEffects.js';
 
@@ -90,6 +91,7 @@ export class UI {
         height: 100%;
         pointer-events: none;
         z-index: 100;
+        overflow: visible;
       }
 
       .screen {
@@ -98,6 +100,12 @@ export class UI {
         height: 100%;
         padding: 20px;
         overflow-y: auto;
+        overflow-x: hidden;
+      }
+
+      .screen#battle-screen {
+        overflow: visible;
+        padding: 0;
       }
 
       .screen.hidden {
@@ -226,24 +234,36 @@ export class UI {
       .card {
         background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
         border: 2px solid #ff0033;
-        padding: 15px;
+        padding: 0;
         margin: 5px;
-        min-width: 120px;
+        width: 120px;
+        height: 180px;
         cursor: pointer;
         transition: all 0.2s;
-        display: inline-block;
+        display: inline-flex;
+        flex-direction: column;
         vertical-align: top;
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+        transform: translateY(140px);
       }
 
       .card:hover {
-        transform: translateY(-10px);
+        transform: translateY(0);
         border-color: #fff;
-        box-shadow: 0 10px 20px rgba(255, 0, 51, 0.5);
+        box-shadow: 0 10px 30px rgba(255, 0, 51, 0.8);
+        z-index: 1000;
       }
 
       .card.attack { border-color: #ff0033; }
       .card.defend { border-color: #3b82f6; }
       .card.status { border-color: #6b7280; }
+      
+      .card.scar {
+        border-color: #8b0000;
+        background: linear-gradient(135deg, #1a0a0a 0%, #2a0a0a 100%);
+      }
 
       .card.unplayable {
         opacity: 0.5;
@@ -253,38 +273,106 @@ export class UI {
       }
 
       .card.unplayable:hover {
-        transform: none;
+        transform: translateY(-20px);
         box-shadow: none;
       }
 
-      .card-name {
-        font-size: 14px;
+      .card-cost-circle {
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #a855f7;
+        border: 2px solid #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-weight: bold;
-        margin-bottom: 5px;
+        font-size: 14px;
         color: #fff;
+        z-index: 2;
       }
 
-      .card-cost {
-        color: #a855f7;
-        font-size: 12px;
-        margin-bottom: 8px;
+      .card-source-icon {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.7);
+        border: 2px solid #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        z-index: 2;
+      }
+
+      .card.unplayable .card-cost-circle {
+        background: #444;
+        border-color: #666;
+        color: #999;
+      }
+
+      .card-header {
+        padding: 6px 8px;
+        padding-left: 40px;
+        background: rgba(0, 0, 0, 0.5);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .card-name {
+        font-size: 11px;
+        font-weight: bold;
+        color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-align: left;
+      }
+
+      .card-illustration {
+        flex: 1;
+        background: rgba(0, 0, 0, 0.3);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 36px;
+        min-height: 60px;
+      }
+
+      .card.attack .card-illustration { color: #ff0033; }
+      .card.defend .card-illustration { color: #3b82f6; }
+      .card.status .card-illustration { color: #6b7280; }
+
+      .card-footer {
+        padding: 8px;
+        background: rgba(0, 0, 0, 0.7);
+        min-height: 50px;
       }
 
       .card-desc {
-        font-size: 11px;
-        color: #999;
+        font-size: 10px;
+        color: #ccc;
+        line-height: 1.3;
       }
 
       .hand {
         position: fixed;
-        bottom: 20px;
+        bottom: -100px;
         left: 50%;
         transform: translateX(-50%);
         display: flex;
         gap: 10px;
         max-width: 90%;
         overflow-x: auto;
-        z-index: 50;
+        overflow-y: visible;
+        z-index: 999;
+        padding-bottom: 120px;
       }
 
       .combat-info {
@@ -418,7 +506,26 @@ export class UI {
       .trait-choice:hover {
         border-color: #fff;
         background: rgba(50, 50, 50, 0.95);
-        transform: scale(1.05);
+        transform: translateY(-8px) scale(1.02);
+      }
+
+      .card.trait-choice {
+        transform: translateY(0) !important;
+      }
+
+      .card.trait-choice:hover {
+        transform: translateY(-8px) scale(1.02) !important;
+      }
+
+      .trait-card-choice {
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .trait-card-choice:hover {
+        transform: translateY(-20px) scale(1.05);
+        box-shadow: 0 10px 30px rgba(255, 0, 51, 0.8);
+        z-index: 10;
       }
 
       .node-button {
@@ -448,9 +555,13 @@ export class UI {
         gap: 10px;
         flex-wrap: wrap;
         justify-content: center;
-        margin: 80px auto 180px;
+        position: fixed;
+        bottom: 160px;
+        left: 50%;
+        transform: translateX(-50%);
         max-width: 800px;
         padding: 0 20px;
+        z-index: 100;
       }
 
       .mask-shop-card {
@@ -632,6 +743,28 @@ export class UI {
         top: 4px;
         left: 4px;
         font-size: 14px;
+      }
+
+      .mask-health {
+        font-size: 10px;
+        color: #ffd700;
+      }
+
+      .view-deck-btn {
+        position: absolute;
+        bottom: 4px;
+        right: 4px;
+        background: rgba(0, 0, 0, 0.8);
+        border: 1px solid #666;
+        padding: 2px 6px;
+        font-size: 14px;
+        cursor: pointer;
+        border-radius: 3px;
+      }
+
+      .view-deck-btn:hover {
+        border-color: #fff;
+        background: rgba(0, 0, 0, 1);
       }
 
       .map-visual {
@@ -819,6 +952,16 @@ export class UI {
         right: 20px;
       }
 
+      .pile-viewer-btn.right-bottom {
+        right: 20px;
+        bottom: 220px;
+      }
+
+      .pile-viewer-btn.right-middle {
+        right: 20px;
+        top: 160px;
+      }
+
       .end-turn-btn {
         position: fixed;
         bottom: 160px;
@@ -866,7 +1009,26 @@ export class UI {
       .trait-choice:hover {
         border-color: #fff;
         background: rgba(50, 50, 50, 0.95);
-        transform: scale(1.05);
+        transform: translateY(-8px) scale(1.02);
+      }
+
+      .card.trait-choice {
+        transform: translateY(0) !important;
+      }
+
+      .card.trait-choice:hover {
+        transform: translateY(-8px) scale(1.02) !important;
+      }
+
+      .trait-card-choice {
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .trait-card-choice:hover {
+        transform: translateY(-20px) scale(1.05);
+        box-shadow: 0 10px 30px rgba(255, 0, 51, 0.8);
+        z-index: 10;
       }
 
       .node-button {
@@ -896,9 +1058,13 @@ export class UI {
         gap: 10px;
         flex-wrap: wrap;
         justify-content: center;
-        margin: 80px auto 180px;
+        position: fixed;
+        bottom: 160px;
+        left: 50%;
+        transform: translateX(-50%);
         max-width: 800px;
         padding: 0 20px;
+        z-index: 100;
       }
 
       .mask-shop-card {
@@ -1114,6 +1280,19 @@ export class UI {
         margin: 20px 0;
         max-height: 500px;
         overflow-y: auto;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        justify-items: center;
+      }
+
+      .pile-cards .card {
+        transform: none !important;
+        transition: none !important;
+      }
+
+      .pile-cards .card:hover {
+        transform: none !important;
       }
 
       #summoning-canvas-container {
@@ -1430,15 +1609,25 @@ export class UI {
     const soulsBar = document.createElement('div');
     soulsBar.className = 'souls-bar';
     soulsBar.innerHTML = `
-      ${souls.map(m => `
-        <div class="soul-card-mini" data-soul-id="${m.id}">
-          <canvas class="soul-preview-mini" id="soul-preview-mini-${m.id}" width="80" height="80"></canvas>
-          <div class="soul-name">${m.name}</div>
-          <div class="soul-stats">❤️${m.blood}/${m.maxBlood}</div>
-          ${m.mask ? '<div class="has-mask">🎭</div>' : ''}
-          ${m.tired ? '<div class="is-tired">💤</div>' : ''}
-        </div>
-      `).join('')}
+      ${souls.map(m => {
+        // Display actual mask health if equipped
+        let maskHealth = '';
+        if (m.mask && m.maskBlood !== undefined && m.maskMaxBlood !== undefined) {
+          maskHealth = `<div class="mask-health">🎭 ${m.maskBlood}/${m.maskMaxBlood}</div>`;
+        }
+        
+        return `
+          <div class="soul-card-mini" data-soul-id="${m.id}">
+            <canvas class="soul-preview-mini" id="soul-preview-mini-${m.id}" width="80" height="80"></canvas>
+            <div class="soul-name">${m.name}</div>
+            <div class="soul-stats">❤️${m.blood}/${m.maxBlood}</div>
+            ${maskHealth}
+            ${m.mask ? '<div class="has-mask">🎭</div>' : ''}
+            ${m.tired ? '<div class="is-tired">💤</div>' : ''}
+            <button class="view-deck-btn" onclick="window.ui.viewSoulDeck(${m.id}); event.stopPropagation();">🃏</button>
+          </div>
+        `;
+      }).join('')}
     `;
     document.body.appendChild(soulsBar);
 
@@ -2381,7 +2570,6 @@ export class UI {
   }
 
   renderMaskShop() {
-    const nodeScreen = document.getElementById('node-screen');
     const offering = this.game.state.maskShopOffering;
     const costs = this.game.config.maskConfig.costs;
     const tempMask = this.game.tempMask;
@@ -2398,7 +2586,10 @@ export class UI {
       ...offering.common.map((m, i) => ({ ...m, rarity: 'common', index: i, cost: costs.common, sold: soldMasks.common.includes(i) }))
     ];
 
-    nodeScreen.innerHTML = `
+    // Show the mask shop screen with 3D scene
+    const summoningScreen = document.getElementById('summoning-screen');
+    summoningScreen.innerHTML = `
+      <div id="summoning-canvas-container"></div>
       <div id="shop-ui">
         <h2 style="margin: 0 0 8px 0; text-align: center; font-size: 18px;">🎭 Mask Vendor</h2>
         <p style="margin: 0; text-align: center; color: #ccc; font-size: 12px;">Purchase masks to empower your souls</p>
@@ -2432,7 +2623,10 @@ export class UI {
       <button class="shop-leave-btn" onclick="window.ui.backToMap()">Leave</button>
     `;
 
-    this.showScreen('node');
+    this.showScreen('summoning');
+    
+    // Initialize the mask shop scene after DOM is ready
+    setTimeout(() => this.initMaskShopScene(), 50);
 
     // If there's a temp mask, make soul cards clickable
     if (tempMask) {
@@ -2449,6 +2643,269 @@ export class UI {
         });
       }, 50);
     }
+  }
+
+  initMaskShopScene() {
+    const container = document.getElementById('summoning-canvas-container');
+    if (!container) return;
+
+    // Scene
+    const scene = new THREE.Scene();
+    
+    // Gradient background (dark cyan at bottom, lighter at top)
+    const canvas = document.createElement('canvas');
+    canvas.width = 2;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+    const gradient = ctx.createLinearGradient(0, 0, 0, 256);
+    gradient.addColorStop(0, '#1a3a3a'); // Lighter cyan at top
+    gradient.addColorStop(1, '#0a0a0a'); // Dark at bottom
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 2, 256);
+    
+    const bgTexture = new THREE.CanvasTexture(canvas);
+    scene.background = bgTexture;
+    scene.fog = new THREE.Fog(0x0a0a0a, 5, 15);
+
+    // Camera
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 2, 5);
+    camera.lookAt(0, 1.5, 0);
+
+    // Renderer
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    container.appendChild(renderer.domElement);
+
+    // Post-processing
+    const composer = new EffectComposer(renderer);
+    const renderPass = new RenderPass(scene, camera);
+    composer.addPass(renderPass);
+
+    const pixelPass = new ShaderPass(PixelShader);
+    pixelPass.uniforms['resolution'].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
+    pixelPass.uniforms['pixelSize'].value = POST_PROCESSING_CONFIG.pixelSize;
+
+    const halftonePass = new ShaderPass(HalftoneShader);
+    halftonePass.uniforms['resolution'].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
+    halftonePass.uniforms['dotSize'].value = POST_PROCESSING_CONFIG.halftoneSize;
+
+    if (POST_PROCESSING_CONFIG.mode === 'pixelation') {
+      pixelPass.renderToScreen = true;
+      composer.addPass(pixelPass);
+    } else if (POST_PROCESSING_CONFIG.mode === 'halftone') {
+      halftonePass.renderToScreen = true;
+      composer.addPass(halftonePass);
+    } else {
+      renderPass.renderToScreen = true;
+    }
+
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0x88cccc, 1.2);
+    scene.add(ambientLight);
+
+    // Key light on vendor (magenta/purple)
+    const mainLight = new THREE.DirectionalLight(0xff44ff, 3.0);
+    mainLight.position.set(0, 5, 2);
+    scene.add(mainLight);
+
+    // Rim light (cyan)
+    const fillLight = new THREE.DirectionalLight(0x44ffff, 2.5);
+    fillLight.position.set(-3, 3, 2);
+    scene.add(fillLight);
+    
+    // Back light for dramatic effect
+    const backLight = new THREE.DirectionalLight(0xaa44ff, 2.0);
+    backLight.position.set(0, 4, -3);
+    scene.add(backLight);
+
+    // Ground
+    const groundGeom = new THREE.CircleGeometry(10, 32);
+    const groundMat = new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.9 });
+    const ground = new THREE.Mesh(groundGeom, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    scene.add(ground);
+
+    // Create creepy vendor (floating hooded figure)
+    const vendorGroup = new THREE.Group();
+    
+    // Hood/head
+    const headGeom = new THREE.SphereGeometry(0.4, 8, 8);
+    const headMat = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0x330033, emissiveIntensity: 0.3 });
+    const head = new THREE.Mesh(headGeom, headMat);
+    head.position.y = 2.2;
+    vendorGroup.add(head);
+    
+    // Robe body
+    const bodyGeom = new THREE.ConeGeometry(0.6, 1.5, 6);
+    const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1a0a1a, roughness: 0.8 });
+    const body = new THREE.Mesh(bodyGeom, bodyMat);
+    body.position.y = 1.2;
+    vendorGroup.add(body);
+    
+    // Glowing eyes
+    const eyeGeom = new THREE.SphereGeometry(0.05, 4, 4);
+    const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff00ff, fog: false });
+    const leftEye = new THREE.Mesh(eyeGeom, eyeMat);
+    leftEye.position.set(-0.12, 2.25, 0.35);
+    vendorGroup.add(leftEye);
+    
+    const rightEye = new THREE.Mesh(eyeGeom, eyeMat);
+    rightEye.position.set(0.12, 2.25, 0.35);
+    vendorGroup.add(rightEye);
+    
+    vendorGroup.position.set(0, 0.5, -1);
+    scene.add(vendorGroup);
+
+    // Stall counter (no masks)
+    const stallGroup = new THREE.Group();
+    
+    // Counter
+    const counterGeom = new THREE.BoxGeometry(3, 0.1, 1);
+    const counterMat = new THREE.MeshStandardMaterial({ color: 0x332211 });
+    const counter = new THREE.Mesh(counterGeom, counterMat);
+    counter.position.set(0, 1, 0);
+    stallGroup.add(counter);
+    
+    scene.add(stallGroup);
+
+    // Rainbow heat wave particles
+    const particleCount = 100;
+    const particleGeometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+    const colors = new Float32Array(particleCount * 3);
+    const velocities = [];
+
+    for (let i = 0; i < particleCount; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * 6;
+      positions[i * 3 + 1] = Math.random() * 0.5;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 4;
+      
+      // Rainbow colors
+      const hue = Math.random();
+      const color = new THREE.Color().setHSL(hue, 1.0, 0.6);
+      colors[i * 3] = color.r;
+      colors[i * 3 + 1] = color.g;
+      colors[i * 3 + 2] = color.b;
+      
+      velocities.push({
+        x: (Math.random() - 0.5) * 0.02,
+        y: 0.01 + Math.random() * 0.02,
+        wobble: Math.random() * Math.PI * 2
+      });
+    }
+
+    particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    particleGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+    const particleMaterial = new THREE.PointsMaterial({
+      size: 0.08,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.7,
+      blending: THREE.AdditiveBlending,
+      fog: false
+    });
+
+    const particles = new THREE.Points(particleGeometry, particleMaterial);
+    scene.add(particles);
+
+    // Store scene data
+    this.maskShopScene = {
+      scene,
+      camera,
+      renderer,
+      composer,
+      renderPass,
+      pixelPass,
+      halftonePass,
+      vendorGroup,
+      stallGroup,
+      particles,
+      particleVelocities: velocities,
+      time: 0
+    };
+
+    // Handle resize
+    const resizeHandler = () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      composer.setSize(window.innerWidth, window.innerHeight);
+      pixelPass.uniforms['resolution'].value.set(window.innerWidth, window.innerHeight);
+      halftonePass.uniforms['resolution'].value.set(window.innerWidth, window.innerHeight);
+    };
+    window.addEventListener('resize', resizeHandler);
+    this.maskShopScene.resizeHandler = resizeHandler;
+
+    // Start animation
+    this.animateMaskShopScene();
+  }
+
+  animateMaskShopScene() {
+    if (!this.maskShopScene) return;
+
+    this.maskShopAnimationId = requestAnimationFrame(() => this.animateMaskShopScene());
+
+    const { scene, camera, composer, vendorGroup, stallGroup, particles, particleVelocities, time } = this.maskShopScene;
+    
+    this.maskShopScene.time += 0.016;
+
+    // Vendor bobbing
+    if (vendorGroup) {
+      vendorGroup.position.y = 0.5 + Math.sin(time * 1.5) * 0.1;
+      vendorGroup.rotation.y = Math.sin(time * 0.5) * 0.1;
+    }
+
+    // Animate particles (heat waves)
+    if (particles) {
+      const positions = particles.geometry.attributes.position.array;
+      
+      for (let i = 0; i < particleVelocities.length; i++) {
+        const vel = particleVelocities[i];
+        
+        // Move particle up
+        positions[i * 3 + 1] += vel.y;
+        
+        // Wobble side to side (heat wave effect)
+        vel.wobble += 0.05;
+        positions[i * 3] += Math.sin(vel.wobble) * 0.015;
+        positions[i * 3 + 2] += Math.cos(vel.wobble * 0.7) * 0.01;
+        
+        // Reset if too high
+        if (positions[i * 3 + 1] > 4) {
+          positions[i * 3] = (Math.random() - 0.5) * 6;
+          positions[i * 3 + 1] = 0;
+          positions[i * 3 + 2] = (Math.random() - 0.5) * 4;
+        }
+      }
+      
+      particles.geometry.attributes.position.needsUpdate = true;
+    }
+
+    // Camera gentle sway
+    camera.position.x = Math.sin(time * 0.3) * 0.5;
+    camera.lookAt(0, 1.5, 0);
+
+    composer.render();
+  }
+
+  disposeMaskShopScene() {
+    if (!this.maskShopScene) return;
+
+    cancelAnimationFrame(this.maskShopAnimationId);
+    
+    if (this.maskShopScene.resizeHandler) {
+      window.removeEventListener('resize', this.maskShopScene.resizeHandler);
+    }
+
+    if (this.maskShopScene.renderer) {
+      this.maskShopScene.renderer.domElement.remove();
+      this.maskShopScene.renderer.dispose();
+    }
+    
+    this.maskShopScene = null;
   }
 
   renderShrine() {
@@ -2510,6 +2967,23 @@ export class UI {
 
   getShrineTheme(effect) {
     switch(effect) {
+      case 'remove_tired':
+        return {
+          color: 0x88ccff,
+          particleColor: 0xaaddff,
+          geometry: () => {
+            // Soft pillow/cloud shape
+            const group = new THREE.Group();
+            const pillow = new THREE.Mesh(
+              new THREE.SphereGeometry(0.3, 8, 8),
+              new THREE.MeshStandardMaterial({ color: 0x88ccff, roughness: 0.3 })
+            );
+            pillow.scale.set(1, 0.6, 1.2);
+            group.add(pillow);
+            return group;
+          },
+          lightColor: 0x88ccff
+        };
       case 'heal_full':
       case 'increase_max_hp':
         return {
@@ -2829,39 +3303,67 @@ export class UI {
   }
 
   renderBattlePrep() {
-    const nodeScreen = document.getElementById('node-screen');
     const enemy = this.game.getCurrentEnemy();
+    
+    // Reset any previous soul card styling first
+    document.querySelectorAll('.soul-card-mini').forEach(card => {
+      card.style.cursor = '';
+      card.style.border = '';
+      card.style.transform = '';
+      card.style.boxShadow = '';
+      card.style.opacity = '';
+      card.onclick = null;
+    });
+    
+    // Enter battle immediately but without soul selected yet
+    this.initBattleSceneWithEnemy(enemy);
+    
+    // Show battle screen with soul selection prompt
+    const battleScreen = document.getElementById('battle-screen');
+    battleScreen.innerHTML = `
+      <div class="combat-info">
+        <div class="combatant" style="opacity: 0.3; pointer-events: none;">
+          <div class="health-bar-floating">
+            <strong>Choose Your Fighter</strong>
+          </div>
+        </div>
 
-    // Souls bar is already visible, just show enemy and prompt
-    nodeScreen.innerHTML = `
-      <h2>⚔️ Battle Ahead</h2>
-      
-      <div class="panel">
-        <canvas id="enemy-preview" width="200" height="200"></canvas>
-        <h3>${enemy.name}</h3>
-        <p>❤️ ${enemy.blood} | ⚔️ ${enemy.attack} | 🛡️ ${enemy.defense}</p>
-        <p>Rewards: ${enemy.dark_energy_reward} ⚡ + ${enemy.coin_reward} 💰</p>
+        <div class="combatant" style="text-align: right;">
+          <div class="health-bar-floating">
+            <strong>${enemy.name}</strong>
+            <div class="health-bar">
+              <div class="health-fill-back" style="width: 100%; background: #8b0000;"></div>
+              <div class="health-fill" style="width: 100%; background: #ff0033;"></div>
+            </div>
+            <div style="font-size: 11px;">❤️ ${enemy.blood}/${enemy.blood} | ⚔️ ${enemy.attack} | 🛡️ ${enemy.defense}</div>
+          </div>
+        </div>
       </div>
 
-      <div class="panel">
-        <h3>Select a soul from below to fight</h3>
+      <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 200; pointer-events: none;">
+        <div style="background: rgba(10, 10, 10, 0.95); border: 3px solid #ff0033; padding: 30px; border-radius: 8px;">
+          <h2 style="margin: 0 0 10px 0; color: #ff0033;">⚔️ Choose Your Fighter</h2>
+          <p style="margin: 0; color: #ccc;">Select a soul from below to enter battle</p>
+        </div>
       </div>
-
-      <button onclick="window.ui.backToMap()">Retreat</button>
     `;
-
-    this.showScreen('node');
     
-    // Render enemy 3D preview
-    setTimeout(() => this.renderEnemyPreview(enemy), 50);
+    this.showScreen('battle');
     
-    // Make soul cards clickable to start battle
+    // Show souls bar and make cards clickable
+    const soulsBar = document.querySelector('.souls-bar');
+    if (soulsBar) {
+      soulsBar.style.display = 'flex';
+    }
+    
     setTimeout(() => {
       document.querySelectorAll('.soul-card-mini').forEach((card, idx) => {
         const souls = this.game.getSouls();
         if (souls[idx]) {
           card.style.cursor = 'pointer';
           card.style.border = '2px solid #0f0';
+          card.style.transform = 'scale(1.05)';
+          card.style.boxShadow = '0 0 20px rgba(0, 255, 0, 0.5)';
           card.onclick = () => this.startBattleWith(souls[idx].id);
         }
       });
@@ -3248,6 +3750,7 @@ export class UI {
     if (result.success) {
       sfx.purchase();
       console.log('Bought mask:', result.mask.name);
+      this.disposeMaskShopScene();
       this.renderMaskShop();
     } else {
       sfx.error();
@@ -3260,6 +3763,7 @@ export class UI {
     const result = this.game.equipTempMask(soulId);
     if (result.success) {
       console.log('Mask equipped!');
+      this.disposeMaskShopScene();
       this.renderMaskShop();
       // Re-render the soul preview in the bottom bar
       const soul = this.game.state.souls.find(m => m.id === soulId);
@@ -3286,6 +3790,16 @@ export class UI {
     let effectText = '';
     
     switch(effect) {
+      case 'remove_tired':
+        if (soul.tiredCount > 0) {
+          const removedCount = soul.tiredCount;
+          soul.tiredCount = 0;
+          effectText = `${removedCount} Tired Card${removedCount > 1 ? 's' : ''} Removed! 💤`;
+          console.log(`Removed ${removedCount} tired cards`);
+        } else {
+          effectText = 'Already Rested! 😊';
+        }
+        break;
       case 'remove_negative_trait':
         if (soul.negativeTraits.length > 0) {
           const removedTrait = soul.negativeTraits[soul.negativeTraits.length - 1];
@@ -3463,7 +3977,27 @@ export class UI {
   startBattleWith(soulId) {
     const result = this.game.startBattle(soulId);
     if (result.success) {
-      this.renderBattle(result.combatState);
+      // Add soul to existing battle scene and animate in
+      this.addSoulToBattleScene(result.combatState);
+      
+      // Hide souls bar
+      const soulsBar = document.querySelector('.souls-bar');
+      if (soulsBar) {
+        soulsBar.style.display = 'none';
+      }
+      
+      // Reset soul card styling
+      document.querySelectorAll('.soul-card-mini').forEach(card => {
+        card.style.cursor = '';
+        card.style.border = '';
+        card.style.transform = '';
+        card.style.boxShadow = '';
+        card.style.opacity = '';
+        card.onclick = null;
+      });
+      
+      // Render battle UI with animation
+      this.renderBattleStart(result.combatState);
     } else {
       alert(result.error);
     }
@@ -3479,8 +4013,9 @@ export class UI {
       this.game.state.completeCurrentNode();
     }
     
-    // Dispose battle scene if active
+    // Dispose scenes if active
     this.disposeBattleScene();
+    this.disposeMaskShopScene();
     
     // Show souls bar again when leaving battle
     const soulsBar = document.querySelector('.souls-bar');
@@ -3525,18 +4060,21 @@ export class UI {
               <div class="health-fill" id="soul-health-bar-fill" style="width: ${Math.max(0, Math.min(100, (state.soul.blood / state.soul.maxBlood) * 100))}%"></div>
             </div>
             <div style="font-size: 11px;">❤️ ${Math.max(0, state.soul.blood)}/${state.soul.maxBlood} ${state.soul.block > 0 ? `🛡️ ${state.soul.block}` : ''}</div>
+            ${state.soul.mask && state.soul.maskBlood > 0 ? `
+              <div style="margin-top: 6px; font-size: 10px; color: #ffd700;">${state.soul.mask.name}</div>
+              <div class="health-bar" style="height: 8px;">
+                <div class="health-fill-back" id="mask-health-bar-back" style="width: ${Math.max(0, Math.min(100, (state.soul.maskBlood / state.soul.maskMaxBlood) * 100))}%; background: #ffa500;"></div>
+                <div class="health-fill" id="mask-health-bar-fill" style="width: ${Math.max(0, Math.min(100, (state.soul.maskBlood / state.soul.maskMaxBlood) * 100))}%; background: #ffd700;"></div>
+              </div>
+              <div style="font-size: 10px; color: #ffd700;">🎭 ${Math.max(0, state.soul.maskBlood)}/${state.soul.maskMaxBlood}</div>
+            ` : ''}
+            ${state.soul.maskBroken ? '<div style="font-size: 10px; color: #ff0000; margin-top: 4px;">💔 Mask Broken!</div>' : ''}
           </div>
         </div>
 
         <div class="combatant" style="text-align: right;">
           <div class="health-bar-floating">
             <strong>${state.enemy.name}</strong>
-            ${state.enemy.intent ? `
-              <div class="enemy-intent">
-                <span class="intent-icon">${state.enemy.intent.icon}</span>
-                <span class="intent-text">${state.enemy.intent.name}: ${state.enemy.intent.value}</span>
-              </div>
-            ` : ''}
             <div class="health-bar">
               <div class="health-fill-back" id="enemy-health-bar-back" style="width: ${Math.max(0, Math.min(100, (state.enemy.blood / state.enemy.maxBlood) * 100))}%"></div>
               <div class="health-fill" id="enemy-health-bar-fill" style="width: ${Math.max(0, Math.min(100, (state.enemy.blood / state.enemy.maxBlood) * 100))}%"></div>
@@ -3558,18 +4096,39 @@ export class UI {
         🗑️ ${state.discardCount}
       </button>
 
+      ${state.voidCount > 0 ? `
+        <button class="pile-viewer-btn right-middle" onclick="window.ui.viewVoidPile()">
+          🌀 ${state.voidCount}
+        </button>
+      ` : ''}
+
       <button class="end-turn-btn" onclick="window.ui.endTurn()">End Turn</button>
 
       <div class="hand">
-        ${state.hand.map((card, i) => `
-          <div class="card ${card.type} ${card.unplayable ? 'unplayable' : ''}" 
-               onclick="window.ui.playCard(${i})"
-               onmouseenter="window.sfx.cardHover()">
-            <div class="card-name">${card.name}</div>
-            <div class="card-cost">${card.unplayable ? 'Unplayable' : `Cost: ${card.cost}`}</div>
-            <div class="card-desc">${card.description || ''}</div>
-          </div>
-        `).join('')}
+        ${state.hand.map((card, i) => {
+          let sourceIcon = '👿'; // soul default
+          if (card.source === 'mask') sourceIcon = '👺';
+          if (card.source === 'scar') sourceIcon = '🩹';
+          
+          return `
+            <div class="card ${card.type} ${card.source === 'scar' ? 'scar' : ''} ${card.unplayable ? 'unplayable' : ''}" 
+                 onclick="window.ui.playCard(${i})"
+                 onmouseenter="window.ui.previewCardEffect(${i})"
+                 onmouseleave="window.ui.clearCardPreview()">
+              <div class="card-cost-circle">${card.cost}</div>
+              <div class="card-source-icon">${sourceIcon}</div>
+              <div class="card-header">
+                <div class="card-name">${card.name}</div>
+              </div>
+              <div class="card-illustration">
+                ${card.source === 'scar' ? '💔' : card.type === 'attack' ? '⚔️' : card.type === 'defend' ? '🛡️' : '✨'}
+              </div>
+              <div class="card-footer">
+                <div class="card-desc">${card.description || ''}</div>
+              </div>
+            </div>
+          `;
+        }).join('')}
       </div>
     `;
 
@@ -3623,6 +4182,219 @@ export class UI {
     }
   }
 
+  initBattleSceneWithEnemy(enemy) {
+    console.log('Initializing battle scene with enemy only:', enemy);
+    const container = document.getElementById('battle-canvas-container');
+    container.classList.add('active');
+
+    // Scene setup (same as initBattleScene but without soul)
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x7a5555);
+    scene.fog = new THREE.Fog(0x7a5555, 5, 15);
+
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(3, 2, 3);
+    camera.lookAt(0, 1, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    container.appendChild(renderer.domElement);
+
+    const labelRenderer = new CSS2DRenderer();
+    labelRenderer.setSize(window.innerWidth, window.innerHeight);
+    labelRenderer.domElement.style.position = 'absolute';
+    labelRenderer.domElement.style.top = '0';
+    labelRenderer.domElement.style.pointerEvents = 'none';
+    container.appendChild(labelRenderer.domElement);
+
+    // Post-processing
+    const composer = new EffectComposer(renderer);
+    const renderPass = new RenderPass(scene, camera);
+    composer.addPass(renderPass);
+
+    const pixelPass = new ShaderPass(PixelShader);
+    pixelPass.uniforms['resolution'].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
+    pixelPass.uniforms['pixelSize'].value = POST_PROCESSING_CONFIG.pixelSize;
+
+    const halftonePass = new ShaderPass(HalftoneShader);
+    halftonePass.uniforms['resolution'].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
+    halftonePass.uniforms['dotSize'].value = POST_PROCESSING_CONFIG.halftoneSize;
+
+    if (POST_PROCESSING_CONFIG.mode === 'pixelation') {
+      pixelPass.renderToScreen = true;
+      composer.addPass(pixelPass);
+    } else if (POST_PROCESSING_CONFIG.mode === 'halftone') {
+      halftonePass.renderToScreen = true;
+      composer.addPass(halftonePass);
+    } else {
+      renderPass.renderToScreen = true;
+    }
+
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 2.0);
+    scene.add(ambientLight);
+
+    const mainLight = new THREE.DirectionalLight(0xffffff, 2.5);
+    mainLight.position.set(5, 10, 5);
+    scene.add(mainLight);
+
+    const fillLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    fillLight.position.set(-5, 5, -5);
+    scene.add(fillLight);
+
+    const rimLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    rimLight.position.set(0, 5, -10);
+    scene.add(rimLight);
+
+    // Ground and environment (same as before)
+    const groundGeom = new THREE.CircleGeometry(5, 32);
+    const groundMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.8 });
+    const ground = new THREE.Mesh(groundGeom, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    scene.add(ground);
+
+    const gridHelper = new THREE.GridHelper(10, 20, 0x333333, 0x222222);
+    scene.add(gridHelper);
+
+    // Add mountains and particles (abbreviated for brevity - copy from initBattleScene if needed)
+
+    // Load enemy on the right
+    const enemyMesh = this.prefabManager.instantiate(`enemy_${enemy.id}`);
+    if (enemyMesh) {
+      enemyMesh.position.set(1.2, 0, 0);
+      enemyMesh.rotation.y = -Math.PI / 4;
+      scene.add(enemyMesh);
+    }
+
+    // Create intent label (CSS2D element for enemy intent)
+    const intentDiv = document.createElement('div');
+    intentDiv.style.cssText = `
+      background: rgba(10, 10, 10, 0.85);
+      border: 2px solid #ff0033;
+      border-radius: 16px;
+      padding: 8px 12px;
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+      min-width: 60px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    `;
+    const intentLabel = new CSS2DObject(intentDiv);
+    intentLabel.position.set(0, 1.8, 0);
+    if (enemyMesh) {
+      enemyMesh.add(intentLabel);
+    }
+
+    // Store scene data
+    this.battleScene = {
+      scene,
+      camera,
+      renderer,
+      labelRenderer,
+      composer,
+      renderPass,
+      pixelPass,
+      halftonePass,
+      enemyMesh,
+      soulMesh: null, // Will be added later
+      intentLabel: intentLabel,
+      particles: null,
+      cameraAngle: 0,
+      soulBasePos: null,
+      enemyBasePos: enemyMesh ? enemyMesh.position.clone() : null,
+      attackAnim: null,
+      healthBarAnim: null,
+      maskHealthBarAnim: null
+    };
+
+    // Start animation
+    this.animateBattleScene();
+  }
+
+  addSoulToBattleScene(state) {
+    if (!this.battleScene) return;
+
+    const { scene } = this.battleScene;
+
+    // Load soul on the left
+    const soulMesh = this.prefabManager.instantiate(`soul_${state.soul.type}`);
+    if (soulMesh) {
+      soulMesh.position.set(-1.2, 0, 0);
+      soulMesh.rotation.y = Math.PI / 4;
+      scene.add(soulMesh);
+
+      // Add mask if equipped (same logic as initBattleScene)
+      if (state.soul.mask && state.soul.mask.id) {
+        const maskMesh = this.prefabManager.instantiate(`mask_${state.soul.mask.id}`);
+        if (maskMesh) {
+          let mountPoint;
+          if (state.soul.type === 'wretch') {
+            const headOrb = soulMesh.userData.headOrb;
+            if (headOrb) {
+              mountPoint = new THREE.Object3D();
+              mountPoint.position.set(0, 0, 0.35);
+              headOrb.add(mountPoint);
+            }
+          } else if (state.soul.type === 'imp' || state.soul.type === 'brute') {
+            mountPoint = new THREE.Object3D();
+            mountPoint.position.set(0, 0.9, 0.5);
+            soulMesh.add(mountPoint);
+          } else if (state.soul.type === 'hollow' || state.soul.type === 'blight') {
+            mountPoint = new THREE.Object3D();
+            mountPoint.position.set(0, 1.4, 0.45);
+            soulMesh.add(mountPoint);
+          } else if (state.soul.type === 'cur') {
+            mountPoint = new THREE.Object3D();
+            mountPoint.position.set(0.5, 0.9, 0.3);
+            soulMesh.add(mountPoint);
+          } else if (state.soul.type === 'scamp') {
+            mountPoint = new THREE.Object3D();
+            mountPoint.position.set(0, 1.2, 0.3);
+            soulMesh.add(mountPoint);
+          } else if (state.soul.type === 'varmint') {
+            mountPoint = new THREE.Object3D();
+            mountPoint.position.set(0.3, 0.85, 0.2);
+            soulMesh.add(mountPoint);
+          } else if (state.soul.type === 'knave') {
+            mountPoint = new THREE.Object3D();
+            mountPoint.position.set(0, 1.3, 0.25);
+            soulMesh.add(mountPoint);
+          }
+
+          if (mountPoint) {
+            maskMesh.scale.set(1.0, 1.0, 1.0);
+            maskMesh.userData.isMask = true;
+            mountPoint.add(maskMesh);
+          }
+        }
+      }
+
+      this.battleScene.soulMesh = soulMesh;
+      this.battleScene.soulBasePos = soulMesh.position.clone();
+    }
+  }
+
+  renderBattleStart(state) {
+    // Full battle render with card slide-in animation
+    setTimeout(() => {
+      this.renderBattle(state);
+      
+      // Start cards off-screen
+      const hand = document.querySelector('.hand');
+      if (hand) {
+        hand.style.transition = 'none';
+        hand.style.bottom = '-500px';
+        
+        // Animate cards sliding up from bottom
+        setTimeout(() => {
+          hand.style.transition = 'bottom 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
+          hand.style.bottom = '-100px';
+        }, 50);
+      }
+    }, 300);
+  }
+
   initBattleScene(state) {
     console.log('Initializing battle scene with state:', state);
     const container = document.getElementById('battle-canvas-container');
@@ -3643,6 +4415,14 @@ export class UI {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
     container.appendChild(renderer.domElement);
+
+    // CSS2D Renderer for labels (not affected by post-processing)
+    const labelRenderer = new CSS2DRenderer();
+    labelRenderer.setSize(window.innerWidth, window.innerHeight);
+    labelRenderer.domElement.style.position = 'absolute';
+    labelRenderer.domElement.style.top = '0';
+    labelRenderer.domElement.style.pointerEvents = 'none';
+    container.appendChild(labelRenderer.domElement);
 
     // Post-processing with pixelation
     const composer = new EffectComposer(renderer);
@@ -3833,6 +4613,7 @@ export class UI {
           
           if (mountPoint) {
             maskMesh.scale.set(1.0, 1.0, 1.0);
+            maskMesh.userData.isMask = true;
             mountPoint.add(maskMesh);
           }
         }
@@ -3849,24 +4630,50 @@ export class UI {
       scene.add(enemyMesh);
     }
 
+    // Create intent label above enemy
+    let intentLabel = null;
+    if (state.enemy.intent && enemyMesh) {
+      const intentDiv = document.createElement('div');
+      intentDiv.className = 'intent-label';
+      intentDiv.style.cssText = `
+        background: rgba(10, 10, 10, 0.95);
+        border: 2px solid #ff0033;
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 20px;
+        color: #fff;
+        font-family: 'IM Fell DW Pica SC', serif;
+        white-space: nowrap;
+        pointer-events: none;
+      `;
+      intentDiv.textContent = `${state.enemy.intent.icon} ${state.enemy.intent.value}`;
+      
+      intentLabel = new CSS2DObject(intentDiv);
+      intentLabel.position.set(0, 1.8, 0);
+      enemyMesh.add(intentLabel);
+    }
+
     // Store scene data
     this.battleScene = {
       scene,
       camera,
       renderer,
+      labelRenderer,
       composer,
       renderPass,
       pixelPass,
       halftonePass,
       soulMesh,
       enemyMesh,
+      intentLabel,
       particles,
       cameraAngle: 0,
       // Animation state
       soulBasePos: soulMesh ? soulMesh.position.clone() : null,
       enemyBasePos: enemyMesh ? enemyMesh.position.clone() : null,
       attackAnim: null,
-      healthBarAnim: null
+      healthBarAnim: null,
+      maskHealthBarAnim: null
     };
 
     // Listen for post-processing changes
@@ -3897,6 +4704,7 @@ export class UI {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
+      labelRenderer.setSize(window.innerWidth, window.innerHeight);
       composer.setSize(window.innerWidth, window.innerHeight);
       pixelPass.uniforms['resolution'].value.set(window.innerWidth, window.innerHeight);
       halftonePass.uniforms['resolution'].value.set(window.innerWidth, window.innerHeight);
@@ -3909,8 +4717,21 @@ export class UI {
   }
 
   updateBattleScene(state) {
-    // Update models if needed (health changes, effects, etc)
-    // For now, just keep animating
+    // Update enemy intent label
+    if (this.battleScene && this.battleScene.intentLabel && state.enemy.intent) {
+      const intentDiv = this.battleScene.intentLabel.element;
+      intentDiv.textContent = `${state.enemy.intent.icon} ${state.enemy.intent.value}`;
+    }
+    
+    // Hide mask if broken
+    if (this.battleScene && this.battleScene.soulMesh && state.soul.maskBroken) {
+      // Find and hide the mask mesh
+      this.battleScene.soulMesh.traverse((child) => {
+        if (child.userData && child.userData.isMask) {
+          child.visible = false;
+        }
+      });
+    }
   }
 
   animateBattleScene() {
@@ -4033,6 +4854,37 @@ export class UI {
       }
     }
 
+    // Handle mask health bar animation
+    if (this.battleScene.maskHealthBarAnim) {
+      const anim = this.battleScene.maskHealthBarAnim;
+      const elapsed = Date.now() - anim.startTime;
+      const totalDuration = anim.shakeDuration + anim.stallDuration + anim.lerpDuration;
+
+      if (elapsed < totalDuration) {
+        if (elapsed < anim.shakeDuration + anim.stallDuration) {
+          // Keep back bar at previous health during shake and stall
+          const prevPercentage = Math.max(0, (anim.prevHealth / anim.maxHealth) * 100);
+          anim.backBar.style.width = prevPercentage + '%';
+        } else {
+          // Lerp back bar down to match front bar
+          const lerpElapsed = elapsed - anim.shakeDuration - anim.stallDuration;
+          const lerpProgress = Math.min(lerpElapsed / anim.lerpDuration, 1);
+          
+          // Ease out the lerp
+          const eased = 1 - Math.pow(1 - lerpProgress, 3);
+          
+          const currentHealth = anim.prevHealth - (anim.damage * eased);
+          const percentage = Math.max(0, (currentHealth / anim.maxHealth) * 100);
+          anim.backBar.style.width = percentage + '%';
+        }
+      } else {
+        // Animation complete - ensure final state
+        const finalPercentage = Math.max(0, (anim.newHealth / anim.maxHealth) * 100);
+        anim.backBar.style.width = finalPercentage + '%';
+        this.battleScene.maskHealthBarAnim = null;
+      }
+    }
+
     // Animate particles
     if (particles) {
       const posAttr = particles.geometry.attributes.position;
@@ -4057,6 +4909,7 @@ export class UI {
     }
 
     composer.render();
+    this.battleScene.labelRenderer.render(scene, camera);
   }
 
   disposeBattleScene() {
@@ -4097,6 +4950,34 @@ export class UI {
       // Trigger defend animation if card was a defend
       if (result.animEvent && result.animEvent.type === 'soul_defend') {
         this.startDefendAnimation('soul', result.animEvent);
+        
+        // If defend card had health cost (scar card), show self-damage animation
+        if (result.animEvent.healthCost > 0) {
+          setTimeout(() => {
+            const combatState = this.game.getCombatState();
+            const selfDamageEvent = {
+              type: 'soul_self_damage',
+              damage: result.animEvent.healthCost,
+              prevHealth: combatState.soul.blood + result.animEvent.healthCost,
+              newHealth: combatState.soul.blood
+            };
+            this.startSelfDamageAnimation(selfDamageEvent);
+          }, 200);
+        }
+      }
+      
+      // If attack card had self-damage (scar card), show self-damage animation after attack
+      if (result.card && result.card.self_damage > 0) {
+        setTimeout(() => {
+          const combatState = this.game.getCombatState();
+          const selfDamageEvent = {
+            type: 'soul_self_damage',
+            damage: result.card.self_damage,
+            prevHealth: combatState.soul.blood + result.card.self_damage,
+            newHealth: combatState.soul.blood
+          };
+          this.startSelfDamageAnimation(selfDamageEvent);
+        }, 600); // After attack animation
       }
       
       this.renderBattle(result.state);
@@ -4119,6 +5000,71 @@ export class UI {
     }
   }
 
+  previewCardEffect(handIndex) {
+    sfx.cardHover();
+    
+    const state = this.game.getCombatState();
+    if (!state || handIndex >= state.hand.length) return;
+    
+    const card = state.hand[handIndex];
+    if (card.unplayable || card.cost > state.energy) return;
+    
+    // Create preview overlay on health bars
+    if (card.type === 'attack' && card.damage) {
+      const enemyHealthBar = document.getElementById('enemy-health-bar-fill');
+      if (!enemyHealthBar) return;
+      
+      // Calculate preview damage
+      const actualDamage = Math.max(0, card.damage - state.enemy.block);
+      const newHealth = Math.max(0, state.enemy.blood - actualDamage);
+      const newPercentage = (newHealth / state.enemy.maxBlood) * 100;
+      
+      // Create preview bar
+      let previewBar = document.getElementById('enemy-preview-bar');
+      if (!previewBar) {
+        previewBar = document.createElement('div');
+        previewBar.id = 'enemy-preview-bar';
+        previewBar.style.position = 'absolute';
+        previewBar.style.top = '0';
+        previewBar.style.left = '0';
+        previewBar.style.height = '100%';
+        previewBar.style.background = 'rgba(255, 255, 100, 0.4)';
+        previewBar.style.pointerEvents = 'none';
+        previewBar.style.zIndex = '5';
+        enemyHealthBar.parentElement.appendChild(previewBar);
+      }
+      previewBar.style.width = newPercentage + '%';
+      
+    } else if (card.type === 'defend' && card.block) {
+      const soulBlockDisplay = document.querySelector('.combatant:nth-child(1) .health-bar-floating');
+      if (!soulBlockDisplay) return;
+      
+      // Show preview block amount
+      let previewBlock = document.getElementById('soul-preview-block');
+      if (!previewBlock) {
+        previewBlock = document.createElement('div');
+        previewBlock.id = 'soul-preview-block';
+        previewBlock.style.fontSize = '11px';
+        previewBlock.style.color = 'rgba(59, 130, 246, 0.8)';
+        previewBlock.style.fontWeight = 'bold';
+        previewBlock.style.marginTop = '4px';
+        soulBlockDisplay.appendChild(previewBlock);
+      }
+      const newBlock = state.soul.block + card.block;
+      previewBlock.textContent = `🛡️ ${state.soul.block} → ${newBlock}`;
+    }
+  }
+
+  clearCardPreview() {
+    // Remove enemy health preview
+    const enemyPreview = document.getElementById('enemy-preview-bar');
+    if (enemyPreview) enemyPreview.remove();
+    
+    // Remove soul block preview
+    const soulPreview = document.getElementById('soul-preview-block');
+    if (soulPreview) soulPreview.remove();
+  }
+
   viewDrawPile() {
     sfx.buttonClick();
     const state = this.game.getCombatState();
@@ -4135,6 +5081,23 @@ export class UI {
     this.showPileModal('Discard Pile', state.discard);
   }
 
+  viewVoidPile() {
+    sfx.buttonClick();
+    const state = this.game.getCombatState();
+    if (!state) return;
+
+    this.showPileModal('Void (Banished)', state.voidPile);
+  }
+
+  viewSoulDeck(soulId) {
+    sfx.buttonClick();
+    const soul = this.game.getSouls().find(s => s.id === soulId);
+    if (!soul) return;
+
+    const deck = soul.buildDeck(this.game.config);
+    this.showPileModal(`${soul.name}'s Deck`, deck);
+  }
+
   showPileModal(title, cards) {
     const modal = document.createElement('div');
     modal.className = 'pile-modal-overlay';
@@ -4147,13 +5110,27 @@ export class UI {
         <h2>${title} (${cards.length})</h2>
         <div class="pile-cards">
           ${cards.length === 0 ? '<p style="color: #999;">Empty</p>' : ''}
-          ${cards.map(card => `
-            <div class="card ${card.type}" style="display: inline-block; margin: 5px;">
-              <div class="card-name">${card.name}</div>
-              <div class="card-cost">Cost: ${card.cost}</div>
-              <div class="card-desc">${card.description || ''}</div>
-            </div>
-          `).join('')}
+          ${cards.map(card => {
+            let sourceIcon = '👿'; // soul default
+            if (card.source === 'mask') sourceIcon = '👺';
+            if (card.source === 'scar') sourceIcon = '🩹';
+            
+            return `
+              <div class="card ${card.type} ${card.source === 'scar' ? 'scar' : ''}">
+                <div class="card-cost-circle">${card.cost}</div>
+                <div class="card-source-icon">${sourceIcon}</div>
+                <div class="card-header">
+                  <div class="card-name">${card.name}</div>
+                </div>
+                <div class="card-illustration">
+                  ${card.source === 'scar' ? '💔' : card.type === 'attack' ? '⚔️' : card.type === 'defend' ? '🛡️' : '✨'}
+                </div>
+                <div class="card-footer">
+                  <div class="card-desc">${card.description || ''}</div>
+                </div>
+              </div>
+            `;
+          }).join('')}
         </div>
         <button onclick="this.closest('.pile-modal-overlay').remove()" style="margin-top: 20px;">Close</button>
       </div>
@@ -4212,47 +5189,123 @@ export class UI {
   startHealthBarAnimation(attacker, animEvent) {
     if (!animEvent) return;
 
-    const frontId = attacker === 'soul' ? 'enemy-health-bar-fill' : 'soul-health-bar-fill';
-    const backId = attacker === 'soul' ? 'enemy-health-bar-back' : 'soul-health-bar-back';
-    const frontBar = document.getElementById(frontId);
-    const backBar = document.getElementById(backId);
+    // Check if this was an enemy attack that damaged the mask
+    const maskDamaged = attacker === 'enemy' && animEvent.maskDamage > 0;
     
-    if (!frontBar || !backBar) return;
-
-    // Get max health
-    const combatState = this.game.getCombatState();
-    let maxHealth;
-    if (attacker === 'soul') {
-      maxHealth = combatState.enemy.maxBlood;
-    } else {
-      maxHealth = combatState.soul.maxBlood;
+    // Check if mask broke
+    if (animEvent.maskBroken) {
+      this.handleMaskBreak();
     }
-
-    // Instantly snap front bar to new health
-    const newPercentage = Math.max(0, (animEvent.newHealth / maxHealth) * 100);
-    frontBar.style.width = newPercentage + '%';
-
-    this.battleScene.healthBarAnim = {
-      frontBar,
-      backBar,
-      prevHealth: animEvent.prevHealth,
-      newHealth: animEvent.newHealth,
-      damage: animEvent.damage,
-      maxHealth,
-      startTime: Date.now(),
-      shakeDuration: 400,      // Shake duration (5 shakes * 80ms = 400ms)
-      stallDuration: 100,      // Brief stall after shake
-      lerpDuration: 500,       // Lerp down duration
-      attacker
-    };
-
-    // Add shake class to parent
-    frontBar.parentElement.classList.add('health-bar-shake');
-    setTimeout(() => {
-      if (frontBar.parentElement) {
-        frontBar.parentElement.classList.remove('health-bar-shake');
+    
+    if (maskDamaged && animEvent.newMaskHealth > 0) {
+      // Animate mask health bar
+      const maskFrontBar = document.getElementById('mask-health-bar-fill');
+      const maskBackBar = document.getElementById('mask-health-bar-back');
+      
+      if (maskFrontBar && maskBackBar) {
+        const combatState = this.game.getCombatState();
+        const maskMaxHealth = combatState.soul.maskMaxBlood;
+        
+        // Instantly snap front bar to new health
+        const newPercentage = Math.max(0, (animEvent.newMaskHealth / maskMaxHealth) * 100);
+        maskFrontBar.style.width = newPercentage + '%';
+        
+        // Store mask animation
+        this.battleScene.maskHealthBarAnim = {
+          frontBar: maskFrontBar,
+          backBar: maskBackBar,
+          prevHealth: animEvent.prevMaskHealth,
+          newHealth: animEvent.newMaskHealth,
+          damage: animEvent.maskDamage,
+          maxHealth: maskMaxHealth,
+          startTime: Date.now(),
+          shakeDuration: 400,
+          stallDuration: 100,
+          lerpDuration: 500,
+          attacker: 'enemy'
+        };
+        
+        // Add shake to mask bar
+        maskFrontBar.parentElement.classList.add('health-bar-shake');
+        setTimeout(() => {
+          if (maskFrontBar.parentElement) {
+            maskFrontBar.parentElement.classList.remove('health-bar-shake');
+          }
+        }, 400);
       }
-    }, 400);
+    }
+    
+    // Animate soul health bar if it took damage
+    if (attacker === 'enemy' && animEvent.damage > 0) {
+      const frontBar = document.getElementById('soul-health-bar-fill');
+      const backBar = document.getElementById('soul-health-bar-back');
+      
+      if (frontBar && backBar) {
+        const combatState = this.game.getCombatState();
+        const maxHealth = combatState.soul.maxBlood;
+        
+        // Instantly snap front bar to new health
+        const newPercentage = Math.max(0, (animEvent.newHealth / maxHealth) * 100);
+        frontBar.style.width = newPercentage + '%';
+        
+        this.battleScene.healthBarAnim = {
+          frontBar,
+          backBar,
+          prevHealth: animEvent.prevHealth,
+          newHealth: animEvent.newHealth,
+          damage: animEvent.damage,
+          maxHealth,
+          startTime: Date.now(),
+          shakeDuration: 400,
+          stallDuration: 100,
+          lerpDuration: 500,
+          attacker: 'enemy'
+        };
+        
+        // Add shake class to parent
+        frontBar.parentElement.classList.add('health-bar-shake');
+        setTimeout(() => {
+          if (frontBar.parentElement) {
+            frontBar.parentElement.classList.remove('health-bar-shake');
+          }
+        }, 400);
+      }
+    } else if (attacker === 'soul') {
+      // Soul attacking enemy
+      const frontBar = document.getElementById('enemy-health-bar-fill');
+      const backBar = document.getElementById('enemy-health-bar-back');
+      
+      if (frontBar && backBar) {
+        const combatState = this.game.getCombatState();
+        const maxHealth = combatState.enemy.maxBlood;
+        
+        // Instantly snap front bar to new health
+        const newPercentage = Math.max(0, (animEvent.newHealth / maxHealth) * 100);
+        frontBar.style.width = newPercentage + '%';
+        
+        this.battleScene.healthBarAnim = {
+          frontBar,
+          backBar,
+          prevHealth: animEvent.prevHealth,
+          newHealth: animEvent.newHealth,
+          damage: animEvent.damage,
+          maxHealth,
+          startTime: Date.now(),
+          shakeDuration: 400,
+          stallDuration: 100,
+          lerpDuration: 500,
+          attacker: 'soul'
+        };
+        
+        // Add shake class to parent
+        frontBar.parentElement.classList.add('health-bar-shake');
+        setTimeout(() => {
+          if (frontBar.parentElement) {
+            frontBar.parentElement.classList.remove('health-bar-shake');
+          }
+        }, 400);
+      }
+    }
   }
 
   startShieldSwellAnimation(attacker) {
@@ -4296,6 +5349,71 @@ export class UI {
     setTimeout(() => {
       animShield.remove();
     }, 300);
+  }
+
+  handleMaskBreak() {
+    // Play dramatic shatter sound
+    sfx.maskShatter();
+    
+    // Get soul's mask break quote
+    const combatState = this.game.getCombatState();
+    const soul = combatState?.soul;
+    if (!soul) return;
+    
+    const quote = this.game.combat.soul.getMaskBreakQuote();
+    if (!quote) return;
+    
+    // Show quote in world space above soul with typewriter effect
+    if (this.battleScene && this.battleScene.soulMesh) {
+      const quoteDiv = document.createElement('div');
+      quoteDiv.style.cssText = `
+        background: #000000;
+        padding: 12px 16px;
+        border-radius: 15px;
+        font-size: 14px;
+        font-style: italic;
+        text-align: center;
+        max-width: 250px;
+        color: #fff;
+        line-height: 1.4;
+      `;
+      
+      const quoteLabel = new CSS2DObject(quoteDiv);
+      quoteLabel.position.set(0, 1.8, 0);
+      this.battleScene.soulMesh.add(quoteLabel);
+      
+      // Typewriter effect with sound
+      let charIndex = 0;
+      const typeSpeed = 50;
+      
+      const typeNextChar = () => {
+        if (charIndex < quote.length) {
+          quoteDiv.textContent += quote[charIndex];
+          
+          // Play MIDI sound for each character (skip spaces)
+          if (quote[charIndex] !== ' ') {
+            const pitch = 200 + Math.random() * 200;
+            sfx.playTone(pitch, 0.05, 0.15, 'square');
+          }
+          
+          charIndex++;
+          setTimeout(typeNextChar, typeSpeed);
+        } else {
+          // Text complete, wait then fade out
+          setTimeout(() => {
+            quoteDiv.style.transition = 'opacity 0.5s';
+            quoteDiv.style.opacity = '0';
+            setTimeout(() => {
+              if (this.battleScene && this.battleScene.soulMesh) {
+                this.battleScene.soulMesh.remove(quoteLabel);
+              }
+            }, 500);
+          }, 1500);
+        }
+      };
+      
+      typeNextChar();
+    }
   }
 
   startDefendAnimation(defender, animEvent) {
@@ -4357,9 +5475,53 @@ export class UI {
     }, 400);
   }
 
+  startSelfDamageAnimation(selfDamageEvent) {
+    // Animate soul health bar for self-damage
+    const frontBar = document.getElementById('soul-health-bar-fill');
+    const backBar = document.getElementById('soul-health-bar-back');
+    
+    if (!frontBar || !backBar) return;
+    
+    const combatState = this.game.getCombatState();
+    const maxHealth = combatState.soul.maxBlood;
+    
+    // Instantly snap front bar to new health
+    const newPercentage = Math.max(0, (selfDamageEvent.newHealth / maxHealth) * 100);
+    frontBar.style.width = newPercentage + '%';
+    
+    this.battleScene.healthBarAnim = {
+      frontBar,
+      backBar,
+      prevHealth: selfDamageEvent.prevHealth,
+      newHealth: selfDamageEvent.newHealth,
+      damage: selfDamageEvent.damage,
+      maxHealth,
+      startTime: Date.now(),
+      shakeDuration: 400,
+      stallDuration: 100,
+      lerpDuration: 500,
+      attacker: 'self'
+    };
+    
+    // Add shake class to parent
+    frontBar.parentElement.classList.add('health-bar-shake');
+    setTimeout(() => {
+      if (frontBar.parentElement) {
+        frontBar.parentElement.classList.remove('health-bar-shake');
+      }
+    }, 400);
+  }
+
   handleBattleEnd() {
     const result = this.game.resolveBattle();
     if (result.success) {
+      // Play victory or defeat stinger
+      if (result.result === 'victory') {
+        sfx.victory();
+      } else {
+        sfx.defeat();
+      }
+      
       // Dispose battle scene
       this.disposeBattleScene();
       
@@ -4389,14 +5551,30 @@ export class UI {
         ` : ''}
       </div>
 
-      <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-        ${battleResult.availableTraits.map(trait => `
-          <div class="trait-choice" onclick="window.ui.chooseTrait('${trait.id}', ${isPositive})">
-            <h3>${trait.name}</h3>
-            <p>${trait.description}</p>
-            <p style="color: #999; font-size: 12px;">Card: ${trait.card}</p>
-          </div>
-        `).join('')}
+      <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 20px;">
+        ${battleResult.availableTraits.map(trait => {
+          // Get the card for this trait
+          const card = this.game.config.getCard(trait.card);
+          if (!card) return '';
+          
+          const sourceIcon = isPositive ? '👺' : '👿';
+          
+          return `
+            <div class="card ${card.type} trait-card-choice" onclick="window.ui.chooseTrait('${trait.id}', ${isPositive})">
+              <div class="card-cost-circle">${card.cost}</div>
+              <div class="card-source-icon">${sourceIcon}</div>
+              <div class="card-header">
+                <div class="card-name">${card.name}</div>
+              </div>
+              <div class="card-illustration">
+                ${card.type === 'attack' ? '⚔️' : card.type === 'defend' ? '🛡️' : '✨'}
+              </div>
+              <div class="card-footer">
+                <div class="card-desc">${card.description || ''}</div>
+              </div>
+            </div>
+          `;
+        }).join('')}
       </div>
     `;
 
@@ -4511,6 +5689,7 @@ export class UI {
 
           if (mountPoint) {
             maskMesh.scale.set(1.0, 1.0, 1.0);
+            maskMesh.userData.isMask = true;
             mountPoint.add(maskMesh);
           }
         }

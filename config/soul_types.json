@@ -14,7 +14,8 @@
       "base_attack": 8,
       "base_defense": 3,
       "starter_trait": "rage",
-      "base_cards": ["slash", "slash", "defend"],
+      "special_card": "rage_strike",
+      "base_cards": ["slash", "slash", "slash", "slash", "defend", "defend", "defend", "defend"],
       "quotes": [
         "Why have you disturbed my rest?!",
         "No... not again...",
@@ -27,6 +28,12 @@
         "A small mercy in this torment.",
         "I feel... less wretched.",
         "Thank you... I think."
+      ],
+      "mask_break_quotes": [
+        "NO! My face!",
+        "It's... shattered!",
+        "My only protection!",
+        "This pain... unbearable!"
       ]
     },
     {
@@ -37,7 +44,8 @@
       "base_attack": 6,
       "base_defense": 5,
       "starter_trait": "fortify",
-      "base_cards": ["slash", "defend", "defend"],
+      "special_card": "iron_defense",
+      "base_cards": ["slash", "slash", "slash", "slash", "defend", "defend", "defend", "defend"],
       "quotes": [
         "You DARE summon me?!",
         "I'll burn you for this interruption!",
@@ -50,6 +58,12 @@
         "More power! YES!",
         "Heh, not bad!",
         "I suppose you're useful after all."
+      ],
+      "mask_break_quotes": [
+        "ARGH! My mask!",
+        "You'll pay for that!",
+        "That was expensive!",
+        "Gah! Right in the face!"
       ]
     },
     {
@@ -60,7 +74,8 @@
       "base_attack": 10,
       "base_defense": 2,
       "starter_trait": "rage",
-      "base_cards": ["slash", "heavy_strike", "defend"],
+      "special_card": "void_strike",
+      "base_cards": ["slash", "slash", "slash", "slash", "defend", "defend", "defend", "defend"],
       "quotes": [
         "...where am I?",
         "The void was preferable to this.",
@@ -73,6 +88,12 @@
         "I can feel it... faintly.",
         "...interesting.",
         "Perhaps I'm not completely empty."
+      ],
+      "mask_break_quotes": [
+        "...empty again.",
+        "The void claims another piece.",
+        "...shattered.",
+        "Nothing lasts."
       ]
     },
     {
@@ -83,7 +104,8 @@
       "base_attack": 7,
       "base_defense": 4,
       "starter_trait": "fortify",
-      "base_cards": ["slash", "slash", "defend"],
+      "special_card": "feral_bite",
+      "base_cards": ["slash", "slash", "slash", "slash", "defend", "defend", "defend", "defend"],
       "quotes": [
         "Who's there?! Show yourself!",
         "I was sleeping in the grave!",
@@ -96,6 +118,12 @@
         "*wags tail* More please!",
         "I knew you cared!",
         "Best master ever!"
+      ],
+      "mask_break_quotes": [
+        "*whimpers* It broke!",
+        "Ow ow ow!",
+        "That hurt!",
+        "*yelps* My face!"
       ]
     },
     {
@@ -106,7 +134,8 @@
       "base_attack": 9,
       "base_defense": 2,
       "starter_trait": "rage",
-      "base_cards": ["slash", "slash", "defend"],
+      "special_card": "quick_strike",
+      "base_cards": ["slash", "slash", "slash", "slash", "defend", "defend", "defend", "defend"],
       "quotes": [
         "Oi! I was in the middle of something!",
         "You can't just yank me around like that!",
@@ -119,6 +148,12 @@
         "Now that's more like it!",
         "I feel FAST!",
         "Can't catch me now!"
+      ],
+      "mask_break_quotes": [
+        "Oi! That's my face!",
+        "Not cool!",
+        "Seriously?!",
+        "That was my good side!"
       ]
     },
     {
@@ -129,7 +164,8 @@
       "base_attack": 6,
       "base_defense": 6,
       "starter_trait": "fortify",
-      "base_cards": ["slash", "defend", "defend"],
+      "special_card": "burrow",
+      "base_cards": ["slash", "slash", "slash", "slash", "defend", "defend", "defend", "defend"],
       "quotes": [
         "Squeak! Who woke me?!",
         "I'll gnaw your ankles for this!",
@@ -142,6 +178,12 @@
         "Okay, maybe you're not so bad.",
         "This power... YES!",
         "I'm unstoppable now!"
+      ],
+      "mask_break_quotes": [
+        "*squeak* NO!",
+        "My defense!",
+        "This is bad!",
+        "*angry squeaking*"
       ]
     },
     {
@@ -152,7 +194,8 @@
       "base_attack": 8,
       "base_defense": 4,
       "starter_trait": "rage",
-      "base_cards": ["slash", "heavy_strike", "defend"],
+      "special_card": "backstab",
+      "base_cards": ["slash", "slash", "slash", "slash", "defend", "defend", "defend", "defend"],
       "quotes": [
         "Clever... pulling me from the shadows.",
         "What's your game, summoner?",
@@ -165,6 +208,12 @@
         "I'll remember this... favorably.",
         "We have an understanding now.",
         "Perhaps you're not a fool after all."
+      ],
+      "mask_break_quotes": [
+        "Clever shot...",
+        "You'll regret that.",
+        "A costly mistake.",
+        "Tch... my mask."
       ]
     },
     {
@@ -175,7 +224,8 @@
       "base_attack": 12,
       "base_defense": 3,
       "starter_trait": "rage",
-      "base_cards": ["slash", "heavy_strike", "heavy_strike"],
+      "special_card": "crushing_blow",
+      "base_cards": ["slash", "slash", "slash", "slash", "defend", "defend", "defend", "defend"],
       "quotes": [
         "WHO DARES?!",
         "I'll crush you for this!",
@@ -188,6 +238,12 @@
         "YESSS! I AM UNSTOPPABLE!",
         "CRUSH! DESTROY!",
         "GIVE ME MORE!"
+      ],
+      "mask_break_quotes": [
+        "RAAAGH! BROKEN!",
+        "MY FACE!",
+        "I'LL TEAR YOU APART!",
+        "SHATTERED!"
       ]
     },
     {
@@ -198,7 +254,8 @@
       "base_attack": 11,
       "base_defense": 6,
       "starter_trait": "rage",
-      "base_cards": ["slash", "heavy_strike", "defend"],
+      "special_card": "plague_touch",
+      "base_cards": ["slash", "slash", "slash", "slash", "defend", "defend", "defend", "defend"],
       "quotes": [
         "Ssss... you reek of desperation.",
         "I was spreading through the earth... now this.",
@@ -211,6 +268,12 @@
         "This power will fester beautifully.",
         "I am become death... moreso.",
         "You've made me deadlier. Foolish."
+      ],
+      "mask_break_quotes": [
+        "Sssss... my visage!",
+        "The rot spreads to me now.",
+        "Cracked... like everything else.",
+        "Even I decay..."
       ]
     }
   ]

@@ -137,6 +137,50 @@ export class SoundEffects {
     this.playTone(1800, 0.12, 0.15, 'triangle', 0.04);
   }
 
+  // Mask shatter - dramatic glass breaking sound
+  maskShatter() {
+    this.init();
+    // Initial crack - high pitch
+    this.playTone(3000, 0.1, 0.35, 'square');
+    this.playTone(2400, 0.12, 0.3, 'sawtooth', 0.02);
+    
+    // Multiple glass shard sounds - cascading down
+    for (let i = 0; i < 8; i++) {
+      const freq = 2000 - (i * 200) + (Math.random() * 100);
+      const delay = 0.05 + (i * 0.03);
+      this.playTone(freq, 0.15, 0.25, 'triangle', delay);
+    }
+    
+    // Deep impact thud
+    this.playTone(80, 0.3, 0.4, 'sawtooth', 0.15);
+  }
+
+  // Victory stinger - triumphant ascending arpeggio
+  victory() {
+    this.init();
+    // Major chord progression going up
+    const notes = [523, 659, 784, 1047]; // C, E, G, high C
+    notes.forEach((freq, i) => {
+      this.playTone(freq, 0.25, 0.25, 'triangle', i * 0.15);
+    });
+    
+    // Bright accent on final note
+    this.playTone(1047, 0.4, 0.3, 'sine', 0.45);
+  }
+
+  // Defeat stinger - ominous descending tones
+  defeat() {
+    this.init();
+    // Descending minor progression
+    const notes = [392, 349, 311, 262]; // G, F, Eb, C
+    notes.forEach((freq, i) => {
+      this.playTone(freq, 0.3, 0.25, 'sawtooth', i * 0.2);
+    });
+    
+    // Low doom note
+    this.playTone(131, 0.6, 0.35, 'triangle', 0.6);
+  }
+
   // Void swell - building tension sound that swells over time
   // Returns oscillators and gain nodes so they can be controlled dynamically
   startVoidSwell(duration = 1.2) {

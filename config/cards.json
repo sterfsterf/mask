@@ -40,6 +40,71 @@
       "damage": 9,
       "self_damage": 2,
       "description": "Deal 9 damage. Take 2 damage."
+    },
+    {
+      "id": "iron_defense",
+      "name": "Iron Defense",
+      "type": "defend",
+      "cost": 2,
+      "block": 12,
+      "description": "Gain 12 block"
+    },
+    {
+      "id": "void_strike",
+      "name": "Void Strike",
+      "type": "attack",
+      "cost": 2,
+      "damage": 14,
+      "description": "Deal 14 damage"
+    },
+    {
+      "id": "feral_bite",
+      "name": "Feral Bite",
+      "type": "attack",
+      "cost": 1,
+      "damage": 8,
+      "description": "Deal 8 damage"
+    },
+    {
+      "id": "quick_strike",
+      "name": "Quick Strike",
+      "type": "attack",
+      "cost": 0,
+      "damage": 4,
+      "description": "Deal 4 damage"
+    },
+    {
+      "id": "burrow",
+      "name": "Burrow",
+      "type": "defend",
+      "cost": 1,
+      "block": 8,
+      "description": "Gain 8 block"
+    },
+    {
+      "id": "backstab",
+      "name": "Backstab",
+      "type": "attack",
+      "cost": 1,
+      "damage": 10,
+      "description": "Deal 10 damage"
+    },
+    {
+      "id": "crushing_blow",
+      "name": "Crushing Blow",
+      "type": "attack",
+      "cost": 2,
+      "damage": 16,
+      "self_damage": 3,
+      "description": "Deal 16 damage. Take 3 damage."
+    },
+    {
+      "id": "plague_touch",
+      "name": "Plague Touch",
+      "type": "attack",
+      "cost": 1,
+      "damage": 7,
+      "description": "Deal 7 damage"
     }
   ]
 }
