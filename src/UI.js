@@ -4565,7 +4565,7 @@ export class UI {
     // Scene setup (same as initBattleScene but without soul)
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x7a5555);
-    scene.fog = new THREE.Fog(0x7a5555, 5, 15);
+    scene.fog = new THREE.Fog(0x7a5555, 8, 20); // Pushed back fog so mountains are visible
 
     const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(3, 2, 3);
@@ -4629,10 +4629,119 @@ export class UI {
     ground.rotation.x = -Math.PI / 2;
     scene.add(ground);
 
-    const gridHelper = new THREE.GridHelper(10, 20, 0x333333, 0x222222);
-    scene.add(gridHelper);
+    // Grid removed for cleaner look
 
-    // Add mountains and particles (abbreviated for brevity - copy from initBattleScene if needed)
+    // Add spiky black mountains at the edges
+    const mountainMat = new THREE.MeshStandardMaterial({ 
+      color: 0x1a1a1a, // Dark gray
+      roughness: 0.95,
+      metalness: 0.0,
+      flatShading: true,
+      emissive: 0x0a0a0a,
+      emissiveIntensity: 0.3
+    });
+
+    const createMountain = (scale) => {
+      const group = new THREE.Group();
+      
+      const mainGeom = new THREE.ConeGeometry(1, 2.5, 5, 1);
+      const posAttr = mainGeom.attributes.position;
+      
+      for (let i = 0; i < posAttr.count; i++) {
+        if (posAttr.getY(i) > 0) {
+          posAttr.setX(i, posAttr.getX(i) * (0.5 + Math.random() * 0.8));
+          posAttr.setZ(i, posAttr.getZ(i) * (0.5 + Math.random() * 0.8));
+          posAttr.setY(i, posAttr.getY(i) * (0.8 + Math.random() * 0.5));
+        }
+      }
+      mainGeom.computeVertexNormals();
+      const mainMesh = new THREE.Mesh(mainGeom, mountainMat);
+      mainMesh.position.y = 1.25;
+      group.add(mainMesh);
+      
+      const spikeCount = 2 + Math.floor(Math.random() * 2);
+      for (let s = 0; s < spikeCount; s++) {
+        const spikeGeom = new THREE.ConeGeometry(0.4, 1.8, 4, 1);
+        const spikeAttr = spikeGeom.attributes.position;
+        for (let i = 0; i < spikeAttr.count; i++) {
+          if (spikeAttr.getY(i) > 0) {
+            spikeAttr.setX(i, spikeAttr.getX(i) * (0.6 + Math.random() * 0.6));
+            spikeAttr.setZ(i, spikeAttr.getZ(i) * (0.6 + Math.random() * 0.6));
+          }
+        }
+        spikeGeom.computeVertexNormals();
+        const spike = new THREE.Mesh(spikeGeom, mountainMat);
+        spike.position.x = (Math.random() - 0.5) * 1.2;
+        spike.position.z = (Math.random() - 0.5) * 1.2;
+        spike.position.y = 1.2 + Math.random() * 0.5;
+        spike.rotation.z = (Math.random() - 0.5) * 0.3;
+        group.add(spike);
+      }
+      
+      group.scale.set(scale, scale, scale);
+      return group;
+    };
+
+    const mountainPositions = [
+      { x: -6, z: -4, scale: 1.2 },
+      { x: -5.5, z: -2, scale: 1.0 },
+      { x: -6.5, z: 0, scale: 1.1 },
+      { x: -5.8, z: 2, scale: 0.9 },
+      { x: -6, z: 4, scale: 1.0 },
+      { x: 6, z: -4, scale: 1.1 },
+      { x: 5.8, z: -2, scale: 0.95 },
+      { x: 6.2, z: 0, scale: 1.3 },
+      { x: 5.5, z: 2, scale: 1.0 },
+      { x: 6, z: 4, scale: 1.1 },
+      { x: -3, z: -5.5, scale: 0.9 },
+      { x: -1, z: -5.8, scale: 0.8 },
+      { x: 1, z: -6, scale: 0.9 },
+      { x: 3, z: -5.5, scale: 0.85 },
+    ];
+
+    mountainPositions.forEach(pos => {
+      const mountain = createMountain(pos.scale);
+      mountain.position.set(pos.x, 0, pos.z);
+      scene.add(mountain);
+    });
+    
+    console.log(`✓ Added ${mountainPositions.length} mountains to battle scene`);
+
+    // Add small rocks scattered near mountains
+    const rockMat = new THREE.MeshStandardMaterial({
+      color: 0x2a2a2a,
+      roughness: 1.0,
+      flatShading: true
+    });
+
+    for (let i = 0; i < 30; i++) {
+      const size = 0.1 + Math.random() * 0.15;
+      const rockGeom = new THREE.DodecahedronGeometry(size, 0);
+      
+      // Randomize vertices for irregular rocks
+      const posAttr = rockGeom.attributes.position;
+      for (let j = 0; j < posAttr.count; j++) {
+        posAttr.setX(j, posAttr.getX(j) * (0.8 + Math.random() * 0.4));
+        posAttr.setY(j, posAttr.getY(j) * (0.8 + Math.random() * 0.4));
+        posAttr.setZ(j, posAttr.getZ(j) * (0.8 + Math.random() * 0.4));
+      }
+      rockGeom.computeVertexNormals();
+      
+      const rock = new THREE.Mesh(rockGeom, rockMat);
+      
+      // Scatter near edges
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 4 + Math.random() * 2;
+      rock.position.x = Math.cos(angle) * dist;
+      rock.position.z = Math.sin(angle) * dist;
+      rock.position.y = size * 0.5;
+      
+      rock.rotation.x = Math.random() * Math.PI;
+      rock.rotation.y = Math.random() * Math.PI;
+      rock.rotation.z = Math.random() * Math.PI;
+      
+      scene.add(rock);
+    }
 
     // Load enemy on the right
     const enemyMesh = this.prefabManager.instantiate(`enemy_${enemy.id}`);
@@ -4778,12 +4887,12 @@ export class UI {
     // Scene
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x7a5555);
-    scene.fog = new THREE.Fog(0x7a5555, 5, 15);
+    scene.fog = new THREE.Fog(0x7a5555, 8, 20); // Pushed back fog range
 
-    // Camera
+    // Camera - adjusted to see mountains on horizon
     const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(3, 2, 3);
-    camera.lookAt(0, 1, 0);
+    camera.position.set(0, 2.5, 5); // Centered view, looking towards back mountains
+    camera.lookAt(0, 1.5, -2); // Look slightly towards the back
 
     // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -4849,46 +4958,82 @@ export class UI {
     ground.rotation.x = -Math.PI / 2;
     scene.add(ground);
 
-    const gridHelper = new THREE.GridHelper(10, 20, 0x333333, 0x222222);
-    scene.add(gridHelper);
+    // Grid removed for cleaner look
 
-    // Add spikey mountains at the edges
+    // Add spiky black mountains at the edges
     const mountainMat = new THREE.MeshStandardMaterial({ 
-      color: 0x1a1a1a,
-      roughness: 0.9,
-      flatShading: true
+      color: 0xff0000, // BRIGHT RED for debugging - will change back to black
+      roughness: 0.95,
+      metalness: 0.0,
+      flatShading: true,
+      emissive: 0xff0000,
+      emissiveIntensity: 0.5
     });
 
-    // Create jagged mountain geometry
+    // Create jagged mountain geometry with multiple spikes
     const createMountain = (scale) => {
-      const geom = new THREE.ConeGeometry(1, 2, 4, 1);
-      const posAttr = geom.attributes.position;
+      const group = new THREE.Group();
+      
+      // Main mountain cone
+      const mainGeom = new THREE.ConeGeometry(1, 2.5, 5, 1);
+      const posAttr = mainGeom.attributes.position;
+      
       // Randomize vertex positions for jagged look
       for (let i = 0; i < posAttr.count; i++) {
         if (posAttr.getY(i) > 0) { // Only offset upper vertices
-          posAttr.setX(i, posAttr.getX(i) * (0.8 + Math.random() * 0.4));
-          posAttr.setZ(i, posAttr.getZ(i) * (0.8 + Math.random() * 0.4));
-          posAttr.setY(i, posAttr.getY(i) * (0.7 + Math.random() * 0.6));
+          posAttr.setX(i, posAttr.getX(i) * (0.5 + Math.random() * 0.8));
+          posAttr.setZ(i, posAttr.getZ(i) * (0.5 + Math.random() * 0.8));
+          posAttr.setY(i, posAttr.getY(i) * (0.8 + Math.random() * 0.5));
         }
       }
-      geom.computeVertexNormals();
-      const mesh = new THREE.Mesh(geom, mountainMat);
-      mesh.scale.set(scale, scale, scale);
-      return mesh;
+      mainGeom.computeVertexNormals();
+      const mainMesh = new THREE.Mesh(mainGeom, mountainMat);
+      mainMesh.position.y = 1.25; // Lift cone so base is at y=0
+      group.add(mainMesh);
+      
+      // Add 2-3 additional spikes
+      const spikeCount = 2 + Math.floor(Math.random() * 2);
+      for (let s = 0; s < spikeCount; s++) {
+        const spikeGeom = new THREE.ConeGeometry(0.4, 1.8, 4, 1);
+        const spikeAttr = spikeGeom.attributes.position;
+        for (let i = 0; i < spikeAttr.count; i++) {
+          if (spikeAttr.getY(i) > 0) {
+            spikeAttr.setX(i, spikeAttr.getX(i) * (0.6 + Math.random() * 0.6));
+            spikeAttr.setZ(i, spikeAttr.getZ(i) * (0.6 + Math.random() * 0.6));
+          }
+        }
+        spikeGeom.computeVertexNormals();
+        const spike = new THREE.Mesh(spikeGeom, mountainMat);
+        spike.position.x = (Math.random() - 0.5) * 1.2;
+        spike.position.z = (Math.random() - 0.5) * 1.2;
+        spike.position.y = 1.2 + Math.random() * 0.5; // Also lift spikes
+        spike.rotation.z = (Math.random() - 0.5) * 0.3;
+        group.add(spike);
+      }
+      
+      group.scale.set(scale, scale, scale);
+      return group;
     };
 
-    // Place mountains around the battlefield
+    // Place mountains around the battlefield edges
     const mountainPositions = [
-      { x: -5, z: -3, scale: 2.5 },
-      { x: -4.5, z: -2, scale: 1.8 },
-      { x: -6, z: 1, scale: 2.0 },
-      { x: 5, z: -3, scale: 2.2 },
-      { x: 4.8, z: -1.5, scale: 1.9 },
-      { x: 5.5, z: 0.5, scale: 2.4 },
-      { x: -1, z: -4, scale: 1.6 },
-      { x: 1, z: -4.5, scale: 1.7 },
-      { x: -2, z: 3, scale: 1.5 },
-      { x: 2.5, z: 3.5, scale: 1.8 },
+      // Left side
+      { x: -6, z: -4, scale: 1.2 },
+      { x: -5.5, z: -2, scale: 1.0 },
+      { x: -6.5, z: 0, scale: 1.1 },
+      { x: -5.8, z: 2, scale: 0.9 },
+      { x: -6, z: 4, scale: 1.0 },
+      // Right side
+      { x: 6, z: -4, scale: 1.1 },
+      { x: 5.8, z: -2, scale: 0.95 },
+      { x: 6.2, z: 0, scale: 1.3 },
+      { x: 5.5, z: 2, scale: 1.0 },
+      { x: 6, z: 4, scale: 1.1 },
+      // Back
+      { x: -3, z: -5.5, scale: 0.9 },
+      { x: -1, z: -5.8, scale: 0.8 },
+      { x: 1, z: -6, scale: 0.9 },
+      { x: 3, z: -5.5, scale: 0.85 },
     ];
 
     mountainPositions.forEach(pos => {
@@ -4896,6 +5041,44 @@ export class UI {
       mountain.position.set(pos.x, 0, pos.z);
       scene.add(mountain);
     });
+    
+    console.log(`✓ Added ${mountainPositions.length} mountains to battle scene`);
+
+    // Add small rocks scattered near mountains
+    const rockMat = new THREE.MeshStandardMaterial({
+      color: 0x2a2a2a,
+      roughness: 1.0,
+      flatShading: true
+    });
+
+    for (let i = 0; i < 30; i++) {
+      const size = 0.1 + Math.random() * 0.15;
+      const rockGeom = new THREE.DodecahedronGeometry(size, 0);
+      
+      // Randomize vertices for irregular rocks
+      const posAttr = rockGeom.attributes.position;
+      for (let j = 0; j < posAttr.count; j++) {
+        posAttr.setX(j, posAttr.getX(j) * (0.8 + Math.random() * 0.4));
+        posAttr.setY(j, posAttr.getY(j) * (0.8 + Math.random() * 0.4));
+        posAttr.setZ(j, posAttr.getZ(j) * (0.8 + Math.random() * 0.4));
+      }
+      rockGeom.computeVertexNormals();
+      
+      const rock = new THREE.Mesh(rockGeom, rockMat);
+      
+      // Scatter near edges
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 4 + Math.random() * 2;
+      rock.position.x = Math.cos(angle) * dist;
+      rock.position.z = Math.sin(angle) * dist;
+      rock.position.y = size * 0.5;
+      
+      rock.rotation.x = Math.random() * Math.PI;
+      rock.rotation.y = Math.random() * Math.PI;
+      rock.rotation.z = Math.random() * Math.PI;
+      
+      scene.add(rock);
+    }
 
     // Add floating particles
     const particleCount = 150;
