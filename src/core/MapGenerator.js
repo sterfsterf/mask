@@ -1,8 +1,15 @@
 // Procedural map generator with seeded RNG
 export class MapGenerator {
-  constructor(seed) {
+  constructor(seed, enemyConfig) {
     this.seed = seed;
     this.rng = this.createSeededRNG(seed);
+    this.enemyConfig = enemyConfig;
+    
+    // Select dominant faction for this run
+    this.dominantFaction = this.selectDominantFaction();
+    this.secondaryFaction = this.selectSecondaryFaction();
+    
+    console.log(`🎯 Run factions: ${this.dominantFaction} (dominant), ${this.secondaryFaction} (secondary)`);
   }
 
   // Seeded RNG based on mulberry32
@@ -51,6 +58,59 @@ export class MapGenerator {
     }
     return arr;
   }
+  
+  // Select dominant faction (60% of enemies)
+  selectDominantFaction() {
+    const factions = ['purifier', 'clockwork', 'hive', 'refined'];
+    return this.choice(factions);
+  }
+  
+  // Select secondary faction (30% of enemies)
+  selectSecondaryFaction() {
+    const factions = ['purifier', 'clockwork', 'hive', 'refined'].filter(f => f !== this.dominantFaction);
+    return this.choice(factions);
+  }
+  
+  // Get enemy for battle node based on layer and faction distribution
+  getEnemyForLayer(layer, totalLayers) {
+    // Determine faction for this enemy (60% dominant, 40% secondary)
+    const factionRoll = this.rng();
+    const faction = factionRoll < 0.6 ? this.dominantFaction : this.secondaryFaction;
+    
+    // Determine tier based on layer
+    const progress = layer / totalLayers;
+    let tier;
+    
+    if (progress < 0.35) {
+      tier = 1; // Early game
+    } else if (progress < 0.75) {
+      tier = this.rng() < 0.7 ? 2 : 1; // Mid game (mostly tier 2, some tier 1)
+    } else {
+      tier = this.rng() < 0.8 ? 3 : 2; // Late game (mostly tier 3, some tier 2)
+    }
+    
+    // Get enemies matching faction and tier
+    const matchingEnemies = this.enemyConfig.enemies.filter(e => 
+      e.faction === faction && e.tier === tier
+    );
+    
+    if (matchingEnemies.length === 0) {
+      // Fallback to any enemy of that tier
+      const tierFallback = this.enemyConfig.enemies.filter(e => e.tier === tier);
+      return tierFallback.length > 0 ? this.choice(tierFallback).id : 'crusader_scout';
+    }
+    
+    return this.choice(matchingEnemies).id;
+  }
+  
+  // Get boss enemy from dominant faction
+  getBossEnemy() {
+    const bosses = this.enemyConfig.enemies.filter(e => 
+      e.faction === this.dominantFaction && e.tier === 4
+    );
+    
+    return bosses.length > 0 ? this.choice(bosses).id : 'the_saint';
+  }
 
   /**
    * Generate a branching node map with layers
@@ -60,17 +120,6 @@ export class MapGenerator {
   generateMap(numLayers = 20) {
     const nodes = [];
     let nodeId = 0;
-
-    // Node type weights (higher = more common)
-    const nodeTypeWeights = [
-      { value: 'battle', weight: 50 },      // Very common
-      { value: 'mask_shop', weight: 15 },   // Uncommon
-      { value: 'shrine', weight: 15 },      // Uncommon
-      { value: 'void', weight: 5 },         // Rare
-      { value: 'mystery', weight: 15 }      // Uncommon
-    ];
-    
-    const enemyTypes = ['weak_shadow', 'goblin', 'orc_warrior'];
 
     // Start with void at layer 0
     nodes.push({
@@ -88,6 +137,20 @@ export class MapGenerator {
     for (let layer = 1; layer < numLayers; layer++) {
       const currentLayerNodes = [];
       const numNodes = this.randInt(1, 4); // 1-4 nodes per layer
+
+      // Calculate void weight based on layer progress (0 to 1)
+      const progress = layer / (numLayers - 1); // 0 at start, 1 at boss
+      // Start with weight 2, increase to 20 near boss
+      const voidWeight = 2 + (progress * progress * 18); // Quadratic growth
+      
+      // Node type weights (adjusted per layer)
+      const nodeTypeWeights = [
+        { value: 'battle', weight: 50 },      // Very common
+        { value: 'mask_shop', weight: 15 },   // Uncommon
+        { value: 'shrine', weight: 15 },      // Uncommon
+        { value: 'void', weight: voidWeight }, // Increases near boss
+        { value: 'mystery', weight: 15 }      // Uncommon
+      ];
 
       // Calculate x positions for this layer (spread evenly)
       const positions = [];
@@ -107,9 +170,9 @@ export class MapGenerator {
           x: positions[i]
         };
 
-        // Add enemy for battle nodes
+        // Add enemy for battle nodes using faction system
         if (nodeType === 'battle') {
-          node.enemy = this.choice(enemyTypes);
+          node.enemy = this.getEnemyForLayer(layer, numLayers);
         }
 
         nodes.push(node);
@@ -129,24 +192,30 @@ export class MapGenerator {
         }
       }
 
-      // Connect previous layer to current layer based on spatial proximity
+      // Connect previous layer to current layer (only to adjacent nodes)
       previousLayer.forEach(prevNode => {
-        // Find 1-3 closest nodes in current layer
-        const distances = currentLayerNodes.map(currNode => ({
-          id: currNode.id,
-          distance: Math.abs(currNode.x - prevNode.x)
-        }));
+        // Find adjacent nodes (straight, one up, or one down)
+        // Define adjacency: within reasonable x-distance threshold
+        const adjacentNodes = currentLayerNodes.filter(currNode => {
+          const xDiff = Math.abs(currNode.x - prevNode.x);
+          // Adjacent means within ~0.4 units of x-space (handles up to 4 nodes per layer)
+          return xDiff < 0.4;
+        });
         
         // Sort by distance
-        distances.sort((a, b) => a.distance - b.distance);
+        adjacentNodes.sort((a, b) => {
+          const aDist = Math.abs(a.x - prevNode.x);
+          const bDist = Math.abs(b.x - prevNode.x);
+          return aDist - bDist;
+        });
         
-        // Connect to 1-3 closest nodes (prefer 2)
+        // Connect to 1-2 adjacent nodes (prefer straight and one diagonal)
         const numConnections = Math.min(
-          currentLayerNodes.length,
-          this.randInt(1, 3)
+          adjacentNodes.length,
+          this.randInt(1, 2)
         );
         
-        const connections = distances.slice(0, numConnections).map(d => d.id);
+        const connections = adjacentNodes.slice(0, numConnections).map(n => n.id);
         nodes[prevNode.id].connections = connections;
       });
 
@@ -174,12 +243,13 @@ export class MapGenerator {
       previousLayer = currentLayerNodes;
     }
 
-    // Add boss node at final layer
+    // Add boss node at final layer (from dominant faction)
+    const bossEnemy = this.getBossEnemy();
     const bossNode = {
       id: nodeId++,
       type: 'battle',
       name: 'BOSS',
-      enemy: 'dark_knight',
+      enemy: bossEnemy,
       connections: [],
       layer: numLayers,
       x: 0.5,
@@ -193,6 +263,7 @@ export class MapGenerator {
     });
 
     console.log(`🗺️ Generated map with ${nodes.length} nodes across ${numLayers + 1} layers`);
+    console.log(`👑 Boss: ${bossEnemy}`);
     return nodes;
   }
 

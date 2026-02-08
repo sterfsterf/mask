@@ -31,7 +31,13 @@ export class ConfigLoader {
     this.soulConfig = soulTypes;
     this.maskConfig = masks;
     this.enemyConfig = enemies;
+    
+    console.log('Enemy config structure:', Object.keys(enemies));
+    console.log('Enemies array:', enemies.enemies);
+    
     this.enemies = this.indexById(enemies.enemies);
+    console.log('Indexed enemies:', Object.keys(this.enemies).length);
+    
     this.shrineTypes = this.indexById(shrines.shrine_types);
 
     console.log('✓ All configs loaded');
@@ -84,15 +90,6 @@ export class ConfigLoader {
     if (masks.length === 0) return null;
     
     return { ...masks[Math.floor(Math.random() * masks.length)] };
-  }
-
-  getTrack(id) {
-    return this.enemyConfig.tracks.find(t => t.id === id);
-  }
-
-  getNode(nodeId) {
-    const track = this.enemyConfig.tracks[0]; // Use first track for now
-    return track.nodes.find(n => n.id === nodeId);
   }
 
   getRandomShrine() {

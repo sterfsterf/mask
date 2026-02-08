@@ -1,5 +1,11 @@
 // 3D Prefab System - reusable 3D models for entities
 import * as THREE from 'three';
+import {
+  CrusaderScoutEnemyPrefab, TemplarGuardianEnemyPrefab, InquisitorEnemyPrefab, TheSaintEnemyPrefab,
+  TickTockScoutEnemyPrefab, BrassSentinelEnemyPrefab, CogworkWardenEnemyPrefab, TheMechanismEnemyPrefab,
+  WorkerDroneEnemyPrefab, BroodTenderEnemyPrefab, HiveVesselEnemyPrefab, TheQueenEnemyPrefab,
+  DuelistEnemyPrefab, CourtMageEnemyPrefab, HighExecutionerEnemyPrefab, TheTyrantEnemyPrefab
+} from './FactionEnemies.js';
 
 export class Prefab3D {
   constructor(type, config) {
@@ -1251,11 +1257,35 @@ export class PrefabManager {
     this.prefabs.set('soul_brute', new BruteSoulPrefab('brute', {}));
     this.prefabs.set('soul_blight', new BlightSoulPrefab('blight', {}));
 
-    // Enemies
+    // Old enemies (being phased out)
     this.prefabs.set('enemy_weak_shadow', new WeakShadowEnemyPrefab('weak_shadow', {}));
     this.prefabs.set('enemy_goblin', new GoblinEnemyPrefab('goblin', {}));
     this.prefabs.set('enemy_orc_warrior', new OrcWarriorEnemyPrefab('orc_warrior', {}));
     this.prefabs.set('enemy_dark_knight', new DarkKnightEnemyPrefab('dark_knight', {}));
+    
+    // Purifier faction
+    this.prefabs.set('enemy_crusader_scout', new CrusaderScoutEnemyPrefab('crusader_scout', {}));
+    this.prefabs.set('enemy_templar_guardian', new TemplarGuardianEnemyPrefab('templar_guardian', {}));
+    this.prefabs.set('enemy_inquisitor', new InquisitorEnemyPrefab('inquisitor', {}));
+    this.prefabs.set('enemy_the_saint', new TheSaintEnemyPrefab('the_saint', {}));
+    
+    // Clockwork faction
+    this.prefabs.set('enemy_tick_tock_scout', new TickTockScoutEnemyPrefab('tick_tock_scout', {}));
+    this.prefabs.set('enemy_brass_sentinel', new BrassSentinelEnemyPrefab('brass_sentinel', {}));
+    this.prefabs.set('enemy_cogwork_warden', new CogworkWardenEnemyPrefab('cogwork_warden', {}));
+    this.prefabs.set('enemy_the_mechanism', new TheMechanismEnemyPrefab('the_mechanism', {}));
+    
+    // Hive faction
+    this.prefabs.set('enemy_worker_drone', new WorkerDroneEnemyPrefab('worker_drone', {}));
+    this.prefabs.set('enemy_brood_tender', new BroodTenderEnemyPrefab('brood_tender', {}));
+    this.prefabs.set('enemy_hive_vessel', new HiveVesselEnemyPrefab('hive_vessel', {}));
+    this.prefabs.set('enemy_the_queen', new TheQueenEnemyPrefab('the_queen', {}));
+    
+    // Refined faction
+    this.prefabs.set('enemy_duelist', new DuelistEnemyPrefab('duelist', {}));
+    this.prefabs.set('enemy_court_mage', new CourtMageEnemyPrefab('court_mage', {}));
+    this.prefabs.set('enemy_high_executioner', new HighExecutionerEnemyPrefab('high_executioner', {}));
+    this.prefabs.set('enemy_the_tyrant', new TheTyrantEnemyPrefab('the_tyrant', {}));
 
     // Masks - based on actual mask types from config
     this.prefabs.set('mask_gnarled_visage', new MaskPrefab('mask', { 

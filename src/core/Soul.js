@@ -1,9 +1,22 @@
 // Soul class - represents a summoned soul
+import { SoulMemory } from './SoulMemory.js';
+
 export class Soul {
-  constructor(id, type, config) {
+  constructor(id, type, config, resurrected = null) {
     this.id = id;
     this.type = type.id;
-    this.name = `${type.name} #${id}`;
+    
+    // Handle resurrection
+    this.isResurrected = !!resurrected;
+    this.originalName = resurrected ? resurrected.name : null;
+    this.resurrectionCount = resurrected ? (resurrected.resurrectionCount || 0) : 0;
+    
+    // Set initial name
+    if (resurrected) {
+      this.name = resurrected.name; // Use old name
+    } else {
+      this.name = `${type.name} #${id}`;
+    }
     
     // Base stats
     this.maxBlood = type.base_blood;
@@ -11,10 +24,14 @@ export class Soul {
     this.baseAttack = type.base_attack;
     this.baseDefense = type.base_defense;
     
-    // Pick a random quote from the soul type
-    this.quote = type.quotes && type.quotes.length > 0 
-      ? type.quotes[Math.floor(Math.random() * type.quotes.length)]
-      : '';
+    // Pick quote - use resurrection quote if resurrected
+    if (this.isResurrected) {
+      this.quote = SoulMemory.getResurrectionQuote(type.rarity, this.resurrectionCount);
+    } else {
+      this.quote = type.quotes && type.quotes.length > 0 
+        ? type.quotes[Math.floor(Math.random() * type.quotes.length)]
+        : '';
+    }
     
     // Store blessing quotes for later
     this.blessingQuotes = type.blessing_quotes || [];

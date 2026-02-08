@@ -1,6 +1,7 @@
 // GameState - manages currencies, souls, progression
 import { Soul } from './Soul.js';
 import { MapGenerator } from './MapGenerator.js';
+import { SoulMemory } from './SoulMemory.js';
 
 export class GameState {
   constructor(config) {
@@ -39,16 +40,21 @@ export class GameState {
     }
 
     const soulType = this.config.rollSoulType();
+    
+    // Roll for resurrection (1/10 chance)
+    const resurrected = SoulMemory.rollResurrection(soulType.id);
+    
     const soul = new Soul(
       this.nextSoulId++,
       soulType,
-      this.config
+      this.config,
+      resurrected // Pass resurrected data if found
     );
 
     this.souls.push(soul);
     this.darkEnergy -= cost;
 
-    return { success: true, soul };
+    return { success: true, soul, resurrected: !!resurrected };
   }
 
   craftMask(rarity) {
@@ -111,7 +117,7 @@ export class GameState {
     // Generate new seed if not provided
     this.mapSeed = seed || Math.floor(Math.random() * 1000000);
     
-    const generator = new MapGenerator(this.mapSeed);
+    const generator = new MapGenerator(this.mapSeed, this.config.enemyConfig);
     this.mapNodes = generator.generateMap(20); // 20 layers
     generator.visualizeMap(this.mapNodes);
     
@@ -163,9 +169,12 @@ export class GameState {
       } else if (revealedType === 'shrine') {
         this.currentShrine = this.config.getRandomShrine();
       } else if (revealedType === 'battle') {
-        // Mystery battles are random enemies
-        const enemyIds = ['weak_shadow', 'goblin', 'orc_warrior'];
-        node.enemy = enemyIds[Math.floor(Math.random() * enemyIds.length)];
+        // Mystery battles use tier 1-2 enemies from any faction
+        const tier1and2Enemies = this.config.enemyConfig.enemies.filter(e => e.tier === 1 || e.tier === 2);
+        if (tier1and2Enemies.length > 0) {
+          const randomEnemy = tier1and2Enemies[Math.floor(Math.random() * tier1and2Enemies.length)];
+          node.enemy = randomEnemy.id;
+        }
       }
     }
     

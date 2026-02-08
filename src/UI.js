@@ -2687,6 +2687,9 @@ export class UI {
   }
 
   showVoidNamingUI() {
+    const isResurrected = this.pendingSoul.isResurrected;
+    const originalName = this.pendingSoul.originalName;
+    
     const nameForm = document.createElement('div');
     nameForm.id = 'void-name-form';
     nameForm.style.cssText = `
@@ -2704,15 +2707,25 @@ export class UI {
       align-items: center;
       gap: 15px;
     `;
+    
+    const headerText = isResurrected 
+      ? `${this.pendingSoul.type} Soul Resurrected` 
+      : `${this.pendingSoul.type} Soul Summoned`;
+    
     nameForm.innerHTML = `
-      <h3 style="margin: 0; text-align: center; color: #9d4edd;">${this.pendingSoul.type} Soul Summoned</h3>
-      <input type="text" id="void-soul-name-input" placeholder="Name your soul..." maxlength="20" style="width: 300px; padding: 10px; background: #1a1a1a; border: 2px solid #666; color: #fff; border-radius: 4px; text-align: center; font-family: 'IM Fell DW Pica SC', serif; font-size: 1.17em;" />
-      <button id="void-confirm-soul-name-btn" disabled style="padding: 10px 20px; background: #9d4edd; border: 2px solid #fff; color: #fff; cursor: pointer; border-radius: 4px; opacity: 0.5;">Confirm</button>
+      <h3 style="margin: 0; text-align: center; color: ${isResurrected ? '#ff6b6b' : '#9d4edd'};">${headerText}</h3>
+      ${isResurrected ? '<p style="margin: 0; color: #999; font-size: 0.9em; text-align: center;">This soul has returned from the void...</p>' : ''}
+      <input type="text" id="void-soul-name-input" placeholder="Name your soul..." maxlength="20" value="${isResurrected ? originalName : ''}" style="width: 300px; padding: 10px; background: #1a1a1a; border: 2px solid #666; color: #fff; border-radius: 4px; text-align: center; font-family: 'IM Fell DW Pica SC', serif; font-size: 1.17em;" />
+      <button id="void-confirm-soul-name-btn" ${isResurrected ? '' : 'disabled'} style="padding: 10px 20px; background: #9d4edd; border: 2px solid #fff; color: #fff; cursor: ${isResurrected ? 'pointer' : 'not-allowed'}; border-radius: 4px; opacity: ${isResurrected ? '1' : '0.5'};">Confirm</button>
+      <div id="rename-sass" style="color: #ff6b6b; font-size: 0.85em; min-height: 20px; text-align: center; font-style: italic;"></div>
     `;
     document.body.appendChild(nameForm);
     
     const input = document.getElementById('void-soul-name-input');
     const confirmBtn = document.getElementById('void-confirm-soul-name-btn');
+    const sassDiv = document.getElementById('rename-sass');
+    
+    let nameChanged = false;
     
     // Enable button when text is entered
     input.addEventListener('input', () => {
@@ -2720,6 +2733,17 @@ export class UI {
         confirmBtn.disabled = false;
         confirmBtn.style.opacity = '1';
         confirmBtn.style.cursor = 'pointer';
+        
+        // Show sass if resurrected and name changed
+        if (isResurrected && input.value.trim() !== originalName && !nameChanged) {
+          import('./core/SoulMemory.js').then(module => {
+            sassDiv.textContent = module.SoulMemory.getRenameQuote();
+          });
+          nameChanged = true;
+        } else if (isResurrected && input.value.trim() === originalName) {
+          sassDiv.textContent = '';
+          nameChanged = false;
+        }
       } else {
         confirmBtn.disabled = true;
         confirmBtn.style.opacity = '0.5';
@@ -2733,6 +2757,12 @@ export class UI {
       
       this.pendingSoul.name = name;
       console.log('Summoned:', this.pendingSoul.name);
+      
+      // Save to soul memory (store reference before clearing pendingSoul)
+      const soulToRemember = this.pendingSoul;
+      import('./core/SoulMemory.js').then(module => {
+        module.SoulMemory.rememberSoul(soulToRemember);
+      });
       
       // Remove naming UI
       nameForm.remove();
@@ -2754,7 +2784,12 @@ export class UI {
     });
     
     // Auto-focus input
-    setTimeout(() => input.focus(), 100);
+    setTimeout(() => {
+      input.focus();
+      if (isResurrected) {
+        input.select(); // Select the text so they can easily change it
+      }
+    }, 100);
   }
 
   renderMaskShop() {
@@ -3507,6 +3542,16 @@ export class UI {
 
   renderBattlePrep() {
     const enemy = this.game.getCurrentEnemy();
+    
+    if (!enemy) {
+      console.error('❌ No enemy found for current node');
+      const node = this.game.getCurrentNode();
+      console.error('Node:', JSON.stringify(node, null, 2));
+      console.error('Enemy config available:', !!this.game.config.enemyConfig);
+      console.error('Enemies in config:', this.game.config.enemyConfig?.enemies?.length);
+      alert('Error: Enemy not found. The map may have been generated before the new enemy system loaded. Please refresh the page and start a new run.');
+      return;
+    }
     
     // Reset any previous soul card styling first
     document.querySelectorAll('.soul-card-mini').forEach(card => {
@@ -4326,6 +4371,7 @@ export class UI {
     if (result.success) {
       // Reset defeat sequence flag for this battle
       this.defeatSequenceShown = false;
+      this.maskBreakSequenceShown = false;
       
       // Add soul to existing battle scene and animate in
       this.addSoulToBattleScene(result.combatState);
@@ -5765,8 +5811,10 @@ export class UI {
     // Check if this was an enemy attack that damaged the mask
     const maskDamaged = attacker === 'enemy' && animEvent.maskDamage > 0;
     
-    // Check if mask broke
-    if (animEvent.maskBroken) {
+    // Check if mask JUST broke (only trigger once)
+    // maskBroken is true, but we haven't shown the break sequence yet
+    if (animEvent.maskBroken && !this.maskBreakSequenceShown) {
+      this.maskBreakSequenceShown = true;
       this.handleMaskBreak();
     }
     
@@ -6245,7 +6293,7 @@ export class UI {
       const allSoulCards = Array.from(document.querySelectorAll('.soul-card-mini'));
       
       allSoulCards.forEach(card => {
-        const soulId = card.getAttribute('data-soul-id');
+        const soulId = parseInt(card.getAttribute('data-soul-id'), 10);
         const soul = aliveSouls.find(s => s.id === soulId);
         
         if (soul) {
@@ -6280,6 +6328,7 @@ export class UI {
     if (result.success) {
       // Reset defeat sequence flag for this new attempt
       this.defeatSequenceShown = false;
+      this.maskBreakSequenceShown = false;
       
       // Remove the defeated soul from the scene
       if (this.battleScene && this.battleScene.soulMesh) {
@@ -6556,6 +6605,7 @@ export class UI {
     sfx.buttonClick();
     this.game.state.completeCurrentNode();
     this.defeatSequenceShown = false; // Reset flag for next battle
+    this.maskBreakSequenceShown = false;
     this.selectedSoul = null;
     this.renderMap();
   }
@@ -6564,6 +6614,7 @@ export class UI {
     sfx.buttonClick();
     this.game.reset();
     this.defeatSequenceShown = false; // Reset flag
+    this.maskBreakSequenceShown = false;
     this.selectedSoul = null;
     this.renderMap();
   }

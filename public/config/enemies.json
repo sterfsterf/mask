@@ -1,128 +1,239 @@
 {
-  "tracks": [
-    {
-      "id": "main_path",
-      "name": "The Void Path",
-      "start_node": 0,
-      "nodes": [
-        {
-          "id": 0,
-          "type": "void",
-          "name": "Starting Void",
-          "connections": [1, 2]
-        },
-        {
-          "id": 1,
-          "type": "battle",
-          "enemy": "weak_shadow",
-          "connections": [3, 4]
-        },
-        {
-          "id": 2,
-          "type": "shrine",
-          "connections": [4, 5]
-        },
-        {
-          "id": 3,
-          "type": "mask_shop",
-          "connections": [6]
-        },
-        {
-          "id": 4,
-          "type": "battle",
-          "enemy": "goblin",
-          "connections": [6, 7]
-        },
-        {
-          "id": 5,
-          "type": "mystery",
-          "connections": [7]
-        },
-        {
-          "id": 6,
-          "type": "void",
-          "name": "Void Crossing",
-          "connections": [8, 9]
-        },
-        {
-          "id": 7,
-          "type": "shrine",
-          "connections": [9]
-        },
-        {
-          "id": 8,
-          "type": "battle",
-          "enemy": "orc_warrior",
-          "connections": [10]
-        },
-        {
-          "id": 9,
-          "type": "mask_shop",
-          "connections": [10, 11]
-        },
-        {
-          "id": 10,
-          "type": "shrine",
-          "connections": [12]
-        },
-        {
-          "id": 11,
-          "type": "mystery",
-          "connections": [12]
-        },
-        {
-          "id": 12,
-          "type": "battle",
-          "enemy": "dark_knight",
-          "connections": []
-        }
-      ]
+  "factions": {
+    "purifier": {
+      "name": "The Purifiers",
+      "color": "#ffd700",
+      "enemies": ["crusader_scout", "templar_guardian", "inquisitor", "the_saint"]
+    },
+    "clockwork": {
+      "name": "The Clockwork Regime",
+      "color": "#b5a642",
+      "enemies": ["tick_tock_scout", "brass_sentinel", "cogwork_warden", "the_mechanism"]
+    },
+    "hive": {
+      "name": "The Hive Collective",
+      "color": "#80ff00",
+      "enemies": ["worker_drone", "brood_tender", "hive_vessel", "the_queen"]
+    },
+    "refined": {
+      "name": "The Refined Court",
+      "color": "#c0c0c0",
+      "enemies": ["duelist", "court_mage", "high_executioner", "the_tyrant"]
     }
-  ],
+  },
   "enemies": [
     {
-      "id": "weak_shadow",
-      "name": "Weak Shadow",
-      "type": "shadow",
-      "blood": 30,
-      "attack": 6,
-      "defense": 2,
-      "coin_reward": 3,
-      "dark_energy_reward": 1,
-      "ai_pattern": "basic_attack"
-    },
-    {
-      "id": "goblin",
-      "name": "Goblin",
-      "type": "goblin",
-      "blood": 40,
-      "attack": 10,
+      "id": "crusader_scout",
+      "name": "Crusader Scout",
+      "faction": "purifier",
+      "tier": 1,
+      "blood": 35,
+      "attack": 8,
       "defense": 4,
       "coin_reward": 5,
       "dark_energy_reward": 1,
-      "ai_pattern": "basic_attack"
+      "ai_pattern": "basic_attack",
+      "description": "First line of holy judgment"
     },
     {
-      "id": "orc_warrior",
-      "name": "Orc Warrior",
-      "type": "orc",
+      "id": "templar_guardian",
+      "name": "Templar Guardian",
+      "faction": "purifier",
+      "tier": 2,
       "blood": 60,
-      "attack": 16,
+      "attack": 12,
       "defense": 8,
       "coin_reward": 8,
       "dark_energy_reward": 2,
-      "ai_pattern": "basic_attack"
+      "ai_pattern": "basic_attack",
+      "description": "Sworn to protect the pure from corruption"
     },
     {
-      "id": "dark_knight",
-      "name": "Dark Knight",
-      "type": "knight",
-      "blood": 100,
+      "id": "inquisitor",
+      "name": "Inquisitor",
+      "faction": "purifier",
+      "tier": 3,
+      "blood": 75,
+      "attack": 16,
+      "defense": 6,
+      "coin_reward": 12,
+      "dark_energy_reward": 3,
+      "ai_pattern": "basic_attack",
+      "description": "Burns away impurity with zealous fire"
+    },
+    {
+      "id": "the_saint",
+      "name": "The Saint",
+      "faction": "purifier",
+      "tier": 4,
+      "blood": 120,
       "attack": 20,
-      "defense": 16,
-      "coin_reward": 15,
+      "defense": 12,
+      "coin_reward": 20,
       "dark_energy_reward": 5,
-      "ai_pattern": "basic_attack"
+      "ai_pattern": "basic_attack",
+      "description": "Martyred champion of divine order"
+    },
+    {
+      "id": "tick_tock_scout",
+      "name": "Tick-Tock Scout",
+      "faction": "clockwork",
+      "tier": 1,
+      "blood": 45,
+      "attack": 6,
+      "defense": 5,
+      "coin_reward": 5,
+      "dark_energy_reward": 1,
+      "ai_pattern": "basic_attack",
+      "description": "Predictable. Relentless. Efficient."
+    },
+    {
+      "id": "brass_sentinel",
+      "name": "Brass Sentinel",
+      "faction": "clockwork",
+      "tier": 2,
+      "blood": 70,
+      "attack": 10,
+      "defense": 10,
+      "coin_reward": 8,
+      "dark_energy_reward": 2,
+      "ai_pattern": "basic_attack",
+      "description": "A perfect machine of war"
+    },
+    {
+      "id": "cogwork_warden",
+      "name": "Cogwork Warden",
+      "faction": "clockwork",
+      "tier": 3,
+      "blood": 90,
+      "attack": 14,
+      "defense": 14,
+      "coin_reward": 12,
+      "dark_energy_reward": 3,
+      "ai_pattern": "basic_attack",
+      "description": "Self-repairing engine of destruction"
+    },
+    {
+      "id": "the_mechanism",
+      "name": "The Mechanism",
+      "faction": "clockwork",
+      "tier": 4,
+      "blood": 150,
+      "attack": 18,
+      "defense": 16,
+      "coin_reward": 20,
+      "dark_energy_reward": 5,
+      "ai_pattern": "basic_attack",
+      "description": "The perfect system made manifest"
+    },
+    {
+      "id": "worker_drone",
+      "name": "Worker Drone",
+      "faction": "hive",
+      "tier": 1,
+      "blood": 25,
+      "attack": 7,
+      "defense": 2,
+      "coin_reward": 4,
+      "dark_energy_reward": 1,
+      "ai_pattern": "basic_attack",
+      "description": "One of many. Many of one."
+    },
+    {
+      "id": "brood_tender",
+      "name": "Brood Tender",
+      "faction": "hive",
+      "tier": 2,
+      "blood": 50,
+      "attack": 11,
+      "defense": 5,
+      "coin_reward": 8,
+      "dark_energy_reward": 2,
+      "ai_pattern": "basic_attack",
+      "description": "Nurtures the swarm's hunger"
+    },
+    {
+      "id": "hive_vessel",
+      "name": "Hive Vessel",
+      "faction": "hive",
+      "tier": 3,
+      "blood": 65,
+      "attack": 15,
+      "defense": 8,
+      "coin_reward": 12,
+      "dark_energy_reward": 3,
+      "ai_pattern": "basic_attack",
+      "description": "A living colony of consuming hate"
+    },
+    {
+      "id": "the_queen",
+      "name": "The Queen",
+      "faction": "hive",
+      "tier": 4,
+      "blood": 100,
+      "attack": 16,
+      "defense": 10,
+      "coin_reward": 20,
+      "dark_energy_reward": 5,
+      "ai_pattern": "basic_attack",
+      "description": "Mother of the endless swarm"
+    },
+    {
+      "id": "duelist",
+      "name": "Duelist",
+      "faction": "refined",
+      "tier": 1,
+      "blood": 38,
+      "attack": 9,
+      "defense": 4,
+      "coin_reward": 6,
+      "dark_energy_reward": 1,
+      "ai_pattern": "basic_attack",
+      "description": "Elegant. Cruel. Superior."
+    },
+    {
+      "id": "court_mage",
+      "name": "Court Mage",
+      "faction": "refined",
+      "tier": 2,
+      "blood": 55,
+      "attack": 13,
+      "defense": 6,
+      "coin_reward": 9,
+      "dark_energy_reward": 2,
+      "ai_pattern": "basic_attack",
+      "description": "Weaves control with aristocratic disdain"
+    },
+    {
+      "id": "high_executioner",
+      "name": "High Executioner",
+      "faction": "refined",
+      "tier": 3,
+      "blood": 80,
+      "attack": 18,
+      "defense": 10,
+      "coin_reward": 13,
+      "dark_energy_reward": 3,
+      "ai_pattern": "basic_attack",
+      "description": "Delivers the final judgment with precision"
+    },
+    {
+      "id": "the_tyrant",
+      "name": "The Tyrant",
+      "faction": "refined",
+      "tier": 4,
+      "blood": 130,
+      "attack": 20,
+      "defense": 14,
+      "coin_reward": 20,
+      "dark_energy_reward": 5,
+      "ai_pattern": "basic_attack",
+      "description": "Rules through absolute domination"
     }
-  ]
+  ],
+  "tier_weights": {
+    "1": { "early": 0.8, "mid": 0.2, "late": 0.0 },
+    "2": { "early": 0.2, "mid": 0.7, "late": 0.2 },
+    "3": { "early": 0.0, "mid": 0.1, "late": 0.8 }
+  }
 }
