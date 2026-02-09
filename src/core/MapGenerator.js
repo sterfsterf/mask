@@ -1,9 +1,10 @@
 // Procedural map generator with seeded RNG
 export class MapGenerator {
-  constructor(seed, enemyConfig) {
+  constructor(seed, enemyConfig, config) {
     this.seed = seed;
     this.rng = this.createSeededRNG(seed);
     this.enemyConfig = enemyConfig;
+    this.config = config; // Store config reference for shrine selection
     
     // Select dominant faction for this run
     this.dominantFaction = this.selectDominantFaction();
@@ -173,6 +174,12 @@ export class MapGenerator {
         // Add enemy for battle nodes using faction system
         if (nodeType === 'battle') {
           node.enemy = this.getEnemyForLayer(layer, numLayers);
+        }
+        
+        // Add shrine type for shrine nodes
+        if (nodeType === 'shrine' && this.config) {
+          const shrines = Object.values(this.config.shrineTypes);
+          node.shrine = this.choice(shrines).id;
         }
 
         nodes.push(node);

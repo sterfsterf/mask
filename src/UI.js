@@ -214,7 +214,6 @@ export class UI {
         display: flex;
         gap: 15px;
         background: rgba(10, 10, 10, 0.9);
-        border: 2px solid #ff0033;
         padding: 10px 15px;
         border-radius: 4px;
       }
@@ -702,6 +701,71 @@ export class UI {
         gap: 4px;
       }
 
+      .mask-description {
+        font-size: 10px;
+        color: #aaa;
+        font-style: italic;
+        line-height: 1.2;
+        min-height: 30px;
+      }
+
+      .mask-shop-actions {
+        display: flex;
+        gap: 4px;
+        width: 100%;
+        margin-top: 4px;
+      }
+
+      .deck-preview-btn {
+        padding: 6px 10px;
+        background: #333;
+        border: 2px solid #555;
+        border-radius: 4px;
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .deck-preview-btn:hover {
+        background: #444;
+        border-color: #ffd700;
+        transform: scale(1.05);
+      }
+
+      .deck-preview-card {
+        background: rgba(0, 0, 0, 0.5);
+        border: 2px solid #444;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 10px;
+      }
+
+      .deck-preview-card .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 5px;
+      }
+
+      .deck-preview-card .card-type {
+        font-size: 12px;
+        color: #888;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+      }
+
+      .deck-preview-card .card-effect {
+        color: #ccc;
+        font-size: 14px;
+        line-height: 1.4;
+      }
+
+      .deck-preview-card .card-cost {
+        color: #ffd700;
+        font-weight: bold;
+      }
+
       .mask-traits {
         font-size: 9px;
         color: #aaa;
@@ -710,6 +774,8 @@ export class UI {
       .buy-btn {
         padding: 4px 8px;
         font-size: 10px;
+        width: 100%;
+      }
         margin-top: 4px;
       }
 
@@ -1030,6 +1096,27 @@ export class UI {
         gap: 2px;
         transition: all 0.3s;
       }
+      
+      /* Type-specific colors for revealed mystery nodes */
+      .map-node.node-type-void {
+        background: rgba(30, 20, 40, 0.9);
+        border-color: #9d4edd;
+      }
+      
+      .map-node.node-type-battle {
+        background: rgba(40, 20, 20, 0.9);
+        border-color: #ff0033;
+      }
+      
+      .map-node.node-type-mask_shop {
+        background: rgba(20, 30, 40, 0.9);
+        border-color: #4a9eff;
+      }
+      
+      .map-node.node-type-shrine {
+        background: rgba(20, 40, 40, 0.9);
+        border-color: #4affe0;
+      }
 
       .map-node.current {
         border-color: #a855f7;
@@ -1303,6 +1390,71 @@ export class UI {
         gap: 4px;
       }
 
+      .mask-description {
+        font-size: 10px;
+        color: #aaa;
+        font-style: italic;
+        line-height: 1.2;
+        min-height: 30px;
+      }
+
+      .mask-shop-actions {
+        display: flex;
+        gap: 4px;
+        width: 100%;
+        margin-top: 4px;
+      }
+
+      .deck-preview-btn {
+        padding: 6px 10px;
+        background: #333;
+        border: 2px solid #555;
+        border-radius: 4px;
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .deck-preview-btn:hover {
+        background: #444;
+        border-color: #ffd700;
+        transform: scale(1.05);
+      }
+
+      .deck-preview-card {
+        background: rgba(0, 0, 0, 0.5);
+        border: 2px solid #444;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 10px;
+      }
+
+      .deck-preview-card .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 5px;
+      }
+
+      .deck-preview-card .card-type {
+        font-size: 12px;
+        color: #888;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+      }
+
+      .deck-preview-card .card-effect {
+        color: #ccc;
+        font-size: 14px;
+        line-height: 1.4;
+      }
+
+      .deck-preview-card .card-cost {
+        color: #ffd700;
+        font-weight: bold;
+      }
+
       .mask-traits {
         font-size: 9px;
         color: #aaa;
@@ -1311,6 +1463,8 @@ export class UI {
       .buy-btn {
         padding: 4px 8px;
         font-size: 10px;
+        width: 100%;
+      }
         margin-top: 4px;
       }
 
@@ -1476,6 +1630,7 @@ export class UI {
         width: 100vw;
         height: 100vh;
         z-index: 1;
+        pointer-events: none;
       }
 
       #summoning-ui {
@@ -1971,6 +2126,14 @@ export class UI {
         const isAvailable = availableNodes.includes(node.id);
         const isBoss = node.isBoss;
         
+        // Check if mystery node is revealed
+        const isVisited = this.game.state.visitedNodes.includes(node.id);
+        const revealedType = node.type === 'mystery' ? this.getRevealedMysteryType(node) : null;
+        const isRevealedMystery = node.type === 'mystery' && (isVisited || revealedType);
+        const actualType = isRevealedMystery 
+          ? (isVisited ? (this.game.state.mysteryRevealed || 'mystery') : revealedType)
+          : node.type;
+        
         let statusClass = '';
         if (isCurrent) statusClass = 'current';
         else if (isCompleted) statusClass = 'completed';
@@ -1980,7 +2143,7 @@ export class UI {
         
         html += `
           <div id="map-node-${node.id}" 
-               class="map-node ${statusClass} ${isBoss ? 'boss' : ''}"
+               class="map-node ${statusClass} ${isBoss ? 'boss' : ''} node-type-${actualType}"
                style="top: ${topPos}px;">
             <div class="map-node-icon">${this.getNodeIcon(node)}</div>
             <div class="map-node-type">${this.getNodeName(node)}</div>
@@ -1998,6 +2161,46 @@ export class UI {
 
   getNodeIcon(node) {
     if (node.isBoss) return '💀';
+    
+    // Check if this is a mystery node that has been visited or revealed
+    if (node.type === 'mystery') {
+      const isVisited = this.game.state.visitedNodes.includes(node.id);
+      const revealedType = this.getRevealedMysteryType(node);
+      
+      if (isVisited || revealedType) {
+        // Show the revealed icon with a small ? indicator
+        const actualType = isVisited ? (this.game.state.mysteryRevealed || 'mystery') : revealedType;
+        let icon = '❓';
+        switch(actualType) {
+          case 'void': icon = '🌀'; break;
+          case 'battle': icon = '⚔️'; break;
+          case 'mask_shop': icon = '🎭'; break;
+          case 'shrine': 
+            // If mystery revealed as shrine, show specific shrine icon if available
+            if (node.shrine && this.game.config.shrineTypes[node.shrine]) {
+              icon = this.game.config.shrineTypes[node.shrine].icon || '✨';
+            } else {
+              icon = '✨';
+            }
+            break;
+        }
+        return `<span style="position: relative;">${icon}<span style="position: absolute; top: -2px; right: -2px; font-size: 8px; opacity: 0.7;">❓</span></span>`;
+      }
+      return '❓';
+    }
+    
+    // For shrine nodes, show specific shrine icon if available
+    if (node.type === 'shrine') {
+      const isVisited = this.game.state.visitedNodes.includes(node.id);
+      const revealedByForesight = this.getNodeDistance(this.game.state.getCurrentNode(), node) === 1 && 
+                                   this.game.state.getActiveMarks().some(m => m.id === 'foresight');
+      
+      if ((isVisited || revealedByForesight) && node.shrine && this.game.config.shrineTypes[node.shrine]) {
+        return this.game.config.shrineTypes[node.shrine].icon || '✨';
+      }
+      return '✨'; // Generic shrine icon when not revealed
+    }
+    
     switch(node.type) {
       case 'void': return '🌀';
       case 'battle': return '⚔️';
@@ -2013,6 +2216,38 @@ export class UI {
     if (node.name) return node.name;
     if (node.isBoss) return 'BOSS';
     
+    // Check if this is a mystery node revealed by foresight
+    if (node.type === 'mystery') {
+      const revealedType = this.getRevealedMysteryType(node);
+      if (revealedType) {
+        switch(revealedType) {
+          case 'void': return 'Void';
+          case 'battle': return 'Battle';
+          case 'mask_shop': return 'Shop';
+          case 'shrine':
+            // Show specific shrine name if available
+            if (node.shrine && this.game.config.shrineTypes[node.shrine]) {
+              return this.game.config.shrineTypes[node.shrine].name.replace(' Shrine', '');
+            }
+            return 'Shrine';
+          default: return '';
+        }
+      }
+      return ''; // Mystery nodes have no label if not revealed
+    }
+    
+    // For shrine nodes, show specific shrine name when revealed
+    if (node.type === 'shrine') {
+      const isVisited = this.game.state.visitedNodes.includes(node.id);
+      const revealedByForesight = this.getNodeDistance(this.game.state.getCurrentNode(), node) === 1 && 
+                                   this.game.state.getActiveMarks().some(m => m.id === 'foresight');
+      
+      if ((isVisited || revealedByForesight) && node.shrine && this.game.config.shrineTypes[node.shrine]) {
+        return this.game.config.shrineTypes[node.shrine].name.replace(' Shrine', '');
+      }
+      return 'Shrine';
+    }
+    
     const type = node.type === 'mystery' ? (this.game.state.mysteryRevealed || 'mystery') : node.type;
     
     switch(type) {
@@ -2020,9 +2255,75 @@ export class UI {
       case 'battle': return 'Battle';
       case 'mask_shop': return 'Shop';
       case 'shrine': return 'Shrine';
-      case 'mystery': return ''; // No label for mystery nodes
+      case 'mystery': return '';
       default: return '';
     }
+  }
+
+  // Check if a mystery node should be revealed by Mark of Foresight
+  getRevealedMysteryType(node) {
+    if (node.type !== 'mystery') return null;
+    
+    // Get all active foresight marks
+    const marks = this.game.state.getActiveMarks();
+    const foresightMarks = marks.filter(m => m.id === 'mark_of_foresight');
+    
+    if (foresightMarks.length === 0) return null;
+    
+    // Find the highest reveal distance from all foresight marks
+    let maxRevealDistance = 0;
+    for (const mark of foresightMarks) {
+      const distance = mark.effect.reveal_distance || 0;
+      if (distance > maxRevealDistance) {
+        maxRevealDistance = distance;
+      }
+    }
+    
+    // Check if this node is within reveal distance
+    const currentNode = this.game.state.getCurrentNode();
+    if (!currentNode) return null;
+    
+    const distanceToNode = this.getNodeDistance(currentNode, node);
+    
+    if (distanceToNode > 0 && distanceToNode <= maxRevealDistance) {
+      // Reveal the mystery! Generate a random type if not already revealed
+      if (!node.revealedType) {
+        const types = ['battle', 'void', 'mask_shop', 'shrine'];
+        node.revealedType = types[Math.floor(Math.random() * types.length)];
+      }
+      return node.revealedType;
+    }
+    
+    return null;
+  }
+
+  // Calculate shortest path distance between two nodes
+  getNodeDistance(fromNode, toNode) {
+    if (fromNode.id === toNode.id) return 0;
+    
+    // BFS to find shortest path
+    const queue = [{ node: fromNode, distance: 0 }];
+    const visited = new Set([fromNode.id]);
+    
+    while (queue.length > 0) {
+      const { node, distance } = queue.shift();
+      
+      for (const connectionId of node.connections) {
+        if (connectionId === toNode.id) {
+          return distance + 1;
+        }
+        
+        if (!visited.has(connectionId)) {
+          visited.add(connectionId);
+          const nextNode = this.game.state.mapNodes.find(n => n.id === connectionId);
+          if (nextNode) {
+            queue.push({ node: nextNode, distance: distance + 1 });
+          }
+        }
+      }
+    }
+    
+    return -1; // Not reachable
   }
 
   getNodeDescription(node) {
@@ -2792,7 +3093,7 @@ export class UI {
     }, 100);
   }
 
-  renderMaskShop() {
+  renderMaskShop(fullRender = true) {
     const offering = this.game.state.maskShopOffering;
     const costs = this.game.config.maskConfig.costs;
     const tempMask = this.game.tempMask;
@@ -2801,6 +3102,12 @@ export class UI {
     const soldMasks = this.game.state.soldMasks;
 
     this.updateCurrencyHUD();
+
+    // If we're just updating (not full render), only update the mask grid
+    if (!fullRender) {
+      this.updateMaskShopGrid();
+      return;
+    }
 
     // Combine all masks into one array with rarity info
     const allMasks = [
@@ -2840,18 +3147,36 @@ export class UI {
           }
           
           return `
-          <div class="mask-shop-card ${mask.rarity} ${mask.sold ? 'sold-out' : ''}">
+          <div class="mask-shop-card ${mask.rarity} ${mask.sold ? 'sold-out' : ''}" style="position: relative;">
+            <button class="deck-preview-btn" onclick="window.ui.showMaskDeck('${mask.id}')" title="View Cards" style="
+              position: absolute;
+              top: 0;
+              right: 0;
+              padding: 0;
+              margin: 0;
+              width: 30px;
+              height: 30px;
+              font-size: 16px;
+              z-index: 10;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            ">
+              🃏
+            </button>
             <img src="${texturePath}" alt="${mask.name}" class="mask-image">
             <div class="mask-card-info">
-              <strong>${mask.name}</strong>
-              <div class="mask-traits">${mask.cards ? mask.cards.join(', ') : ''}</div>
-              ${mask.sold ? `
-                <button class="buy-btn sold-btn" disabled>SOLD OUT</button>
-              ` : `
-                <button class="buy-btn" onclick="window.ui.buyMask('${mask.rarity}', ${mask.index})" ${coins < mask.cost ? 'disabled' : ''}>
-                  ${mask.cost} 💰
-                </button>
-              `}
+              <strong style="display: block; margin-bottom: 4px;">${mask.name}</strong>
+              <div class="mask-description" style="font-size: 10px; color: #aaa; font-style: italic; margin-bottom: 8px;">${mask.description || ''}</div>
+              <div class="mask-shop-actions">
+                ${mask.sold ? `
+                  <button class="buy-btn sold-btn" disabled>SOLD OUT</button>
+                ` : `
+                  <button class="buy-btn" onclick="window.ui.buyMask('${mask.rarity}', ${mask.index})" ${coins < mask.cost ? 'disabled' : ''}>
+                    ${mask.cost} 💰
+                  </button>
+                `}
+              </div>
             </div>
           </div>
         `;
@@ -2863,8 +3188,10 @@ export class UI {
 
     this.showScreen('summoning');
     
-    // Initialize the mask shop scene after DOM is ready
-    setTimeout(() => this.initMaskShopScene(), 50);
+    // Initialize the mask shop scene after DOM is ready (only if not already initialized)
+    if (!this.summoningScene || !this.summoningScene.scene) {
+      setTimeout(() => this.initMaskShopScene(), 50);
+    }
 
     // If there's a temp mask, make soul cards clickable
     if (tempMask) {
@@ -2881,6 +3208,70 @@ export class UI {
         });
       }, 50);
     }
+  }
+
+  updateMaskShopGrid() {
+    const offering = this.game.state.maskShopOffering;
+    const costs = this.game.config.maskConfig.costs;
+    const coins = this.game.state.coins;
+    const soldMasks = this.game.state.soldMasks;
+
+    const allMasks = [
+      ...offering.legendary.map((m, i) => ({ ...m, rarity: 'legendary', index: i, cost: costs.legendary, sold: soldMasks.legendary.includes(i) })),
+      ...offering.rare.map((m, i) => ({ ...m, rarity: 'rare', index: i, cost: costs.rare, sold: soldMasks.rare.includes(i) })),
+      ...offering.common.map((m, i) => ({ ...m, rarity: 'common', index: i, cost: costs.common, sold: soldMasks.common.includes(i) }))
+    ];
+
+    const maskShopGrid = document.querySelector('.mask-shop-grid');
+    if (!maskShopGrid) return;
+
+    const base = import.meta.env.BASE_URL || './';
+    maskShopGrid.innerHTML = allMasks.map(mask => {
+      let texturePath;
+      if (mask.texture) {
+        const cleanPath = mask.texture.startsWith('./') 
+          ? mask.texture.slice(2)
+          : mask.texture;
+        texturePath = base + cleanPath;
+      } else {
+        texturePath = base + 'masks/fallback_mask.png';
+      }
+      
+      return `
+        <div class="mask-shop-card ${mask.rarity} ${mask.sold ? 'sold-out' : ''}" style="position: relative;">
+          <button class="deck-preview-btn" onclick="window.ui.showMaskDeck('${mask.id}')" title="View Cards" style="
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 0;
+            margin: 0;
+            width: 30px;
+            height: 30px;
+            font-size: 16px;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          ">
+            🃏
+          </button>
+          <img src="${texturePath}" alt="${mask.name}" class="mask-image">
+          <div class="mask-card-info">
+            <strong style="display: block; margin-bottom: 4px;">${mask.name}</strong>
+            <div class="mask-description" style="font-size: 10px; color: #aaa; font-style: italic; margin-bottom: 8px;">${mask.description || ''}</div>
+            <div class="mask-shop-actions">
+              ${mask.sold ? `
+                <button class="buy-btn sold-btn" disabled>SOLD OUT</button>
+              ` : `
+                <button class="buy-btn" onclick="window.ui.buyMask('${mask.rarity}', ${mask.index})" ${coins < mask.cost ? 'disabled' : ''}>
+                  ${mask.cost} 💰
+                </button>
+              `}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
   }
 
   initMaskShopScene() {
@@ -3152,6 +3543,14 @@ export class UI {
 
     this.updateCurrencyHUD();
 
+    // Check if this is a resource shrine (doesn't require soul selection)
+    const isResourceShrine = shrine.effect === 'dark_energy' || shrine.effect === 'coins';
+    
+    // Check if this is a mark shrine (requires souls with masks)
+    const isMarkShrine = shrine.effect === 'add_mark';
+    const soulsWithMasks = souls.filter(s => s.mask);
+    const canTakeMark = soulsWithMasks.length > 0;
+
     // Show the shrine screen with 3D scene
     const summoningScreen = document.getElementById('summoning-screen');
     summoningScreen.innerHTML = `
@@ -3160,13 +3559,54 @@ export class UI {
         <h2 style="margin: 0 0 8px 0; text-align: center; font-size: 18px;">✨ ${shrine.name}</h2>
         <p style="margin: 0; text-align: center; color: #ccc; font-size: 12px;">${shrine.description}</p>
       </div>
-      <div id="shrine-instruction">
-        ${souls.length > 0 ? 
-          '<strong style="color: #ffd700;">Choose a soul to bless ↓</strong>' : 
-          '<span style="color: #999;">No souls to bless</span>'
-        }
-      </div>
-      <button class="shrine-skip-btn" onclick="window.ui.skipShrine()">Skip</button>
+      ${isResourceShrine ? `
+        <div id="shrine-instruction" style="position: fixed; bottom: 160px; left: 50%; transform: translateX(-50%); z-index: 100;">
+          <button class="shrine-take-btn" onclick="window.ui.takeResourceShrine()" style="
+            padding: 8px 20px;
+            font-size: 13px;
+            background: linear-gradient(135deg, #4a9eff, #3a7ecc);
+            border: 2px solid #ffd700;
+            border-radius: 8px;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(74, 158, 255, 0.4);
+          ">
+            Take
+          </button>
+        </div>
+        <button class="shrine-skip-btn" onclick="window.ui.skipShrine()" style="
+          position: fixed;
+          bottom: 160px;
+          right: 20px;
+          padding: 8px 20px;
+          font-size: 13px;
+          z-index: 100;
+        ">
+          Leave
+        </button>
+      ` : isMarkShrine && !canTakeMark ? `
+        <div id="shrine-instruction">
+          <span style="color: #999;">No souls have masks to imbue</span>
+        </div>
+        <button class="shrine-skip-btn" onclick="window.ui.skipShrine()" style="
+          position: fixed;
+          bottom: 160px;
+          right: 20px;
+          padding: 8px 20px;
+          font-size: 13px;
+          z-index: 100;
+        ">Leave</button>
+      ` : `
+        <div id="shrine-instruction">
+          ${souls.length > 0 ? 
+            `<strong style="color: #ffd700;">Choose a soul ${isMarkShrine ? 'with a mask' : 'to bless'} ↓</strong>` : 
+            '<span style="color: #999;">No souls to bless</span>'
+          }
+        </div>
+        <button class="shrine-skip-btn" onclick="window.ui.skipShrine()">Skip</button>
+      `}
     `;
 
     this.showScreen('summoning');
@@ -3174,26 +3614,37 @@ export class UI {
     // Initialize the shrine scene after DOM is ready
     setTimeout(() => this.initShrineScene(), 50);
     
-    // Store the shrine effect details for when a soul is clicked
-    this.pendingShrineEffect = {
-      effect: shrine.effect,
-      value: shrine.value || 0
-    };
-    
-    // Make soul cards clickable for blessing
-    setTimeout(() => {
-      document.querySelectorAll('.souls-bar .soul-card-mini').forEach((card) => {
-        card.style.cursor = 'pointer';
-        card.style.border = '2px solid #ffd700';
-        card.style.boxShadow = '0 0 10px rgba(255, 215, 0, 0.5)';
-        card.addEventListener('click', () => {
-          if (this.pendingShrineEffect) {
-            const soulId = parseInt(card.dataset.soulId);
-            this.applyShrineEffect(soulId, this.pendingShrineEffect.effect, this.pendingShrineEffect.value);
+    // Only set up soul selection if not a resource shrine
+    if (!isResourceShrine) {
+      // Store the shrine effect details for when a soul is clicked
+      this.pendingShrineEffect = {
+        effect: shrine.effect,
+        value: shrine.value || 0
+      };
+      
+      // Make soul cards clickable for blessing
+      setTimeout(() => {
+        document.querySelectorAll('.souls-bar .soul-card-mini').forEach((card) => {
+          const soulId = parseInt(card.dataset.soulId);
+          const soul = souls.find(s => s.id === soulId);
+          
+          // For mark shrines, only make souls with masks clickable
+          if (isMarkShrine && (!soul || !soul.mask)) {
+            card.style.opacity = '0.3';
+            return;
           }
+          
+          card.style.cursor = 'pointer';
+          card.style.border = '2px solid #ffd700';
+          card.style.boxShadow = '0 0 10px rgba(255, 215, 0, 0.5)';
+          card.addEventListener('click', () => {
+            if (this.pendingShrineEffect) {
+              this.applyShrineEffect(soulId, this.pendingShrineEffect.effect, this.pendingShrineEffect.value);
+            }
+          });
         });
-      });
-    }, 100);
+      }, 100);
+    }
   }
 
   skipShrine() {
@@ -3201,6 +3652,57 @@ export class UI {
     this.disposeShrineScene();
     this.game.state.completeCurrentNode();
     this.renderMap();
+  }
+
+  takeResourceShrine() {
+    sfx.shrineTwinkle();
+    
+    const shrine = this.game.state.currentShrine;
+    
+    // Apply the resource effect directly (no soul required)
+    let effectText = '';
+    switch(shrine.effect) {
+      case 'dark_energy':
+        this.game.state.darkEnergy += shrine.value;
+        effectText = `+${shrine.value} ⚡ Dark Energy`;
+        console.log(`Gained ${shrine.value} dark energy`);
+        break;
+      case 'coins':
+        this.game.state.coins += shrine.value;
+        effectText = `+${shrine.value} 💰 Coins`;
+        console.log(`Gained ${shrine.value} coins`);
+        break;
+    }
+    
+    // Update currency display
+    this.updateCurrencyHUD();
+    
+    // Show floating effect text
+    const instructionElement = document.getElementById('shrine-instruction');
+    if (instructionElement) {
+      instructionElement.innerHTML = `
+        <div style="
+          background: rgba(74, 158, 255, 0.2);
+          border: 2px solid #ffd700;
+          padding: 20px;
+          border-radius: 10px;
+          font-size: 18px;
+          font-weight: bold;
+          color: #ffd700;
+          text-align: center;
+          animation: pulse 0.5s ease-out;
+        ">
+          ${effectText}
+        </div>
+      `;
+    }
+    
+    // Wait a moment then return to map
+    setTimeout(() => {
+      this.disposeShrineScene();
+      this.game.state.completeCurrentNode();
+      this.renderMap();
+    }, 1500);
   }
 
   getShrineTheme(effect) {
@@ -3323,6 +3825,7 @@ export class UI {
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.domElement.style.pointerEvents = 'auto'; // Allow canvas interaction
     container.appendChild(renderer.domElement);
 
     // Post-processing
@@ -3998,12 +4501,55 @@ export class UI {
     if (result.success) {
       sfx.purchase();
       console.log('Bought mask:', result.mask.name);
-      this.disposeMaskShopScene();
-      this.renderMaskShop();
+      
+      // Update mask grid to reflect purchase
+      this.updateMaskShopGrid();
+      
+      // Add instruction and make soul cards in the souls bar clickable
+      const tempMask = this.game.tempMask;
+      
+      // Add instruction if not present
+      if (!document.getElementById('shop-instruction')) {
+        const shopUi = document.getElementById('shop-ui');
+        const instructionDiv = document.createElement('div');
+        instructionDiv.id = 'shop-instruction';
+        instructionDiv.innerHTML = `<strong style="color: #ffd700;">Choose a soul to equip "${tempMask.name}" ↓</strong>`;
+        shopUi.after(instructionDiv);
+      }
+      
+      // Make soul cards in the souls bar clickable
+      const soulCards = document.querySelectorAll('.souls-bar .soul-card-mini');
+      soulCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.style.border = '2px solid #ffd700';
+        card.style.boxShadow = '0 0 10px rgba(255, 215, 0, 0.5)';
+        card.addEventListener('click', () => {
+          const soulId = parseInt(card.dataset.soulId);
+          this.equipTempMaskTo(soulId);
+        });
+      });
     } else {
       sfx.error();
       alert(result.error);
     }
+  }
+
+  showMaskDeck(maskId) {
+    sfx.buttonClick();
+    const mask = this.game.config.getMask(maskId);
+    if (!mask) return;
+
+    // Build card array with mask source
+    const cards = mask.cards.map(cardId => {
+      const card = this.game.config.getCard(cardId);
+      if (card) {
+        return { ...card, source: 'mask' };
+      }
+      return null;
+    }).filter(card => card !== null);
+
+    // Use the same modal as soul deck viewer
+    this.showPileModal(`${mask.name} Cards`, cards);
   }
 
   equipTempMaskTo(soulId) {
@@ -4032,10 +4578,16 @@ export class UI {
       // Show mask binding reaction (shake + quote)
       this.showMaskBindingReaction(soulId, tempMask.name, bindingQuote);
       
-      // Wait for animation to complete before re-rendering shop
+      // Wait for animation to complete before cleaning up UI
       setTimeout(() => {
-        this.disposeMaskShopScene();
-        this.renderMaskShop();
+        // Remove instruction and souls section
+        const instruction = document.getElementById('shop-instruction');
+        const soulsSection = document.getElementById('souls-section');
+        if (instruction) instruction.remove();
+        if (soulsSection) soulsSection.remove();
+        
+        // Update the mask grid to show temp mask is gone
+        this.updateMaskShopGrid();
       }, 2000);
     } else {
       alert(result.error);
@@ -4161,6 +4713,15 @@ export class UI {
   }
 
   applyShrineEffect(soulId, effect, value) {
+    const soul = this.game.state.souls.find(m => m.id === soulId);
+    if (!soul) return;
+    
+    // Special handling for mark selection
+    if (effect === 'add_mark') {
+      this.showMarkSelectionForShrine(soulId);
+      return;
+    }
+    
     sfx.shrineTwinkle();
     
     // Hide the instruction text
@@ -4168,9 +4729,6 @@ export class UI {
     if (instructionElement) {
       instructionElement.style.display = 'none';
     }
-    
-    const soul = this.game.state.souls.find(m => m.id === soulId);
-    if (!soul) return;
 
     let effectText = '';
     let affectionQuote = null;
@@ -4235,6 +4793,109 @@ export class UI {
     // Show floating effect text and soul quote
     // If affection quote exists, show that; otherwise show blessing quote
     const quoteToShow = affectionQuote || soul.getBlessingQuote();
+    this.showShrineReaction(soulId, effectText, quoteToShow);
+  }
+  
+  showMarkSelectionForShrine(soulId) {
+    sfx.buttonClick();
+    
+    const soul = this.game.state.souls.find(s => s.id === soulId);
+    if (!soul || !soul.mask) return;
+    
+    // Get all available marks
+    const allMarks = Object.values(this.game.config.marks);
+    
+    // Pick 3 random marks
+    const shuffled = [...allMarks].sort(() => Math.random() - 0.5);
+    const offeredMarks = shuffled.slice(0, 3);
+    
+    // Hide instruction and skip button
+    const instructionElement = document.getElementById('shrine-instruction');
+    const skipButton = document.querySelector('.shrine-skip-btn');
+    if (instructionElement) instructionElement.style.display = 'none';
+    if (skipButton) skipButton.style.display = 'none';
+    
+    // Show mark selection UI
+    const shrineUi = document.getElementById('shrine-ui');
+    const markSelection = document.createElement('div');
+    markSelection.id = 'mark-selection';
+    markSelection.innerHTML = `
+      <div style="
+        position: fixed;
+        bottom: 200px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(10, 10, 10, 0.95);
+        border: 2px solid #ffd700;
+        padding: 20px;
+        border-radius: 8px;
+        max-width: 600px;
+        z-index: 150;
+      ">
+        <h3 style="margin: 0 0 15px 0; text-align: center; color: #ffd700;">Choose a Mark for ${soul.name}</h3>
+        <div style="display: flex; gap: 15px; justify-content: center;">
+          ${offeredMarks.map(mark => {
+            const rarity = soul.mask.rarity || 'common';
+            const effect = mark.effects[rarity];
+            return `
+              <div class="mark-choice" data-mark-id="${mark.id}" style="
+                flex: 1;
+                background: rgba(74, 158, 255, 0.1);
+                border: 2px solid #4a9eff;
+                border-radius: 8px;
+                padding: 15px;
+                cursor: pointer;
+                transition: all 0.2s;
+                text-align: center;
+              ">
+                <div style="font-size: 24px; margin-bottom: 8px;">${mark.icon}</div>
+                <div style="font-weight: bold; color: #ffd700; margin-bottom: 8px;">${mark.name}</div>
+                <div style="font-size: 11px; color: #aaa; margin-bottom: 8px;">${mark.description}</div>
+                <div style="font-size: 10px; color: #4a9eff;">${rarity}: ${effect}</div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+    shrineUi.after(markSelection);
+    
+    // Bind click handlers
+    document.querySelectorAll('.mark-choice').forEach(choice => {
+      choice.addEventListener('mouseenter', () => {
+        choice.style.background = 'rgba(74, 158, 255, 0.3)';
+        choice.style.transform = 'scale(1.05)';
+      });
+      choice.addEventListener('mouseleave', () => {
+        choice.style.background = 'rgba(74, 158, 255, 0.1)';
+        choice.style.transform = 'scale(1)';
+      });
+      choice.addEventListener('click', () => {
+        const markId = choice.getAttribute('data-mark-id');
+        this.applyMarkFromShrine(soulId, markId);
+      });
+    });
+  }
+  
+  applyMarkFromShrine(soulId, markId) {
+    sfx.shrineTwinkle();
+    
+    const soul = this.game.state.souls.find(s => s.id === soulId);
+    if (!soul || !soul.mask) return;
+    
+    // Add mark to mask
+    soul.addMarkToMask(markId);
+    
+    // Remove mark selection UI
+    const markSelection = document.getElementById('mark-selection');
+    if (markSelection) markSelection.remove();
+    
+    // Show effect
+    const mark = this.game.config.getMark(markId);
+    const effectText = `${mark.icon} ${mark.name} Imbued!`;
+    const affectionQuote = soul.changeAffection(8); // +8 for mark
+    const quoteToShow = affectionQuote || soul.getBlessingQuote();
+    
     this.showShrineReaction(soulId, effectText, quoteToShow);
   }
   
@@ -6320,6 +6981,10 @@ export class UI {
     // Reset the combat with the new soul against the same enemy
     const enemy = this.game.combat.enemy;
     
+    // Remove the choice prompt
+    const prompt = document.getElementById('soul-choice-prompt');
+    if (prompt) prompt.remove();
+    
     // End the current combat (clears the old soul's data)
     this.game.endCombat();
     
@@ -6361,8 +7026,14 @@ export class UI {
         card.style.border = '';
         card.style.transform = '';
         card.style.boxShadow = '';
+        card.style.opacity = '';
         card.onclick = null;
       });
+      
+      // Render battle UI with the new soul's cards
+      this.renderBattleStart(result.combatState);
+    } else {
+      alert(result.error);
     }
   }
 
@@ -6553,12 +7224,50 @@ export class UI {
     }
     
     cardScreen.innerHTML = `
+      <style>
+        .mark-choice-card:hover {
+          transform: scale(1.05);
+          border-color: #ffe066 !important;
+          box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+        }
+      </style>
+      
       <div class="panel">
         <h2>${isPositive ? '🎉 VICTORY!' : '💀 DEFEAT'}</h2>
-        <p>${isPositive ? 'Choose a card to add to your mask:' : 'Your mask broke! Choose a curse for your soul:'}</p>
+        <p>${isPositive ? 'Choose a reward for your mask:' : 'Your mask broke! Choose a curse for your soul:'}</p>
       </div>
 
       <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 20px;">
+        ${isPositive && battleResult.availableMarks && battleResult.availableMarks.length > 0 ? 
+          battleResult.availableMarks.map(markId => {
+            const mark = this.game.config.getMark(markId);
+            if (!mark) return '';
+            
+            const maskRarity = soul.mask?.rarity || 'common';
+            const effect = mark.effects[maskRarity];
+            
+            return `
+              <div class="mark-choice-card" onclick="window.ui.chooseMark('${markId}')" style="
+                width: 180px;
+                border: 3px solid #ffd700;
+                padding: 15px;
+                background: rgba(255, 215, 0, 0.1);
+                border-radius: 10px;
+                cursor: pointer;
+                transition: all 0.2s;
+                text-align: center;
+              ">
+                <div style="font-size: 32px; margin-bottom: 8px;">${mark.icon}</div>
+                <div style="font-weight: bold; color: #ffd700; margin-bottom: 4px;">${mark.name}</div>
+                <div style="font-size: 11px; color: #aaa; font-style: italic; margin-bottom: 8px;">${mark.description}</div>
+                <div style="font-size: 10px; color: #888; margin-bottom: 6px; text-transform: uppercase;">
+                  ${maskRarity} mask effect:
+                </div>
+                <div style="color: #fff; font-size: 13px; font-weight: bold;">${effect.description}</div>
+              </div>
+            `;
+          }).join('') : ''
+        }
         ${battleResult.availableCards.map(cardId => {
           const card = this.game.config.getCard(cardId);
           if (!card) return '';
@@ -6626,6 +7335,29 @@ export class UI {
       sfx.negative();
     }
     this.game.applyCardChoice(cardId, isPositive);
+    
+    // Mark battle node as complete
+    this.game.state.completeCurrentNode();
+    
+    const gameStatus = this.game.checkGameOver();
+    if (gameStatus.gameOver) {
+      alert(gameStatus.message);
+      this.game.reset();
+    }
+
+    this.selectedSoul = null;
+    this.renderMap();
+  }
+
+  chooseMark(markId) {
+    sfx.shrineTwinkle(); // Use a special sound for marks
+    
+    const result = this.game.applyMarkChoice(markId);
+    
+    if (result.success) {
+      const mark = this.game.config.getMark(markId);
+      console.log(`✓ Applied mark: ${mark.name}`);
+    }
     
     // Mark battle node as complete
     this.game.state.completeCurrentNode();

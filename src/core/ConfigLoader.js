@@ -9,12 +9,13 @@ export class ConfigLoader {
 
   async loadAll() {
     const base = import.meta.env.BASE_URL || './';
-    const [cards, soulTypes, masks, enemies, shrines] = await Promise.all([
+    const [cards, soulTypes, masks, enemies, shrines, marks] = await Promise.all([
       fetch(`${base}config/cards.json`).then(r => r.json()),
       fetch(`${base}config/soul_types.json`).then(r => r.json()),
       fetch(`${base}config/masks.json`).then(r => r.json()),
       fetch(`${base}config/enemies.json`).then(r => r.json()),
-      fetch(`${base}config/shrines.json`).then(r => r.json())
+      fetch(`${base}config/shrines.json`).then(r => r.json()),
+      fetch(`${base}config/marks.json`).then(r => r.json())
     ]);
 
     // Store raw configs for access
@@ -23,7 +24,8 @@ export class ConfigLoader {
       soulTypes,
       masks,
       enemies,
-      shrines
+      shrines,
+      marks
     };
 
     this.cards = this.indexById(cards.cards);
@@ -39,6 +41,7 @@ export class ConfigLoader {
     console.log('Indexed enemies:', Object.keys(this.enemies).length);
     
     this.shrineTypes = this.indexById(shrines.shrine_types);
+    this.marks = this.indexById(marks.marks);
 
     console.log('✓ All configs loaded');
     return this;
@@ -61,6 +64,14 @@ export class ConfigLoader {
 
   getEnemy(id) {
     return this.enemies[id];
+  }
+
+  getMask(id) {
+    return this.maskConfig.masks.find(m => m.id === id);
+  }
+
+  getMark(id) {
+    return this.marks[id];
   }
 
   rollSoulType() {
@@ -104,25 +115,24 @@ export class ConfigLoader {
       legendary: []
     };
 
-    const commonMasks = this.maskConfig.masks.filter(m => m.rarity === 'common');
-    const rareMasks = this.maskConfig.masks.filter(m => m.rarity === 'rare');
-    const legendaryMasks = this.maskConfig.masks.filter(m => m.rarity === 'legendary');
+    // Create shuffled copies to avoid duplicates
+    const commonMasks = [...this.maskConfig.masks.filter(m => m.rarity === 'common')]
+      .sort(() => Math.random() - 0.5);
+    const rareMasks = [...this.maskConfig.masks.filter(m => m.rarity === 'rare')]
+      .sort(() => Math.random() - 0.5);
+    const legendaryMasks = [...this.maskConfig.masks.filter(m => m.rarity === 'legendary')]
+      .sort(() => Math.random() - 0.5);
 
-    // 2 common masks
-    for (let i = 0; i < 2; i++) {
-      if (commonMasks.length > 0) {
-        const mask = commonMasks[Math.floor(Math.random() * commonMasks.length)];
-        offering.common.push({ ...mask });
-      }
+    // Pick 2 unique common masks
+    for (let i = 0; i < Math.min(2, commonMasks.length); i++) {
+      offering.common.push({ ...commonMasks[i] });
     }
 
     // 1 rare OR legendary mask (50/50 chance)
     if (Math.random() < 0.5 && rareMasks.length > 0) {
-      const mask = rareMasks[Math.floor(Math.random() * rareMasks.length)];
-      offering.rare.push({ ...mask });
+      offering.rare.push({ ...rareMasks[0] });
     } else if (legendaryMasks.length > 0) {
-      const mask = legendaryMasks[Math.floor(Math.random() * legendaryMasks.length)];
-      offering.legendary.push({ ...mask });
+      offering.legendary.push({ ...legendaryMasks[0] });
     }
 
     return offering;

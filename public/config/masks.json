@@ -12,7 +12,8 @@
       "type": "shadow",
       "cards": ["swift_strike"],
       "bind_duration": 3,
-      "texture": "/masks/gnarled_visage.png"
+      "texture": "./masks/gnarled_visage.png",
+      "description": "Twisted wood, weathered by centuries of whispered curses."
     },
     {
       "id": "iron_grimace",
@@ -21,7 +22,8 @@
       "type": "flesh",
       "cards": ["fortify_block", "rage_strike_trait"],
       "bind_duration": 5,
-      "texture": "/masks/iron_grimace.png"
+      "texture": "./masks/iron_grimace.png",
+      "description": "Cold metal that drinks deep of battle fury."
     },
     {
       "id": "fleshy_grin",
@@ -30,7 +32,8 @@
       "type": "flesh",
       "cards": ["fortify_block"],
       "bind_duration": 3,
-      "texture": "/masks/fleshy_grin.png"
+      "texture": "./masks/fleshy_grin.png",
+      "description": "Leathery skin stretched over ancient cartilage. It still twitches."
     },
     {
       "id": "scrimshaw_awe",
@@ -38,7 +41,8 @@
       "rarity": "rare",
       "type": "bone",
       "cards": ["swift_strike", "rage_strike_trait"],
-      "bind_duration": 5
+      "bind_duration": 5,
+      "description": "Carved from the skull of something that refused to stay dead."
     },
     {
       "id": "void_crown",
@@ -46,7 +50,8 @@
       "rarity": "legendary",
       "type": "universal",
       "cards": ["rage_strike_trait", "fortify_block", "swift_strike"],
-      "bind_duration": 10
+      "bind_duration": 10,
+      "description": "A crown of pure absence. Wearing it is like drowning in power."
     },
     {
       "id": "ember_shroud",
@@ -54,7 +59,8 @@
       "rarity": "rare",
       "type": "shadow",
       "cards": ["swift_strike", "rage_strike_trait"],
-      "bind_duration": 5
+      "bind_duration": 5,
+      "description": "Smoke and ash given form. It whispers of forgotten pyres."
     },
     {
       "id": "calcified_howl",
@@ -62,7 +68,8 @@
       "rarity": "legendary",
       "type": "bone",
       "cards": ["rage_strike_trait", "rage_strike_trait", "swift_strike"],
-      "bind_duration": 10
+      "bind_duration": 10,
+      "description": "A scream frozen in bone. Its rage never fades."
     },
     {
       "id": "crimson_tyrant",
@@ -70,7 +77,8 @@
       "rarity": "legendary",
       "type": "flesh",
       "cards": ["rage_strike_trait", "fortify_block", "rage_strike_trait"],
-      "bind_duration": 10
+      "bind_duration": 10,
+      "description": "Dripping with the blood of a thousand battles. It hungers for more."
     },
     {
       "id": "beggers_gaze",
@@ -78,7 +86,8 @@
       "rarity": "common",
       "type": "shadow",
       "cards": ["swift_strike"],
-      "bind_duration": 3
+      "bind_duration": 3,
+      "description": "Hollow eyes that beg for what they can never have."
     },
     {
       "id": "splintered_smile",
@@ -86,7 +95,8 @@
       "rarity": "common",
       "type": "bone",
       "cards": ["swift_strike"],
-      "bind_duration": 3
+      "bind_duration": 3,
+      "description": "Cracked and broken, yet it grins on."
     },
     {
       "id": "ashen_veil",
@@ -94,7 +104,8 @@
       "rarity": "common",
       "type": "shadow",
       "cards": ["swift_strike"],
-      "bind_duration": 3
+      "bind_duration": 3,
+      "description": "The residue of something burned beyond recognition."
     },
     {
       "id": "sanguine_maw",
@@ -102,7 +113,8 @@
       "rarity": "rare",
       "type": "flesh",
       "cards": ["rage_strike_trait", "fortify_block"],
-      "bind_duration": 5
+      "bind_duration": 5,
+      "description": "Teeth and tongues woven together. It tastes your fear."
     },
     {
       "id": "obsidian_leer",
@@ -110,7 +122,8 @@
       "rarity": "rare",
       "type": "shadow",
       "cards": ["rage_strike_trait", "swift_strike"],
-      "bind_duration": 5
+      "bind_duration": 5,
+      "description": "Black glass that reflects only darkness."
     },
     {
       "id": "charnel_grin",
@@ -118,7 +131,8 @@
       "rarity": "rare",
       "type": "bone",
       "cards": ["rage_strike_trait", "swift_strike"],
-      "bind_duration": 5
+      "bind_duration": 5,
+      "description": "The smile of something that died laughing at death itself."
     },
     {
       "id": "flayed_sovereign",
@@ -126,7 +140,8 @@
       "rarity": "rare",
       "type": "flesh",
       "cards": ["fortify_block", "rage_strike_trait"],
-      "bind_duration": 5
+      "bind_duration": 5,
+      "description": "Royalty stripped of everything but power."
     },
     {
       "id": "abyssal_membrane",
@@ -134,7 +149,8 @@
       "rarity": "legendary",
       "type": "shadow",
       "cards": ["rage_strike_trait", "fortify_block", "swift_strike"],
-      "bind_duration": 10
+      "bind_duration": 10,
+      "description": "A thin veil between worlds. Wear it and touch the void."
     },
     {
       "id": "gorewreath",
@@ -142,7 +158,8 @@
       "rarity": "legendary",
       "type": "flesh",
       "cards": ["rage_strike_trait", "rage_strike_trait", "fortify_block"],
-      "bind_duration": 10
+      "bind_duration": 10,
+      "description": "A crown of viscera and sinew. Beautiful in its brutality."
     },
     {
       "id": "ossuary_crown",
@@ -150,7 +167,8 @@
       "rarity": "legendary",
       "type": "bone",
       "cards": ["rage_strike_trait", "fortify_block", "swift_strike"],
-      "bind_duration": 10
+      "bind_duration": 10,
+      "description": "Built from the bones of forgotten kings."
     },
     {
       "id": "carrion_psalm",
@@ -158,7 +176,8 @@
       "rarity": "legendary",
       "type": "universal",
       "cards": ["rage_strike_trait", "fortify_block", "swift_strike"],
-      "bind_duration": 10
+      "bind_duration": 10,
+      "description": "A hymn to decay, sung in flesh and bone and shadow."
     }
   ]
 }

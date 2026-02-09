@@ -1,0 +1,64 @@
+{
+  "marks": [
+    {
+      "id": "mark_of_foresight",
+      "name": "Mark of Foresight",
+      "icon": "🧿",
+      "description": "Reveals the path ahead",
+      "effects": {
+        "common": {
+          "reveal_distance": 1,
+          "description": "? nodes 1 step ahead are revealed"
+        },
+        "rare": {
+          "reveal_distance": 2,
+          "description": "? nodes 2 steps ahead are revealed"
+        },
+        "legendary": {
+          "reveal_distance": 99,
+          "description": "All ? nodes on the map are revealed"
+        }
+      }
+    },
+    {
+      "id": "mark_of_greed",
+      "name": "Mark of Greed",
+      "icon": "💰",
+      "description": "Draws wealth from victory",
+      "effects": {
+        "common": {
+          "bonus_coins_per_victory": 1,
+          "description": "+1 coin per victory"
+        },
+        "rare": {
+          "bonus_coins_per_victory": 2,
+          "description": "+2 coins per victory"
+        },
+        "legendary": {
+          "bonus_coins_per_victory": 4,
+          "description": "+4 coins per victory"
+        }
+      }
+    },
+    {
+      "id": "mark_of_regeneration",
+      "name": "Mark of Regeneration",
+      "icon": "🌿",
+      "description": "Mends the mask after each battle",
+      "effects": {
+        "common": {
+          "mask_heal_per_battle": 3,
+          "description": "Restore 3 mask health after each battle"
+        },
+        "rare": {
+          "mask_heal_per_battle": 6,
+          "description": "Restore 6 mask health after each battle"
+        },
+        "legendary": {
+          "mask_heal_per_battle": 10,
+          "description": "Restore 10 mask health after each battle"
+        }
+      }
+    }
+  ]
+}

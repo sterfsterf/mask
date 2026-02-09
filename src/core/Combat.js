@@ -133,8 +133,11 @@ export class Combat {
       // Banish mask card to void
       this.voidPile.push(playedCard);
       
-      // Generate and add scar card to discard
+      // Generate scar card and add to soul's permanent scar cards
       const scarCard = this.generateScarCard(playedCard);
+      this.soul.scarCards.push(scarCard);
+      
+      // Also add to discard pile for this battle
       this.discardPile.push(scarCard);
       
       // Check for death

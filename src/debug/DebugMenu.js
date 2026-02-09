@@ -205,6 +205,7 @@ export class DebugMenu {
         left: 10px;
         z-index: 9999;
         font-family: 'Courier New', monospace;
+        display: none;
       }
 
       .debug-toggle {

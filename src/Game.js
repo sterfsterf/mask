@@ -222,11 +222,15 @@ export class Game {
       // Decrement mask bind
       soul.decrementMaskBind();
       
+      // 5% chance (1/20) to offer a mark, otherwise all cards
+      const offerMark = Math.random() < 0.05;
+      
       return {
         success: true,
         result: 'victory',
         needsCardChoice: true,
-        availableCards: this.getRandomPositiveCards(3)
+        availableCards: this.getRandomPositiveCards(offerMark ? 2 : 3),
+        availableMarks: offerMark ? this.getRandomMarks(1) : []
       };
     } else {
       // Mask breaks on defeat
@@ -297,6 +301,17 @@ export class Game {
     return this.sampleArray(curses.map(c => c.id), count);
   }
 
+  getRandomMarks(count) {
+    if (!this.config || !this.config.config || !this.config.config.marks) {
+      console.error('Marks config not loaded!');
+      return [];
+    }
+    
+    const allMarks = this.config.config.marks.marks;
+    const markIds = allMarks.map(m => m.id);
+    return this.sampleArray(markIds, count);
+  }
+
   sampleArray(arr, count) {
     const shuffled = [...arr].sort(() => 0.5 - Math.random());
     return shuffled.slice(0, count);
@@ -319,6 +334,21 @@ export class Game {
 
     this.combat = null;
     return { success: true };
+  }
+
+  applyMarkChoice(markId) {
+    const soul = this.combat.soul;
+    
+    if (soul.mask) {
+      soul.addMarkToMask(markId);
+      console.log(`✓ Added mark ${markId} to ${soul.name}'s mask`);
+      this.combat = null;
+      return { success: true };
+    } else {
+      console.log(`⚠️ ${soul.name} has no mask - mark ${markId} forfeited`);
+      this.combat = null;
+      return { success: true }; // Still proceed even without mask
+    }
   }
 
   // Game over check

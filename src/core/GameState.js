@@ -117,7 +117,7 @@ export class GameState {
     // Generate new seed if not provided
     this.mapSeed = seed || Math.floor(Math.random() * 1000000);
     
-    const generator = new MapGenerator(this.mapSeed, this.config.enemyConfig);
+    const generator = new MapGenerator(this.mapSeed, this.config.enemyConfig, this.config);
     this.mapNodes = generator.generateMap(20); // 20 layers
     generator.visualizeMap(this.mapNodes);
     
@@ -145,6 +145,29 @@ export class GameState {
     ).filter(n => n !== undefined);
   }
 
+  // Get all marks from all souls with masks
+  getActiveMarks() {
+    const marks = [];
+    for (const soul of this.souls) {
+      if (soul.mask && soul.mask.marks) {
+        for (const markId of soul.mask.marks) {
+          const markConfig = this.config.getMark(markId);
+          if (markConfig) {
+            const maskRarity = soul.mask.rarity || 'common';
+            const effect = markConfig.effects[maskRarity];
+            marks.push({
+              id: markId,
+              config: markConfig,
+              effect: effect,
+              soul: soul
+            });
+          }
+        }
+      }
+    }
+    return marks;
+  }
+
   moveToNode(nodeId) {
     this.currentNodeId = nodeId;
     this.visitedNodes.push(nodeId);
@@ -156,7 +179,10 @@ export class GameState {
       this.maskShopOffering = this.config.generateMaskShopOffering();
       this.soldMasks = { common: [], rare: [], legendary: [] }; // Reset sold masks for new shop
     } else if (node.type === 'shrine') {
-      this.currentShrine = this.config.getRandomShrine();
+      // Use the shrine assigned to this node, or fallback to random
+      this.currentShrine = node.shrine 
+        ? this.config.shrineTypes[node.shrine]
+        : this.config.getRandomShrine();
     } else if (node.type === 'mystery') {
       // Reveal mystery as one of the other types
       const types = ['battle', 'void', 'mask_shop', 'shrine'];
@@ -167,7 +193,10 @@ export class GameState {
         this.maskShopOffering = this.config.generateMaskShopOffering();
         this.soldMasks = { common: [], rare: [], legendary: [] }; // Reset sold masks for new shop
       } else if (revealedType === 'shrine') {
-        this.currentShrine = this.config.getRandomShrine();
+        // Assign a random shrine to this mystery node
+        const randomShrine = this.config.getRandomShrine();
+        node.shrine = randomShrine.id;
+        this.currentShrine = randomShrine;
       } else if (revealedType === 'battle') {
         // Mystery battles use tier 1-2 enemies from any faction
         const tier1and2Enemies = this.config.enemyConfig.enemies.filter(e => e.tier === 1 || e.tier === 2);

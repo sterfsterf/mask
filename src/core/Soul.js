@@ -47,6 +47,7 @@ export class Soul {
     this.starterTrait = type.starter_trait;
     this.specialCard = type.special_card;
     this.negativeCards = []; // Negative cards that go in deck
+    this.scarCards = []; // Scar cards from broken masks that persist
     
     // Mask
     this.mask = null;
@@ -123,6 +124,11 @@ export class Soul {
       const negCard = config.getCard(cardId);
       if (negCard) deck.push({ ...negCard, source: 'soul' });
     });
+    
+    // Scar cards (scar source) - persistent cards from broken masks
+    this.scarCards.forEach(scarCard => {
+      deck.push({ ...scarCard, source: 'scar' });
+    });
 
     // Tired cards if any (soul source)
     for (let i = 0; i < this.tiredCount; i++) {
@@ -134,7 +140,7 @@ export class Soul {
   }
 
   equipMask(mask) {
-    this.mask = { ...mask };
+    this.mask = { ...mask, marks: [] }; // Add marks array to track applied marks
     this.maskBattlesRemaining = mask.bind_duration;
     
     // Initialize mask health based on rarity
@@ -205,6 +211,15 @@ export class Soul {
         this.mask.cards = [];
       }
       this.mask.cards.push(cardId);
+    }
+  }
+
+  addMarkToMask(markId) {
+    if (this.mask) {
+      if (!this.mask.marks) {
+        this.mask.marks = [];
+      }
+      this.mask.marks.push(markId);
     }
   }
 
